@@ -539,7 +539,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	/* check for frequency decrease */
 	if (avg_load < dbs_tuners_ins.down_threshold) {
 		/* are we at the minimum frequency already? */
-		if (policy->cur == policy->min) {
+		if (policy->cur <= policy->min) {
 			/* should we disable auxillary CPUs? */
 			if (num_online_cpus() > 1 && hotplug_out_avg_load <
 					dbs_tuners_ins.down_threshold) {
