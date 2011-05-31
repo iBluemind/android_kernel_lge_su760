@@ -67,6 +67,8 @@ struct cpu_dbs_info_s {
 	cputime64_t prev_cpu_nice;
 	struct cpufreq_policy *cur_policy;
 	struct delayed_work work;
+	struct work_struct cpu_up_work;
+	struct work_struct cpu_down_work;
 	struct cpufreq_frequency_table *freq_table;
 	int cpu;
 	/*
@@ -520,7 +522,8 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 			 * wq is not running here so its safe.
 			 */
 			mutex_unlock(&this_dbs_info->timer_mutex);
-			cpu_up(1);
+			queue_work_on(this_dbs_info->cpu, khotplug_wq,
+					&this_dbs_info->cpu_up_work);
 			mutex_lock(&this_dbs_info->timer_mutex);
 			goto out;
 		}
@@ -544,8 +547,10 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 			if (num_online_cpus() > 1 && hotplug_out_avg_load <
 					dbs_tuners_ins.down_threshold) {
 				mutex_unlock(&this_dbs_info->timer_mutex);
-				cpu_down(1);
+				queue_work_on(this_dbs_info->cpu, khotplug_wq,
+					&this_dbs_info->cpu_down_work);
 				mutex_lock(&this_dbs_info->timer_mutex);
+				
 			}
 			goto out;
 		}
@@ -573,6 +578,16 @@ out:
 	return;
 }
 
+static void do_cpu_up(struct work_struct *work)
+{
+	cpu_up(1);
+}
+
+static void do_cpu_down(struct work_struct *work)
+{
+	cpu_down(1);
+}
+
 static void do_dbs_timer(struct work_struct *work)
 {
 	struct cpu_dbs_info_s *dbs_info =
@@ -584,6 +599,7 @@ static void do_dbs_timer(struct work_struct *work)
 
 	mutex_lock(&dbs_info->timer_mutex);
 	dbs_check_cpu(dbs_info);
+
 	queue_delayed_work_on(cpu, khotplug_wq, &dbs_info->work, delay);
 	mutex_unlock(&dbs_info->timer_mutex);
 }
@@ -595,6 +611,8 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
 	delay -= jiffies % delay;
 
 	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
+	INIT_WORK(&dbs_info->cpu_up_work, do_cpu_up);
+	INIT_WORK(&dbs_info->cpu_down_work, do_cpu_down);
 	queue_delayed_work_on(dbs_info->cpu, khotplug_wq, &dbs_info->work,
 		delay);
 }
