@@ -78,4 +78,4 @@ obj-$(CONFIG_TS0710_MUX)	+= ts0710mux/
 
 obj-$(CONFIG_FSYNC_CONTROL)	+= fsync_control.o
 obj-$(CONFIG_CUSTOM_VOLTAGE)	+= custom_voltage.o
-
+obj-$(CONFIG_LIVE_OC)		+= live_oc.o

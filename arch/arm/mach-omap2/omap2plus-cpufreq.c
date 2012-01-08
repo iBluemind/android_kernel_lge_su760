@@ -76,6 +76,12 @@ static bool omap_cpufreq_suspended;
 
 static int oc_val;
 
+#ifdef CONFIG_LIVE_OC
+extern void register_freqtable(struct cpufreq_frequency_table * freq_table);
+extern void register_freqmutex(struct mutex * freq_mutex);
+extern void register_freqpolicy(struct cpufreq_policy * policy);
+#endif
+
 static unsigned int omap_getspeed(unsigned int cpu)
 {
 	unsigned long rate;
@@ -244,6 +250,10 @@ static int omap_target(struct cpufreq_policy *policy,
 	unsigned int i;
 	int ret = 0;
 
+#ifdef CONFIG_LIVE_OC
+	mutex_lock(&omap_cpufreq_lock);
+#endif
+
 	if (!freq_table) {
 		dev_err(mpu_dev, "%s: cpu%d: no freq table!\n", __func__,
 				policy->cpu);
@@ -258,7 +268,9 @@ static int omap_target(struct cpufreq_policy *policy,
 		return ret;
 	}
 
+#ifndef CONFIG_LIVE_OC
 	mutex_lock(&omap_cpufreq_lock);
+#endif
 
 	current_target_freq = freq_table[i].frequency;
 
@@ -503,6 +515,12 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
 
 #ifdef CONFIG_CUSTOM_VOLTAGE
 	customvoltage_register_freqmutex(&omap_cpufreq_lock);
+#endif
+
+#ifdef CONFIG_LIVE_OC
+	register_freqpolicy(policy);
+	register_freqtable(freq_table);
+	register_freqmutex(&omap_cpufreq_lock);
 #endif
 
 	return 0;
