@@ -80,6 +80,7 @@ static int oc_val;
 extern void register_freqtable(struct cpufreq_frequency_table * freq_table);
 extern void register_freqmutex(struct mutex * freq_mutex);
 extern void register_freqpolicy(struct cpufreq_policy * policy);
+extern void register_maxthermal(unsigned int * max_thermal);
 #endif
 
 static unsigned int omap_getspeed(unsigned int cpu)
@@ -518,6 +519,7 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
 #endif
 
 #ifdef CONFIG_LIVE_OC
+	register_maxthermal(&max_thermal);
 	register_freqpolicy(policy);
 	register_freqtable(freq_table);
 	register_freqmutex(&omap_cpufreq_lock);
