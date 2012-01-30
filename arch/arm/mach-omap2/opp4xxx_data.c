@@ -32,6 +32,9 @@
 #ifdef CONFIG_CUSTOM_VOLTAGE
 #include <linux/custom_voltage.h>
 #endif
+#ifdef CONFIG_LIVE_OC
+extern void liveoc_init(void);
+#endif
 
 /*
  * STD_FUSE_OPP_DPLL_1 contains info about ABB trim type for MPU/IVA.
@@ -720,6 +723,9 @@ int __init omap4_opp_init(void)
 out:
 #ifdef CONFIG_CUSTOM_VOLTAGE
 	customvoltage_init();
+#endif
+#ifdef CONFIG_LIVE_OC
+	liveoc_init();
 #endif
 
 	return r;
