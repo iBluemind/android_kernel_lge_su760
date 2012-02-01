@@ -47,6 +47,9 @@
 #ifdef CONFIG_CUSTOM_VOLTAGE
 #include <linux/custom_voltage.h>
 #endif
+#ifdef CONFIG_LIVE_OC
+#include <linux/live_oc.h>
+#endif
 
 #ifdef CONFIG_SMP
 struct lpj_info {
@@ -75,13 +78,6 @@ static bool omap_cpufreq_ready;
 static bool omap_cpufreq_suspended;
 
 static int oc_val;
-
-#ifdef CONFIG_LIVE_OC
-extern void liveoc_register_freqtable(struct cpufreq_frequency_table * freq_table);
-extern void liveoc_register_freqmutex(struct mutex * freq_mutex);
-extern void liveoc_register_freqpolicy(struct cpufreq_policy * policy);
-extern void liveoc_register_maxthermal(unsigned int * max_thermal);
-#endif
 
 static unsigned int omap_getspeed(unsigned int cpu)
 {

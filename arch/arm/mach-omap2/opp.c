@@ -31,7 +31,7 @@
 #endif
 
 #ifdef CONFIG_LIVE_OC
-extern void liveoc_register_oppdevice(struct device * dev, char * dev_name);
+#include <linux/live_oc.h>
 #endif
 
 /* Temp variable to allow multiple calls */
