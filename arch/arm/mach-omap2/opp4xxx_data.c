@@ -29,6 +29,10 @@
 #include "omap_opp_data.h"
 #include "pm.h"
 
+#ifdef CONFIG_CUSTOM_VOLTAGE
+#include <linux/custom_voltage.h>
+#endif
+
 /*
  * STD_FUSE_OPP_DPLL_1 contains info about ABB trim type for MPU/IVA.
  * This probably is an ugly location to put the DPLL trim details.. but,
@@ -714,6 +718,10 @@ int __init omap4_opp_init(void)
 		omap4_opp_enable("mpu", 1500000000);
 
 out:
+#ifdef CONFIG_CUSTOM_VOLTAGE
+	customvoltage_init();
+#endif
+
 	return r;
 }
 device_initcall(omap4_opp_init);
