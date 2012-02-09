@@ -725,8 +725,7 @@ bool usb_is_intel_lpt_switchable_xhci(struct pci_dev *pdev)
 {
 	return pdev->class == PCI_CLASS_SERIAL_USB_XHCI &&
 		pdev->vendor == PCI_VENDOR_ID_INTEL &&
-		(pdev->device == PCI_DEVICE_ID_INTEL_LYNX_POINT_XHCI ||
-		 pdev->device == PCI_DEVICE_ID_INTEL_LYNX_POINT_LP_XHCI);
+		pdev->device == PCI_DEVICE_ID_INTEL_LYNX_POINT_XHCI;
 }
 
 bool usb_is_intel_switchable_xhci(struct pci_dev *pdev)
