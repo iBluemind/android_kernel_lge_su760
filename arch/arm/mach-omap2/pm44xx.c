@@ -1565,7 +1565,7 @@ static void __init omap4_pm_setup_errata(void)
 static int __init omap4_pm_init(void)
 {
 	int ret = 0;
-	struct clockdomain *l3_1_clkdm, *l4wkup,*sdma_clkdm, *l3_init_clkdm;
+	struct clockdomain *l3_1_clkdm, *l4wkup, *sdma_clkdm, *l3_init_clkdm;
 	struct clockdomain *ducati_clkdm, *l3_2_clkdm, *l4_per, *l4_cfg;
 	char *init_devices[] = {"mpu", "iva"};
 	int i;
