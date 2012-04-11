@@ -74,6 +74,8 @@ static unsigned int screen_off_max_freq;
 static bool omap_cpufreq_ready;
 static bool omap_cpufreq_suspended;
 
+static int oc_val;
+
 static unsigned int omap_getspeed(unsigned int cpu)
 {
 	unsigned long rate;
@@ -562,6 +564,62 @@ struct freq_attr omap_cpufreq_attr_screen_off_freq = {
 	.store = store_screen_off_freq,
 };
 
+/*
+ * OMAP4 MPU voltage control via cpufreq by Michael Huang (coolbho3k)
+ *
+ * Note: Each opp needs to have a discrete entry in both volt data and
+ * dependent volt data (in opp4xxx_data.c), or voltage control breaks. Make a
+ * new voltage entry for each opp. Keep this in mind when adding extra
+ * frequencies.
+ */
+
+/* struct opp is defined elsewhere, but not in any accessible header files */
+struct opp {
+        struct list_head node;
+
+        bool available;
+        unsigned long rate;
+        unsigned long u_volt;
+
+        struct device_opp *dev_opp;
+};
+
+/*
+ * Variable GPU OC - sysfs interface for cycling through different GPU top speeds
+ * Author: imoseyon@gmail.com
+ *
+*/
+static ssize_t show_gpu_oc(struct cpufreq_policy *policy, char *buf)
+{
+	return sprintf(buf, "%d\n", oc_val);
+}
+static ssize_t store_gpu_oc(struct cpufreq_policy *policy, const char *buf, size_t size)
+{
+	int prev_oc, ret1, ret2; 
+        struct device *dev;
+	unsigned long gpu_freqs[2] = {307200000,384000000};
+
+	prev_oc = oc_val;
+	if (prev_oc < 0 || prev_oc > 1) {
+		// shouldn't be here
+		pr_info("[imoseyon] gpu_oc error - bailing\n");	
+		return size;
+	}
+	
+	sscanf(buf, "%d\n", &oc_val);
+	if (oc_val < 0 ) oc_val = 0;
+	if (oc_val > 1 ) oc_val = 1;
+	if (prev_oc == oc_val) return size;
+
+        dev = omap_hwmod_name_get_dev("gpu");
+        ret1 = opp_disable(dev, gpu_freqs[prev_oc]);
+        ret2 = opp_enable(dev, gpu_freqs[oc_val]);
+        pr_info("[imoseyon] gpu top speed changed from %lu to %lu (%d,%d)\n", 
+		gpu_freqs[prev_oc], gpu_freqs[oc_val], ret1, ret2);
+	
+	return size;
+}
+
 #ifdef CONFIG_CUSTOM_VOLTAGE
 static ssize_t show_UV_mV_table(struct cpufreq_policy * policy, char * buf)
 {
@@ -594,6 +652,12 @@ static struct freq_attr gpu_clock = {
     .show = show_gpu_clock,
 };
 
+static struct freq_attr gpu_oc = {
+	.attr = {.name = "gpu_oc", .mode=0666,},
+	.show = show_gpu_oc,
+	.store = store_gpu_oc,
+};
+
 static struct freq_attr *omap_cpufreq_attr[] = {
 	&cpufreq_freq_attr_scaling_available_freqs,
 	&omap_cpufreq_attr_screen_off_freq,
@@ -601,6 +665,7 @@ static struct freq_attr *omap_cpufreq_attr[] = {
 	&omap_UV_mV_table,
 #endif
 	&gpu_clock,
+	&gpu_oc,
 	NULL,
 };
 
@@ -653,6 +718,8 @@ static struct platform_device omap_cpufreq_device = {
 static int __init omap_cpufreq_init(void)
 {
 	int ret;
+
+	oc_val = 0;
 
 	if (cpu_is_omap24xx())
 		mpu_clk_name = "virt_prcm_set";
