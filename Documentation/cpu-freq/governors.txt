@@ -312,6 +312,8 @@ entropy and leads to lots of spurious plug-in and plug-out transitions.
 The number of sampling periods averaged together is tunable via the
 "hotplug_in_sampling_periods" and "hotplug_out_sampling_periods"
 run-time tunable parameters.
+boost: If non-zero, immediately boost speed of all CPUs to
+hispeed_freq.  If zero, allow CPU speeds to drop below hispeed_freq.
 
 3. The Governor Interface in the CPUfreq Core
 =============================================
