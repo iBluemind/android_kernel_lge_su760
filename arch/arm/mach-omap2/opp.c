@@ -66,7 +66,7 @@ int __init omap_init_opp_table(struct omap_opp_def *opp_def,
 	omap_table_init = 1;
 
 	/* Lets now register with OPP library */
-	for (i = 0; i < opp_def_size; i++) {
+	for (i = 0; i < opp_def_size; i++, opp_def++) {
 		struct omap_hwmod *oh;
 		struct device *dev;
 
@@ -124,8 +124,6 @@ int __init omap_init_opp_table(struct omap_opp_def *opp_def,
 			liveoc_register_oppdevice(dev, opp_def->hwmod_name);
 #endif
 		}
-next:
-		opp_def++;
 	}
 
 	return 0;
