@@ -2879,17 +2879,17 @@ static void __net_exit ip6_route_net_exit(struct net *net)
 static int __net_init ip6_route_net_init_late(struct net *net)
 {
 #ifdef CONFIG_PROC_FS
-  proc_net_fops_create(net, "ipv6_route", 0, &ipv6_route_proc_fops);
-  proc_net_fops_create(net, "rt6_stats", S_IRUGO, &rt6_stats_seq_fops);
+	proc_net_fops_create(net, "ipv6_route", 0, &ipv6_route_proc_fops);
+	proc_net_fops_create(net, "rt6_stats", S_IRUGO, &rt6_stats_seq_fops);
 #endif
-  return 0;
+	return 0;
 }
 
 static void __net_exit ip6_route_net_exit_late(struct net *net)
 {
 #ifdef CONFIG_PROC_FS
-  proc_net_remove(net, "ipv6_route");
-  proc_net_remove(net, "rt6_stats");
+	proc_net_remove(net, "ipv6_route");
+	proc_net_remove(net, "rt6_stats");
 #endif
 }
 
@@ -2899,8 +2899,8 @@ static struct pernet_operations ip6_route_net_ops = {
 };
 
 static struct pernet_operations ip6_route_net_late_ops = {
-  .init = ip6_route_net_init_late,
-  .exit = ip6_route_net_exit_late,
+	.init = ip6_route_net_init_late,
+	.exit = ip6_route_net_exit_late,
 };
 
 static struct notifier_block ip6_route_dev_notifier = {
@@ -2953,13 +2953,13 @@ int __init ip6_route_init(void)
 		goto xfrm6_init;
 
 	ret = register_pernet_subsys(&ip6_route_net_late_ops);
-  	if (ret)
-    		goto fib6_rules_init;
+	if (ret)
+		goto fib6_rules_init;
 
 	ret = -ENOBUFS;
-	if (__rtnl_register(PF_INET6, RTM_NEWROUTE, inet6_rtm_newroute, NULL, NULL) ||
-	    __rtnl_register(PF_INET6, RTM_DELROUTE, inet6_rtm_delroute, NULL, NULL) ||
-	    __rtnl_register(PF_INET6, RTM_GETROUTE, inet6_rtm_getroute, NULL, NULL))
+	if (__rtnl_register(PF_INET6, RTM_NEWROUTE, inet6_rtm_newroute, NULL) ||
+	    __rtnl_register(PF_INET6, RTM_DELROUTE, inet6_rtm_delroute, NULL) ||
+	    __rtnl_register(PF_INET6, RTM_GETROUTE, inet6_rtm_getroute, NULL))
 		goto out_register_late_subsys;
 
 	ret = register_netdevice_notifier(&ip6_route_dev_notifier);
