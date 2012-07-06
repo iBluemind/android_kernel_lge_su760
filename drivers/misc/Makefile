@@ -75,3 +75,5 @@ obj-$(CONFIG_TSPDRV)		+= tspdrv/
 # RIP-12331 : handling CP Crash of RIL Recovery
 obj-$(CONFIG_LGE_MODEM_WATCHER)	+= modem_watcher.o
 obj-$(CONFIG_TS0710_MUX)	+= ts0710mux/
+
+obj-$(CONFIG_FSYNC_CONTROL)	+= fsync_control.o
