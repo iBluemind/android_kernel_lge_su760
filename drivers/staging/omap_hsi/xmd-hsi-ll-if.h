@@ -96,6 +96,9 @@ int hsi_ll_close(int channel);
  * @buf: Pointer to buffer.
  * @size: number of bytes to be transferred.
  */
+
+int hsi_ll_check_channel(int channel);
+
 void hsi_ll_reset_write_channel(int channel);
 
 int hsi_ll_write(int channel, unsigned char *buf, unsigned int size);

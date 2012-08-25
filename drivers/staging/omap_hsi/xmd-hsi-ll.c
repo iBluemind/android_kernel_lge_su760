@@ -31,7 +31,6 @@
 #include "xmd-hsi-ll-if.h"
 #include "xmd-hsi-ll-cfg.h"
 #include "xmd-hsi-ll-internal.h"
-
 #if defined(CONFIG_MACH_LGE_COSMOPOLITAN)
 #include "xmd-ch.h"
 #endif
@@ -172,6 +171,9 @@ static int hsi_ll_command_decode(
 	unsigned int* message,
 	unsigned int* ll_msg_type,
 	unsigned int* channel,
+#if defined (MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY)
+	unsigned int* open_id,
+#endif
 	unsigned int* param)
 {
 	int ret = 0;
@@ -222,7 +224,15 @@ static int hsi_ll_command_decode(
 		break;
 	case HSI_LL_MSG_OPEN_CONN_OCTET:
 		*channel = ((msg & 0x0F000000) >> 24);
+#if defined (MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY)
+		*open_id = ((msg & 0x00F00000) >> 20);
+		*param	 = (msg & 0x000FFFFF);
+		if (!open_id)
+		    *param   = (msg & 0x00FFFFFF);
+#else
 		*param   = (msg & 0x00FFFFFF);
+#endif
+
 #if defined (HSI_LL_ENABLE_CRITICAL_LOG)
 		if (*channel == 0) {
 			printk("\nHSI_LL: Unexpected case. Received CMD = 0x%x. %s %d\n",
@@ -230,9 +240,19 @@ static int hsi_ll_command_decode(
 		}
 #endif
 		break;
+
+#if defined (MIPI_HSI_CHECK_CP_RX_INFO)
+	case HSI_LL_MSG_INFO:
+		*channel = ((msg & 0x0F000000) >> 24);
+		*param	 = (msg & 0x000000FF);
+		break;
+#endif
+
 	case HSI_LL_MSG_ECHO:
 	case HSI_LL_MSG_INFO_REQ:
+#if !defined (MIPI_HSI_CHECK_CP_RX_INFO)
 	case HSI_LL_MSG_INFO:
+#endif
 	case HSI_LL_MSG_CONFIGURE:
 	case HSI_LL_MSG_ALLOCATE_CH:
 	case HSI_LL_MSG_RELEASE_CH:
@@ -327,8 +347,17 @@ static int hsi_ll_send_command(
 				  ((size                       & 0x00FFFFFF));
 		}
 		break;
+#if defined (MIPI_HSI_CHECK_CP_RX_INFO)		
+	case HSI_LL_MSG_INFO_REQ: {
+		command = ((HSI_LL_MSG_INFO_REQ & 0x0000000F) << 28) |
+				  ((channel             & 0x0000000F) << 24);
+		}
+		break;
+#endif
 	case HSI_LL_MSG_ECHO:
+#if !defined (MIPI_HSI_CHECK_CP_RX_INFO)		
 	case HSI_LL_MSG_INFO_REQ:
+#endif
 	case HSI_LL_MSG_INFO:
 	case HSI_LL_MSG_CONFIGURE:
 	case HSI_LL_MSG_ALLOCATE_CH:
@@ -420,6 +449,9 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 {
 	int ret;
 	unsigned int channel = 0, param = 0, ll_msg_type = 0;
+#if defined (MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY)
+	unsigned int new_open_id = 0;
+#endif
 
 	spin_lock_bh(&hsi_ll_if.rd_cmd_cb_lock);
 
@@ -429,6 +461,9 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 	ret = hsi_ll_command_decode(&hsi_ll_data.rx_cmd,
 								&ll_msg_type,
 								&channel,
+#if defined (MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY)
+								&new_open_id,
+#endif
 								&param);
 
 #if defined (HSI_LL_ENABLE_CRITICAL_LOG)
@@ -450,11 +485,22 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 	}
 
 	switch(ll_msg_type) {
+#if defined (MIPI_HSI_CHECK_CP_RX_INFO)
+	case HSI_LL_MSG_INFO: {
+#if 1 
+		printk("\nHSI_LL: Info received. CP state %d for channel %d. %s %d\n",
+				 param, channel, __func__, __LINE__);
+#endif		
+		hsi_ll_data.ch[channel].tx.cp_state = param;
+		hsi_ll_data.ch[channel].tx.cp_info_complete = 1;
+		wake_up_interruptible(&hsi_ll_data.ch[channel].tx.cp_info_wait);
+	}
+	break;
+#endif
 	case HSI_LL_MSG_BREAK: {
 #if defined (HSI_LL_ENABLE_ERROR_LOG)
 		printk("\nHSI_LL:Break received.%s %d\n", __func__, __LINE__);
 #endif
-
 
 #if 0
 		/* Start RIL recovery */
@@ -543,11 +589,14 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 							hsi_ll_data.ch[channel].tx.buffer,
 							size);
 
-#if defined (HSI_LL_ENABLE_DEBUG_LOG)
+#if defined (HSI_LL_ENABLE_ERROR_LOG)
 			if (ret!=0) {
 				printk("\nHSI_LL:hsi_write failed for channel %d with error %d. %s %d\n",
 						 channel, ret, __func__, __LINE__);
-			} else {
+			}
+#endif
+#if defined (HSI_LL_ENABLE_DEBUG_LOG)
+			else {
 				printk("\nHSI_LL: Transferring data over channel %d. %s %d\n",
 						 channel, __func__, __LINE__);
 			}
@@ -645,13 +694,31 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 		/* TODO: Complete this */
 		break;
 	case HSI_LL_MSG_OPEN_CONN_OCTET: {
+#if defined (MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY)
+		if(new_open_id != 0 && hsi_ll_data.ch[channel].rx.open_id == new_open_id) {
+#if defined (HSI_LL_ENABLE_ERROR_LOG)			
+			printk("\nHSI_LL:WARN: Resend open_conn from CP. Already proccessed channel %d open_id %d new_open_id %d %s %d\n",
+					channel, hsi_ll_data.ch[channel].rx.open_id, new_open_id, __func__, __LINE__);
+#endif
+			break;
+		}
+
+#if defined (HSI_LL_ENABLE_DEBUG_LOG)
+		printk("\nHSI_LL: Open_connect for ch %d. open_id %d. new_open_id %d\n",
+				channel, hsi_ll_data.ch[channel].rx.open_id, new_open_id);
+#endif
+
+		hsi_ll_data.ch[channel].rx.open_id = new_open_id;
+#endif
 		switch(hsi_ll_data.ch[channel].rx.state) {
 			case HSI_LL_RX_STATE_IDLE: {
 				struct hsi_ll_rx_tx_data temp_data;
 				temp_data.buffer  = NULL;
 				temp_data.size    = hsi_ll_data.ch[channel].rx.size = param;
 
+#if defined (MIPI_HSI_CP_OPEN_CONN_NAK_FOR_RETRY)
 				hsi_ll_data.ch[channel].rx.nak_sent = 0;
+#endif
 
 				/*Make sure requested memory size is multiple of word as read
 				  is always in multiple of words. */
@@ -694,7 +761,8 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 				}
 			}
 			break;
-
+/* P2 issue : CP Open Conn Retry Workaround  : NAK stops retry open conn timer */
+#if defined (MIPI_HSI_CP_OPEN_CONN_NAK_FOR_RETRY)
 #if defined (HSI_LL_ENABLE_RX_BUF_RETRY_WQ)
 		case HSI_LL_RX_STATE_BLOCKED: {
 			if (hsi_ll_data.ch[channel].rx.nak_sent == 0) {
@@ -715,8 +783,7 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 			}
 			break;
 #endif
-
-#if 1
+			
 		case HSI_LL_RX_STATE_RX:
 			if (hsi_ll_data.ch[channel].rx.nak_sent == 0) {
 #if defined (HSI_LL_ENABLE_ERROR_LOG)
@@ -736,7 +803,6 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 			
 			break;
 #endif
-// IMC_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 
          default:
 #if defined (HSI_LL_ENABLE_ERROR_LOG)
@@ -1117,15 +1183,150 @@ static int hsi_ll_rd_ctrl_ch_th(void *data)
 	return 0;
 }
 
-/**
- * hsi_ll_write - HSI LL Write
- * @channel: Channel Number.
- * @char: pointer to buffer.
- * @size: Number of bytes to be transferred.
- */
-void hsi_ll_reset_write_channel(int channel)
+#if defined (MIPI_HSI_CHECK_CP_RX_INFO)
+/* TODO: Fine tune to required value. */
+#define HSI_CHECK_CP_INFO_TIMEOUT		(1 * HZ)
+
+/*
+ * hsi_ll_check_cp_state
+ * -EACCES : Ril recovery proccessing
+ * -EBUSY : wait again because it is processing
+ * -EPERM : Fail to check
+ * 0 : success to send data.
+*/
+static int hsi_ll_check_cp_state(int channel)
 {
+	int rc = 0;
+	unsigned int cp_state = HSI_LL_RX_STATE_UNDEF;
+
+	if( hsi_ll_data.state == HSI_LL_IF_STATE_ERR_RECOVERY) {
+#if 1 
+		printk("\nHSI_LL: Recovery state %s %d\n", __func__, __LINE__);
+#endif		
+		return -EACCES;
+	}
+
+	hsi_ll_data.ch[channel].tx.cp_state = HSI_LL_RX_STATE_UNDEF;
+	hsi_ll_data.ch[channel].tx.cp_info_complete = 0;
+
+	rc = hsi_ll_send_command(HSI_LL_MSG_INFO_REQ,
+						channel,
+						NULL,
+						HSI_LL_PHY_ID_TX);
+
+	if(rc != 0) {
 #if defined (HSI_LL_ENABLE_ERROR_LOG)
+		printk("\nHSI_LL: ch %d ret %d fail to send info req %s %d\n",
+			channel, rc, __func__, __LINE__);
+#endif
+		return -EPERM;
+	}
+
+	rc = wait_event_interruptible_timeout(hsi_ll_data.ch[channel].tx.cp_info_wait,
+					hsi_ll_data.ch[channel].tx.cp_info_complete == 1, HSI_CHECK_CP_INFO_TIMEOUT);
+	
+	cp_state = hsi_ll_data.ch[channel].tx.cp_state;
+	hsi_ll_data.ch[channel].tx.cp_state = HSI_LL_RX_STATE_UNDEF;
+
+	hsi_ll_data.ch[channel].tx.cp_info_complete = 0;
+
+#if defined (HSI_LL_ENABLE_DEBUG_LOG)
+	printk("\nHSI_LL: ch %d state %d %s %d\n", channel, hsi_ll_data.ch[channel].tx.state, __func__, __LINE__);
+#endif
+
+	if(hsi_ll_data.ch[channel].tx.state == HSI_LL_TX_STATE_IDLE) {
+#if 1 
+		printk("\nHSI_LL: ch %d Idle %s %d\n", channel, __func__, __LINE__);
+#endif		
+		return 0;
+	}
+
+	if(hsi_ll_data.ch[channel].tx.state != HSI_LL_TX_STATE_OPEN_CONN){
+#if 1 
+		printk("\nHSI_LL: ch %d Try again %s %d\n", channel, __func__, __LINE__);
+#endif		
+		return -EBUSY;
+	}
+
+	if (rc == 0) { 
+#if defined (HSI_LL_ENABLE_ERROR_LOG)
+		printk("\nHSI_LL: ch %d Timeout fail to check %s %d\n", channel, __func__, __LINE__);
+#endif
+		return -EPERM;
+	}
+	else {
+		int ret = 0;
+
+#if 1 
+		printk("\nHSI_LL: ch %d cp_state %d %s %d\n", channel, cp_state, __func__, __LINE__);
+#endif
+		switch (cp_state) {
+			case HSI_LL_RX_STATE_IDLE: {
+					rc = hsi_ll_send_command(HSI_LL_MSG_OPEN_CONN_OCTET,
+								  channel,
+								  &hsi_ll_data.ch[channel].tx.size,
+								  HSI_LL_PHY_ID_TX);
+					if(rc != 0) {
+#if defined (HSI_LL_ENABLE_ERROR_LOG)
+						printk("\nHSI_LL: ch %d rc %d fail to send info req %s %d\n", channel, rc, __func__, __LINE__);
+#endif
+						ret = -EPERM;
+					}
+					else {
+#if 1 
+						printk("\nHSI_LL: ch %d rc %d success to send info req %s %d\n", channel, rc, __func__, __LINE__);
+#endif
+						ret = -EBUSY;
+					}
+				}
+				break;
+
+			case HSI_LL_RX_STATE_RX: {
+					unsigned int size = hsi_ll_data.ch[channel].tx.size;
+		
+					hsi_ll_stop_tx_timer(channel);
+					hsi_ll_data.ch[channel].tx.state = HSI_LL_TX_STATE_TX;
+		
+					HSI_LL_GET_SIZE_IN_WORDS(size);
+		
+					rc = hsi_write(hsi_ll_data.dev[channel],
+									hsi_ll_data.ch[channel].tx.buffer,
+									size);
+
+					if (rc != 0) {
+						ret = -EPERM;
+#if defined (HSI_LL_ENABLE_ERROR_LOG)
+						printk("\nHSI_LL:hsi_write failed for channel %d with error %d. %s %d\n",
+							 channel, rc, __func__, __LINE__);
+#endif
+					}
+					else {
+						ret = -EBUSY;
+#if 1
+						printk("\nHSI_LL: Transferring data over channel %d. %s %d\n",
+							 channel, __func__, __LINE__);
+#endif
+					}
+
+					hsi_ll_start_tx_timer(channel, 10);
+				}
+				break;
+
+			default:
+#if 1
+		printk("\nHSI_LL: ch %d cp_state %d Try again %s %d\n", channel, cp_state, __func__, __LINE__);
+#endif
+				ret = -EBUSY;
+				break;
+		}
+
+		return ret;
+	}
+}
+#endif
+int hsi_ll_check_channel(int channel)
+{
+#if 1 
 	printk("\nHSI_LL: channel 0. state %d %s %d\n", 
 		hsi_ll_data.ch[HSI_LL_CTRL_CHANNEL].tx.state, __func__, __LINE__);
 
@@ -1133,10 +1334,64 @@ void hsi_ll_reset_write_channel(int channel)
 		hsi_ll_data.ch[channel].tx.state, __func__, __LINE__);
 #endif
 
-	hsi_write_cancel(hsi_ll_data.dev[HSI_LL_CTRL_CHANNEL]);
+	if( hsi_ll_data.state == HSI_LL_IF_STATE_ERR_RECOVERY) {
+#if 1 
+		printk("\nHSI_LL: Recovery state %s %d\n", __func__, __LINE__);
+#endif
+		return -EACCES;
+	}
+
+	else if(hsi_ll_data.ch[channel].tx.state == HSI_LL_TX_STATE_IDLE) {
+#if 1 
+		printk("\nHSI_LL: ch %d Idle %s %d\n", channel, __func__, __LINE__);
+#endif
+		return 0;
+	}
+
+	else if(hsi_ll_data.ch[channel].tx.state != HSI_LL_TX_STATE_OPEN_CONN){
+#if 1 		
+		printk("\nHSI_LL: ch %d Try again %s %d\n", channel, __func__, __LINE__);
+#endif
+		return -EBUSY;
+	}
+	else
+#if defined (MIPI_HSI_CHECK_CP_RX_INFO)
+		return hsi_ll_check_cp_state(channel);
+#else
+		return -EPERM; 
+#endif
+}
+
+void hsi_ll_reset_write_channel(int channel)
+{
+	int ret = 0;
+
+#if 1 
+	printk("\nHSI_LL: channel 0. state %d %s %d\n", 
+		hsi_ll_data.ch[HSI_LL_CTRL_CHANNEL].tx.state, __func__, __LINE__);
+			
+	printk("\nHSI_LL: channel %d. state %d %s %d\n", channel, 
+		hsi_ll_data.ch[channel].tx.state, __func__, __LINE__);
+#endif
+
+	if( hsi_ll_data.state == HSI_LL_IF_STATE_ERR_RECOVERY)
+		return;
+
+	ret = hsi_write_cancel(hsi_ll_data.dev[HSI_LL_CTRL_CHANNEL]);
+
+#if defined (HSI_LL_ENABLE_ERROR_LOG)
+	printk("\nHSI_LL: channel 0. hsi_write_cancel ret %d %s %d\n",
+		ret, __func__, __LINE__);
+#endif
 	hsi_ll_data.ch[HSI_LL_CTRL_CHANNEL].tx.state = HSI_LL_TX_STATE_IDLE;
 
-	hsi_write_cancel(hsi_ll_data.dev[channel]);
+
+	ret = hsi_write_cancel(hsi_ll_data.dev[channel]);
+
+#if defined (HSI_LL_ENABLE_ERROR_LOG)
+	printk("\nHSI_LL: channel %d. hsi_write_cancel ret %d %s %d\n",
+		channel, ret, __func__, __LINE__);
+#endif
 
 	hsi_ll_if.wr_complete_flag = 1;
 	wake_up_interruptible(&hsi_ll_if.wr_complete);
@@ -1249,7 +1504,13 @@ int hsi_ll_open(int channel)
 	hsi_ll_data.ch[channel].rx.state = HSI_LL_RX_STATE_IDLE;
 	hsi_ll_data.ch[channel].tx.state = HSI_LL_TX_STATE_IDLE;
 
+#if defined (MIPI_HSI_CP_OPEN_CONN_NAK_FOR_RETRY)
 	hsi_ll_data.ch[channel].rx.nak_sent = 0;
+#endif
+
+#if defined (MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY)
+	hsi_ll_data.ch[channel].rx.open_id = 16;  /* 0 ~ 15 */
+#endif
 
 	if (0 > hsi_open(hsi_ll_data.dev[channel])) {
 #if defined (HSI_LL_ENABLE_ERROR_LOG)
@@ -1261,6 +1522,11 @@ int hsi_ll_open(int channel)
 #if defined (HSI_LL_ENABLE_TX_RETRY_WQ)
 		hsi_ll_data.ch[channel].tx.channel = channel;
 		INIT_WORK(&hsi_ll_data.ch[channel].tx.retry_work, hsi_ll_retry_work);
+#endif
+#if defined (MIPI_HSI_CHECK_CP_RX_INFO)
+		init_waitqueue_head(&hsi_ll_data.ch[channel].tx.cp_info_wait);
+		hsi_ll_data.ch[channel].tx.cp_info_complete = 0;
+		hsi_ll_data.ch[channel].tx.cp_state = HSI_LL_RX_STATE_IDLE;
 #endif
 		hsi_ll_data.ch[channel].open = TRUE;
 	}
@@ -1967,7 +2233,6 @@ static void hsi_ll_port_event_cb(
 {
 	switch(event) {
 	case HSI_EVENT_BREAK_DETECTED:
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [START]
 #if defined(CONFIG_MACH_LGE_COSMOPOLITAN)
 		if((dev->n_ch == 0)&&(hsi_ll_data.state == HSI_LL_IF_STATE_READY)) {
 			ifx_schedule_cp_dump_or_reset();
@@ -1983,7 +2248,6 @@ static void hsi_ll_port_event_cb(
 #endif
 		}
 #endif
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 		break;
 	case HSI_EVENT_ERROR:
 #if defined (HSI_LL_ENABLE_DEBUG_LOG)
@@ -2053,9 +2317,6 @@ int hsi_ll_init(int port, const hsi_ll_notify cb)
 			goto quit_init;
 		}
 
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [START]
-/* TI HSI driver (from HSI_DRIVER_VERSION 0.4.2) can suppport port 1 and 2, 
-	but IMC XMD currently supports port 1 only */
 #if 1
 		for (i = 0; i < HSI_MAX_PORTS; i++)
 			hsi_ll_iface.ch_mask[i] = 0;
@@ -2070,7 +2331,6 @@ int hsi_ll_init(int port, const hsi_ll_notify cb)
 			hsi_ll_iface.ch_mask[i] = (0xFFFFFFFF ^ (0xFFFFFFFF << HSI_LL_MAX_CHANNELS));
 		}
 #endif
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 
 		if (HSI_LL_RESULT_SUCCESS != hsi_ll_events_init()) {
 #if defined (HSI_LL_ENABLE_ERROR_LOG)
@@ -2210,11 +2470,9 @@ int hsi_ll_reset(int type)
 	printk("\nHSI_LL: ifx cordump hsi_ll_reset started.\n");
 #endif
 
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [START]
 #if defined(CONFIG_MACH_LGE_COSMOPOLITAN)
 		xmd_set_ifx_cp_dump();
 #endif
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 	}
 
 #if defined (HSI_LL_ENABLE_TX_RETRY_WQ)
@@ -2227,6 +2485,11 @@ int hsi_ll_reset(int type)
 		hsi_ll_data.ch[ch_i].open = FALSE;
 		hsi_write_cancel(hsi_ll_data.dev[ch_i]);
 		hsi_read_cancel(hsi_ll_data.dev[ch_i]);
+#if defined (MIPI_HSI_CHECK_CP_RX_INFO)
+		hsi_ll_data.ch[ch_i].tx.cp_info_complete = 1;
+		wake_up_interruptible(&hsi_ll_data.ch[ch_i].tx.cp_info_wait);
+		hsi_ll_data.ch[ch_i].tx.cp_state = HSI_LL_RX_STATE_UNDEF;
+#endif
 	}
 
 	hsi_ll_if.wr_complete_flag = 1;
@@ -2238,7 +2501,6 @@ int hsi_ll_reset(int type)
 	printk("\nHSI_LL: Unblocking all read/write callbacks.\n");
 #endif
 
-// IMC_CHANGE [MIPI-HSI] jaesung.woo@lge.com [START]
 /* RIL recovery initialization	*/
 #if 1	
 	hsi_ll_data.ch[HSI_LL_CTRL_CHANNEL].tx.state = HSI_LL_RX_STATE_IDLE;
@@ -2272,11 +2534,14 @@ int hsi_ll_reset(int type)
 		hsi_ll_data.ch[ch_i].rx.size = 0;			
 		hsi_ll_data.ch[ch_i].rx.state = HSI_LL_RX_STATE_IDLE;
 		
+#if defined (MIPI_HSI_CP_OPEN_CONN_NAK_FOR_RETRY)
 		hsi_ll_data.ch[ch_i].rx.nak_sent = 0;
-		
+#endif
+#if defined (MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY)
+		hsi_ll_data.ch[ch_i].rx.open_id = 16; /* 0 ~ 15 */
+#endif
 	}
 #endif
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 
 #if defined (HSI_LL_ENABLE_DEBUG_LOG)
 	printk("\nHSI_LL: Revoking PSV enable.\n");
@@ -2285,9 +2550,7 @@ int hsi_ll_reset(int type)
 #if defined (HSI_LL_ENABLE_PM)
 	hsi_ll_if.psv_event_flag = HSI_LL_PSV_EVENT_PSV_DISABLE;
 
-	// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [START]
 	hsi_ll_data.tx_cfg.ac_wake = HSI_LL_WAKE_LINE_LOW;
-	// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 #endif
 
 	if(type != HSI_LL_RESET_IFX_COREDUMP)
@@ -2329,7 +2592,6 @@ int hsi_ll_restart(void)
 	hsi_ll_if.msg_avaliable_flag   = 0;
 
 	for(ch_i=0; ch_i < HSI_LL_MAX_CHANNELS; ch_i++) {
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [START]
 #if 1
 		if (0 > hsi_open(hsi_ll_data.dev[ch_i])) {
 #if defined (HSI_LL_ENABLE_ERROR_LOG)
@@ -2341,7 +2603,6 @@ int hsi_ll_restart(void)
 			hsi_ll_data.ch[ch_i].open = TRUE;
 		}
 #endif
-// LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 	}
 
 #if defined (HSI_LL_ENABLE_DEBUG_LOG)

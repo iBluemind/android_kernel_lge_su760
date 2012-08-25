@@ -43,11 +43,20 @@
 /* Frame Size */
 #define HSI_LL_MAX_FRAME_SIZE       HSI_FRAMESIZE_DEFAULT
 
+/* For 96MHZ Base CLK, 96MHZ(0) 48MHZ(1)  24MHZ(3)
+    Divisor value => HSI CLK == HSI base CLK/(1+divisor value)
+    Clock Change 48MHz => 96MHz */
 #define HSI_LL_DIVISOR_VALUE        HSI_DIVISOR_DEFAULT /* For 96MHZ Base CLK, 96MHZ(0) 48MHZ(1)  24MHZ(3) */
 
 /*To enable Power management */
 #define HSI_LL_ENABLE_PM
 
+#define MIPI_HSI_CP_OPEN_CONN_NAK_FOR_RETRY
+
+#define MIPI_HSI_CP_OPEN_CONN_ID_FOR_RETRY
+
+#define MIPI_HSI_TTY_WRITE_TIMEOUT_FEATURE
+#define MIPI_HSI_CHECK_CP_RX_INFO
 #define HSI_LL_COUNTERS_VALUE	   (HSI_COUNTERS_FT_DEFAULT | \
 									HSI_COUNTERS_TB_DEFAULT | \
 									HSI_COUNTERS_FB_DEFAULT)
