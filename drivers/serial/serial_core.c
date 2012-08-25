@@ -1132,6 +1132,14 @@ uart_ioctl(struct tty_struct *tty, struct file *filp, unsigned int cmd,
 		ret = uart_do_autoconfig(state);
 		break;
 
+	case TCFLSH:
+		switch (arg) {
+		case TCIFLUSH:
+		case TCIOFLUSH:
+			uart_flush_buffer(tty);
+			break;
+		}
+		break;
 	case TIOCSERGWILD: /* obsolete */
 	case TIOCSERSWILD: /* obsolete */
 		ret = 0;
@@ -2017,6 +2025,9 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
 	mutex_lock(&port->mutex);
 
 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
+	if (!tty_dev)
+		return -ENOMEM;
+	
 	if (device_may_wakeup(tty_dev)) {
 		enable_irq_wake(uport->irq);
 		put_device(tty_dev);
@@ -2083,6 +2094,9 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
 	mutex_lock(&port->mutex);
 
 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
+	if (!tty_dev)
+		return -ENOMEM;
+	
 	if (!uport->suspended && device_may_wakeup(tty_dev)) {
 		disable_irq_wake(uport->irq);
 		mutex_unlock(&port->mutex);

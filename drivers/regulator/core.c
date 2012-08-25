@@ -1409,6 +1409,14 @@ int regulator_disable(struct regulator *regulator)
 {
 	struct regulator_dev *rdev = regulator->rdev;
 	int ret = 0;
+#if defined(CONFIG_MACH_LGE_VMMC_ALWAYSON_FORCED)	//20110504 FW1 KIMBYUNGCHUL SD_CARD_LOCKUP_IN_omap_hsmmc_resume_FUNC	 [START]
+
+	if(!strncmp(rdev->desc->name,"VMMC",4))
+		{
+		return 0;
+		}
+#endif //CONFIG_MACH_LGE_VMMC_ALWAYSON_FORCED		//20110504 FW1 KIMBYUNGCHUL SD_CARD_LOCKUP_IN_omap_hsmmc_resume_FUNC	 [END]
+
 
 	mutex_lock(&rdev->mutex);
 	ret = _regulator_disable(rdev);
@@ -1443,6 +1451,20 @@ static int _regulator_force_disable(struct regulator_dev *rdev)
 	rdev->use_count = 0;
 	return ret;
 }
+//FW KIMBYUNGCHUL 20110414 [START]	just for vmmc plz~
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH	
+int regulator_force_refresh(struct regulator *regulator){
+
+	extern		int twlreg_refresh(struct regulator_dev *rdev);
+	int ret;
+
+	mutex_lock(&regulator->rdev->mutex); 
+	ret = twlreg_refresh(regulator->rdev);
+	mutex_unlock(&regulator->rdev->mutex);
+	return ret;
+}
+#endif	//CONFIG_MACH_LGE_MMC_REFRESH
+//FW KIMBYUNGCHUL 20110414 [END]
 
 /**
  * regulator_force_disable - force disable regulator output

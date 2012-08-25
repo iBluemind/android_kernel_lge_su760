@@ -254,6 +254,15 @@ config OMAP_DM_TIMER
 	help
 	 Select this option if you want to use OMAP Dual-Mode timers.
 
+config OMAP_HDMI_AUDIO_WA
+	bool "Enable HDMI audio workaround"
+	depends on SYSLINK_PROC
+	default y
+	help
+	  Enable HDMI audio workaround for OMAP ES2.0, ES2.1 and
+	  ES2.2 revisions. This allows to send ACR packets at
+	  the rate described in HDMI 1.3a. 
+
 config OMAP_SERIAL_WAKE
 	bool "Enable wake-up events for serial ports"
 	depends on ARCH_OMAP1 && OMAP_MUX
@@ -278,6 +287,7 @@ config OMAP_PM
 	depends on PM
 	bool "OMAP PM layer implementation"
 endchoice
+
 
 endmenu
 

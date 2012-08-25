@@ -66,6 +66,7 @@
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <linux/io.h>
+#include <linux/jiffies.h>
 #include <linux/pm_runtime.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
@@ -95,6 +96,7 @@ static struct hwspinlock_state *hwspinlock_module = &hwspinlock_state;
 struct hwspinlock {
 	bool is_init;
 	int id;
+	int hwspinlock_counter;
 	void __iomem *lock_reg;
 	bool is_allocated;
 	struct platform_device *pdev;
@@ -104,12 +106,13 @@ struct hwspinlock {
 static struct hwspinlock *hwspinlocks;
 
 /* API functions */
-
 /* Busy loop to acquire a spinlock */
 int hwspinlock_lock(struct hwspinlock *handle)
 {
 	int retval;
+	unsigned long timeout;
 
+	timeout = msecs_to_jiffies(500) + jiffies;
 	if (WARN_ON(handle == NULL))
 		return -EINVAL;
 
@@ -121,8 +124,15 @@ int hwspinlock_lock(struct hwspinlock *handle)
 
 	/* Attempt to acquire the lock by reading from it */
 	do {
+		if (time_after_eq(jiffies, timeout)){
+			printk("\nTIMEOUT: 500 ms, failed to acquire hwspinlock %d\n", handle->id);
+			return -ETIMEDOUT;
+		} 		
 		retval = readl(handle->lock_reg);
+		ndelay(5000);
 	} while (retval == HWSPINLOCK_BUSY);
+
+	handle->hwspinlock_counter++;
 
 	return 0;
 }
@@ -148,6 +158,11 @@ int hwspinlock_trylock(struct hwspinlock *handle)
 	if (retval == HWSPINLOCK_BUSY)
 		pm_runtime_put_sync(&handle->pdev->dev);
 
+	if (retval != HWSPINLOCK_BUSY) {
+		handle->hwspinlock_counter++;
+	}
+
+
 	return retval;
 }
 EXPORT_SYMBOL(hwspinlock_trylock);
@@ -162,6 +177,7 @@ int hwspinlock_unlock(struct hwspinlock *handle)
 	writel(0, handle->lock_reg);
 
 	pm_runtime_put_sync(&handle->pdev->dev);
+	handle->hwspinlock_counter--;
 
 	return 0;
 }
@@ -203,8 +219,10 @@ struct hwspinlock *hwspinlock_request_specific(unsigned int id)
 
 	spin_lock_irqsave(&hwspinlock_module->local_lock, flags);
 
-	if (WARN_ON(hwspinlocks[id].is_allocated))
+	if (WARN_ON(hwspinlocks[id].is_allocated)){
+		pr_err("request_specific failed for id %d", id);
 		goto exit;
+	}
 
 	handle = &hwspinlocks[id];
 	handle->is_allocated = true;
@@ -280,6 +298,7 @@ static int __devinit hwspinlock_probe(struct platform_device *pdev)
 	/* Set up each individual lock handle */
 	for (id = 0; id < hwspinlock_module->num_locks; id++) {
 		hwspinlocks[id].id		= id;
+		hwspinlocks[id].hwspinlock_counter = 0;
 		hwspinlocks[id].pdev		= pdev;
 
 		hwspinlocks[id].is_init		= true;

@@ -203,7 +203,7 @@ struct omap_opp *opp_find_freq_exact(struct device *dev,
 		return opp;
 
 	list_for_each_entry(temp_opp, &dev_opp->opp_list, node) {
-		if (temp_opp->enabled) {
+		if (temp_opp->enabled == enabled) {
 			unsigned long rate = temp_opp->rate / 1000000;
 
 			if (rate == req_freq) {
@@ -328,8 +328,13 @@ struct omap_opp *opp_find_freq_floor(struct device *dev, unsigned long *freq)
  * Searches for exact match in the opp list and returns handle to the matching
  * opp if found, else returns ERR_PTR in case of error and should be handled
  * using IS_ERR.
+ *
+ * Note enabled is a modifier for the search.  If enabled is true then the
+ * matching opp must be enabled.  If enabled is false then the matching opp
+ * must be disabled.
  */
-struct omap_opp *opp_find_voltage(struct device *dev, unsigned long volt)
+struct omap_opp *opp_find_voltage(struct device *dev, unsigned long volt,
+		bool enabled)
 {
 	struct device_opp *dev_opp;
 	struct omap_opp *temp_opp, *opp = ERR_PTR(-ENODEV);
@@ -339,7 +344,8 @@ struct omap_opp *opp_find_voltage(struct device *dev, unsigned long volt)
 		return opp;
 
 	list_for_each_entry(temp_opp, &dev_opp->opp_list, node) {
-		if (temp_opp->enabled && temp_opp->u_volt == volt) {
+		if (!(temp_opp->enabled ^ enabled) &&
+				temp_opp->u_volt == volt) {
 			opp = temp_opp;
 			break;
 		}
@@ -361,7 +367,7 @@ struct omap_opp *opp_find_voltage(struct device *dev, unsigned long volt)
 int opp_set_rate(struct device *dev, unsigned long freq)
 {
 	struct device_opp *dev_opp;
-
+	
 	if (!dev) {
 		pr_err("%s: Invalid device\n", __func__);
 		return -EINVAL;
@@ -493,7 +499,6 @@ int opp_add(const struct omap_opp_def *opp_def)
 			break;
 		}
 	}
-
 	if (!dev_opp) {
 		/* Allocate a new device OPP table */
 		dev_opp = kzalloc(sizeof(struct device_opp), GFP_KERNEL);
@@ -628,6 +633,12 @@ void opp_init_cpufreq_table(struct device *dev,
 	freq_table[i].frequency = CPUFREQ_TABLE_END;
 
 	*table = &freq_table[0];
+}
+
+void opp_exit_cpufreq_table(struct cpufreq_frequency_table **table)
+{
+	kfree(*table);
+	*table = NULL;
 }
 
 struct device **opp_init_voltage_params(struct voltagedomain *voltdm,

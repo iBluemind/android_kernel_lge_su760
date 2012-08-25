@@ -1,0 +1,18 @@
+# drivers/cosmo/Kconfig
+
+menuconfig LGE_COSMO_DRIVERS
+	bool "LGE Cosmopolitan"
+	default y
+	---help---
+		Support for LG P920 Drivers.
+		
+if LGE_COSMO_DRIVERS
+source "drivers/cosmo/muic/Kconfig"
+source "drivers/cosmo/charger/Kconfig"
+source "drivers/cosmo/fuel_gauge/Kconfig"
+#source "drivers/cosmo/audio/Kconfig"
+source "drivers/cosmo/subpmic/Kconfig"
+source "drivers/cosmo/misc/Kconfig"
+source "drivers/cosmo/mtc_eta/Kconfig"
+source "drivers/cosmo/mhl/Kconfig"
+endif #LG_FW_DRIVERS

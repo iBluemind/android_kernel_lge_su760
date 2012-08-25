@@ -305,7 +305,7 @@ struct musb_hw_ep {
 #endif
 };
 
-static inline struct usb_request *next_in_request(struct musb_hw_ep *hw_ep)
+static inline struct musb_request *next_in_request(struct musb_hw_ep *hw_ep)
 {
 #ifdef CONFIG_USB_GADGET_MUSB_HDRC
 	return next_request(&hw_ep->ep_in);
@@ -314,7 +314,7 @@ static inline struct usb_request *next_in_request(struct musb_hw_ep *hw_ep)
 #endif
 }
 
-static inline struct usb_request *next_out_request(struct musb_hw_ep *hw_ep)
+static inline struct musb_request *next_out_request(struct musb_hw_ep *hw_ep)
 {
 #ifdef CONFIG_USB_GADGET_MUSB_HDRC
 	return next_request(&hw_ep->ep_out);
@@ -412,6 +412,9 @@ struct musb {
 
 	unsigned is_multipoint:1;
 	unsigned ignore_disconnect:1;	/* during bus resets */
+#if defined(CONFIG_ARCH_OMAP)
+	unsigned is_attached:1;         /* Last VBUS event was "VBUS Connected". */
+#endif
 
 	unsigned		hb_iso_rx:1;	/* high bandwidth iso rx? */
 	unsigned		hb_iso_tx:1;	/* high bandwidth iso tx? */
@@ -624,6 +627,8 @@ extern void musb_platform_try_idle(struct musb *musb, unsigned long timeout);
 
 #if defined(CONFIG_USB_TUSB6010) || defined(CONFIG_BLACKFIN)
 extern int musb_platform_get_vbus_status(struct musb *musb);
+#elif defined(CONFIG_ARCH_OMAP)
+#define musb_platform_get_vbus_status(musb) (0 != (musb)->is_attached)
 #else
 #define musb_platform_get_vbus_status(x)	0
 #endif

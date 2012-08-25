@@ -13,6 +13,7 @@
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/device.h>
+#include <linux/usb/android_composite.h>
 
 #include "u_serial.h"
 #include "gadget_chips.h"
@@ -242,6 +243,9 @@ gser_unbind(struct usb_configuration *c, struct usb_function *f)
 	if (gadget_is_dualspeed(c->cdev->gadget))
 		usb_free_descriptors(f->hs_descriptors);
 	usb_free_descriptors(f->descriptors);
+	if (f->name) {
+		kfree(f->name);
+	}
 	kfree(func_to_gser(f));
 }
 
@@ -266,6 +270,7 @@ int __init gser_bind_config(struct usb_configuration *c, u8 port_num)
 	 * distinguish instances ...
 	 */
 
+	printk("gser_bind_config, port_num :%d", port_num);
 	/* maybe allocate device-global string ID */
 	if (gser_string_defs[0].id == 0) {
 		status = usb_string_id(c->cdev);
@@ -281,7 +286,13 @@ int __init gser_bind_config(struct usb_configuration *c, u8 port_num)
 
 	gser->port_num = port_num;
 
-	gser->port.func.name = "gser";
+	gser->port.func.name = kzalloc(7, GFP_KERNEL);
+	if (gser->port.func.name) {
+		snprintf((char*)gser->port.func.name, 7, "gser%d", gser->port_num);
+	} else {
+		kfree(gser);
+		return -ENOMEM;
+	}
 	gser->port.func.strings = gser_strings;
 	gser->port.func.bind = gser_bind;
 	gser->port.func.unbind = gser_unbind;
@@ -293,3 +304,28 @@ int __init gser_bind_config(struct usb_configuration *c, u8 port_num)
 		kfree(gser);
 	return status;
 }
+
+#ifdef CONFIG_LGE_ANDROID_USB_DIAG
+
+int gser_function_bind_config(struct usb_configuration *c)
+{
+	int ret = gser_bind_config(c, 1);
+//kernel panic 	if (ret == 0)
+//kernel panic 		gserial_setup(c->cdev->gadget, 1);
+	return ret;
+}
+
+static struct android_usb_function acm_function = {
+	.name = "gser",
+	.bind_config = gser_function_bind_config,
+};
+
+static int __init init(void)
+{
+	printk(KERN_INFO "f_serial init\n");
+	android_register_function(&acm_function);
+	return 0;
+}
+module_init(init);
+
+#endif /* CONFIG_USB_ANDROID_ACM */

@@ -1,12 +1,16 @@
 /*
- * ALSA SoC OMAP ABE driver
  *
- * Author:	Laurent Le Faucheur <l-le-faucheur@ti.com>
- * 		Liam Girdwood <lrg@slimlogic.co.uk>
+ * This file is provided under a dual BSD/GPLv2 license.  When using or
+ * redistributing this file, you may do so under either license.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * version 2 as published by the Free Software Foundation.
+ * GPL LICENSE SUMMARY
+ *
+ * Copyright(c) 2010-2011 Texas Instruments Incorporated,
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,43 +19,51 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA
+ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ * The full GNU General Public License is included in this distribution
+ * in the file called LICENSE.GPL.
+ *
+ * BSD LICENSE
+ *
+ * Copyright(c) 2010-2011 Texas Instruments Incorporated,
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *   distribution.
+ * * Neither the name of Texas Instruments Incorporated nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
+
 #include "abe_main.h"
-#ifndef abe_dat_c
-#define abe_dat_c
+
 const u32 abe_firmware_array[ABE_FIRMWARE_MAX_SIZE] = {
 #include "abe_firmware.c"
 };
-u32 abe_firmware_version_number;
-/*
- * Kernel base
- */
-void __iomem *io_base;
-/*
- * global variable : saves stack area
- */
-u16 MultiFrame[PROCESSING_SLOTS][TASKS_IN_SLOT];
-ABE_SIODescriptor sio_desc;
-ABE_SPingPongDescriptor desc_pp;
-abe_satcdescriptor_aess atc_desc;
-/*
- * automatic gain control of input mixer's gains
- */
-u32 abe_compensated_mixer_gain;
-u8 abe_muted_gains_indicator[MAX_NBGAIN_CMEM];
-u32 abe_desired_gains_decibel[MAX_NBGAIN_CMEM];
-u32 abe_muted_gains_decibel[MAX_NBGAIN_CMEM];
-u32 abe_desired_gains_linear[MAX_NBGAIN_CMEM];
-u32 abe_desired_ramp_delay_ms[MAX_NBGAIN_CMEM];
-/*
- * HAL/FW ports status / format / sampling / protocol(call_back) / features
- *	/ gain / name
- */
-u32 pdm_dl1_status;
-u32 pdm_dl2_status;
-u32 pdm_vib_status;
+
+struct omap_abe *abe;
+
 /*
  * HAL/FW ports status / format / sampling / protocol(call_back) / features
  *	/ gain / name
@@ -63,7 +75,7 @@ const abe_port_t abe_port_init[LAST_PORT_ID] = {
 	   reseted at start Port Name for the debug trace */
 	/* DMIC */ {
 		    OMAP_ABE_PORT_ACTIVITY_IDLE, {96000, SIX_MSB},
-		    NODRIFT, NOCALLBACK, 0, (DMIC_ITER / 6),
+		    NODRIFT, NOCALLBACK, 0, (DMIC_ITER/6),
 		    {
 		     SNK_P, DMIC_PORT_PROT,
 		     {{dmem_dmic, dmem_dmic_size, DMIC_ITER} }
@@ -72,7 +84,7 @@ const abe_port_t abe_port_init[LAST_PORT_ID] = {
 		    {EQDMIC, 0}, "DMIC"},
 	/* PDM_UL */ {
 		      OMAP_ABE_PORT_ACTIVITY_IDLE, {96000, STEREO_MSB},
-		      NODRIFT, NOCALLBACK, smem_amic, (MCPDM_UL_ITER / 2),
+		      NODRIFT, NOCALLBACK, smem_amic, (MCPDM_UL_ITER/2),
 		      {
 		       SNK_P, MCPDMUL_PORT_PROT,
 		       {{dmem_amic, dmem_amic_size, MCPDM_UL_ITER} }
@@ -197,9 +209,9 @@ const abe_port_t abe_port_init[LAST_PORT_ID] = {
 			{0, 0}, {0}, "BT_VX_DL"},
 	/* PDM_DL */ {
 		      OMAP_ABE_PORT_ACTIVITY_IDLE, {96000, SIX_MSB},
-		      NODRIFT, NOCALLBACK, 0, (MCPDM_DL_ITER / 6),
-		      {SRC_P, MCPDMDL_PORT_PROT,
-		       {{dmem_mcpdm, dmem_mcpdm_size} } },
+		      NODRIFT, NOCALLBACK, 0, (MCPDM_DL_ITER/6),
+		      {SRC_P, MCPDMDL_PORT_PROT, {{dmem_mcpdm,
+						dmem_mcpdm_size} } },
 		      {0, 0},
 		      {MIXDL1, EQ1, APS1, MIXDL2, EQ2L, EQ2R, APS2L, APS2R, 0},
 		      "PDM_DL"},
@@ -788,25 +800,6 @@ const u32 abe_alpha_iir[64] = {
  * ABE_DEBUG DATA
  */
 /*
- * IRQ and trace pointer in DMEM:
- * FW updates a write pointer at "MCU_IRQ_FIFO_ptr_labelID", the read pointer is in HAL
- */
-u32 abe_irq_dbg_read_ptr;
-/*
- * General circular buffer used to trace APIs calls and AE activity.
- */
-u32 abe_dbg_activity_log[D_DEBUG_HAL_TASK_sizeof];
-u32 abe_dbg_activity_log_write_pointer;
-u32 abe_dbg_mask;
-/*
- * Global variable holding parameter errors
- */
-u32 abe_dbg_param;
-/*
- * Output of messages selector
- */
-u32 abe_dbg_output;
-/*
  * last parameters
  */
 #define SIZE_PARAM 10
@@ -836,24 +829,4 @@ const u32 abe_port_priority[LAST_PORT_ID - 1] = {
 	BT_VX_UL_PORT,
 	VIB_DL_PORT,
 };
-/*
- * ABE CONST AREA FOR DMIC DECIMATION FILTERS
- */
-/* const s32 abe_dmic_40 [C_98_48_LP_Coefs_sizeof] = {
-	-4119413, -192384, -341428, -348088, -151380, 151380, 348088,
-	341428, 192384, 4119415, 1938156, -6935719, 775202, -1801934,
-	2997698, -3692214, 3406822, -2280190, 1042982 };
-const s32 abe_dmic_32 [C_98_48_LP_Coefs_sizeof] = {
-	-4119413, -192384, -341428, -348088, -151380, 151380, 348088,
-	341428, 192384, 4119415, 1938156, -6935719, 775202, -1801934,
-	2997698, -3692214, 3406822, -2280190, 1042982 };
-const s32 abe_dmic_25 [C_98_48_LP_Coefs_sizeof] = {
-	-4119413, -192384, -341428, -348088, -151380, 151380, 348088,
-	341428, 192384, 4119415, 1938156, -6935719, 775202, -1801934,
-	2997698, -3692214, 3406822, -2280190, 1042982 };
-const s32 abe_dmic_16 [C_98_48_LP_Coefs_sizeof] = {
-	-4119413, -192384, -341428, -348088, -151380, 151380, 348088,
-	341428, 192384, 4119415, 1938156, -6935719, 775202, -1801934,
-	2997698, -3692214, 3406822, -2280190, 1042982 };
-*/
-#endif/* abe_dat_c */
+

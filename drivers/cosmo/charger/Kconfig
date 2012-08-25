@@ -1,0 +1,11 @@
+config LG_FW_RT9524_CHARGER
+	bool "RT9524_CHARGER"
+	default n
+	help
+	  Support for RT9524_CHARGER driver. 
+
+config LG_FW_MAX17040_FUEL_GAUGE
+	bool "MAX17040_FUEL_GAUGE"
+	default n
+	help
+	  Support for MAX17040_FUEL_GAUGE driver. 

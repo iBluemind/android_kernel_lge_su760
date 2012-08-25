@@ -24,7 +24,7 @@ struct timed_output_dev {
 
 	/* returns the current number of milliseconds remaining on the timer */
 	int		(*get_time)(struct timed_output_dev *sdev);
-
+	
 	/* private data */
 	struct device	*dev;
 	int		index;

@@ -3,7 +3,7 @@
 #
 
 config OMAP_HSI
-	tristate "OMAP HSI hardware driver"
+	bool "OMAP HSI hardware driver"
 	depends on (ARCH_OMAP34XX || ARCH_OMAP4)
 	default n
 	---help---
@@ -44,6 +44,18 @@ config OMAP_SSI_DEVICE
 	depends on ARCH_OMAP34XX
 
 endchoice
+
+#
+# OMAP HSI char device kernel configuration
+#
+
+config OMAP_IFX_HSI_DLP
+	tristate "HSI-DLP for IFX Modem and TTY/NET interface for apps"
+	depends on OMAP_HSI
+	---help---
+	  If you say Y here, you will enable the HSI DLP implementation
+	  for IFX MODEM as well as TTY/NET interfaces for android apps.
+
 
 #
 # OMAP HSI char device kernel configuration

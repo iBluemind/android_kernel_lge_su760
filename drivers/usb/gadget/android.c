@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  */
-
+ 
 /* #define DEBUG */
 /* #define VERBOSE_DEBUG */
 
@@ -188,6 +188,11 @@ static int product_has_function(struct android_usb_product *p,
 	int i;
 
 	for (i = 0; i < count; i++) {
+
+// LGE_UPDATE_S hunsoo.lee
+		printk("product_has_function,i:%d, cnt:%d, p : %s, functions : %s, f->disabled:%d \n",
+			i, count,  *functions, name, f->disabled);
+// LGE_UPDATE_E
 		if (!strcmp(name, *functions++))
 			return 1;
 	}
@@ -198,6 +203,16 @@ static int product_matches_functions(struct android_usb_product *p)
 {
 	struct usb_function		*f;
 	list_for_each_entry(f, &android_config_driver.functions, list) {
+	// LGE_UPDATE_S hunsoo.lee
+	if(f)
+	{
+		if( !strcmp(f->name, "rndis") )
+			continue; 	
+		f->disabled = 0; 
+		printk("usb %s is enabled\n", f->name);
+	}
+	// LGE_UPDATE_E
+
 		if (product_has_function(p, f) == !!f->disabled)
 			return 0;
 	}
@@ -209,6 +224,8 @@ static int get_product_id(struct android_dev *dev)
 	struct android_usb_product *p = dev->products;
 	int count = dev->num_products;
 	int i;
+/*
+	printk(KERN_INFO "get_product_id\n");
 
 	if (p) {
 		for (i = 0; i < count; i++, p++) {
@@ -301,7 +318,33 @@ void android_register_function(struct android_usb_function *f)
 	 * and the main driver has bound.
 	 */
 	if (dev && dev->config && _registered_function_count == dev->num_functions)
+	{
+		struct usb_function 	*func;
+		
 		bind_functions(dev);
+
+		list_for_each_entry(func, &android_config_driver.functions, list) {
+			if(func)
+			{
+				if( !strcmp(func->name, "rndis") )
+				{
+					func->disabled = 1;					
+					printk("usb %s is disabled\n", func->name);
+				}
+				else if(!strcmp(func->name, "adb"))
+				{
+					continue;
+					printk("usb %s is enabled\n", func->name);					
+				}
+				else
+				{
+					func->disabled = 0;					
+					printk("usb %s is enabled\n", func->name);
+				}
+			}
+		}
+		
+	}
 }
 
 void android_enable_function(struct usb_function *f, int enable)
@@ -322,22 +365,38 @@ void android_enable_function(struct usb_function *f, int enable)
 			 */
 			if (enable)
 #ifdef CONFIG_USB_ANDROID_RNDIS_WCEIS
-				dev->cdev->desc.bDeviceClass = USB_CLASS_WIRELESS_CONTROLLER;
+			{
+//				dev->cdev->desc.bDeviceClass = USB_CLASS_WIRELESS_CONTROLLER;
+				dev->cdev->desc.bDeviceClass = USB_CLASS_MISC;
+				dev->cdev->desc.bDeviceSubClass = 0x02;
+				dev->cdev->desc.bDeviceProtocol = 0x01;
+			}
 #else
 				dev->cdev->desc.bDeviceClass = USB_CLASS_COMM;
 #endif
 			else
-				dev->cdev->desc.bDeviceClass = USB_CLASS_PER_INTERFACE;
-
+			{
+				dev->cdev->desc.bDeviceClass = USB_CLASS_COMM;
+				dev->cdev->desc.bDeviceSubClass = 0x0;
+				dev->cdev->desc.bDeviceProtocol = 0x0;				
+			}
 			/* Windows does not support other interfaces when RNDIS is enabled,
 			 * so we disable UMS and MTP when RNDIS is on.
 			 */
-			list_for_each_entry(func, &android_config_driver.functions, list) {
+/*			list_for_each_entry(func, &android_config_driver.functions, list) {
 				if (!strcmp(func->name, "usb_mass_storage")
 					|| !strcmp(func->name, "mtp")) {
 					usb_function_set_enabled(func, !enable);
 				}
 			}
+*/
+			if(enable)
+				dev->product_id = 0x61D7;
+			else
+				dev->product_id = 0x618E;
+
+//			printk("android_enable_function %s is pid\n", dev->product_id);
+			
 		}
 #endif
 
@@ -400,7 +459,7 @@ static int __init init(void)
 		return -ENOMEM;
 
 	/* set default values, which should be overridden by platform data */
-	dev->product_id = PRODUCT_ID;
+	dev->product_id = 0x618E;
 	_android_dev = dev;
 
 	return platform_driver_register(&android_platform_driver);

@@ -59,6 +59,16 @@
 #define OMAPFB_SET_TEARSYNC	OMAP_IOW(62, struct omapfb_tearsync_info)
 #define OMAPFB_GET_DISPLAY_INFO	OMAP_IOR(63, struct omapfb_display_info)
 
+// Modified by prajuna 20110223 for color tuning {
+#ifdef CONFIG_MACH_LGE_COSMO_DOMASTIC
+#define LGE_FW_TDMB
+#endif // CONFIG_MACH_LGE_COSMO_DOMASTIC
+
+#ifdef LGE_FW_TDMB
+#define OMAPFB_SET_CCS_MATRIX	OMAP_IOW(70, struct omapfb_ccs)
+#endif // LGE_FW_TDMB
+// Modified by prajuna 20110223 for color tuning }
+
 #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
 #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
 #define OMAPFB_CAPS_PANEL_MASK		0xff000000
@@ -217,6 +227,22 @@ struct omapfb_display_info {
 	__u32 height;	/* phys height of the display in micrometers */
 	__u32 reserved[5];
 };
+
+// Modified by prajuna 20110223 for color tuning {
+#ifdef LGE_FW_TDMB
+#define OMAPFB_CCS_RGB2YUV 	0
+#define OMAPFB_CCS_YUV2RGB 	1
+
+#define OMAPFB_CCS_SIZE	9
+#define OMAPFB_BV_SIZE	3
+
+struct omapfb_ccs {
+	int direction;			/* OMAPFB_CCS_RGB2YUV or YUV2RGB */
+	int16_t ccs[OMAPFB_CCS_SIZE];	/* 3x3 color coefficients */
+	int16_t bv[OMAPFB_BV_SIZE];	/* 1x3 bias vector */
+};
+#endif // LGE_FW_TDMB
+// Modified by prajuna 20110223 for color tuning }
 
 #ifdef __KERNEL__
 

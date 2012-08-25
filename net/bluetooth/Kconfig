@@ -22,6 +22,7 @@ menuconfig BT
 	     BNEP Module (Bluetooth Network Encapsulation Protocol)
 	     CMTP Module (CAPI Message Transport Protocol)
 	     HIDP Module (Human Interface Device Protocol)
+	     TIHIDP Module (Human Interface Device Protocol - Texas instruments version)
 
 	  Say Y here to compile Bluetooth support into the kernel or say M to
 	  compile it as module (bluetooth).
@@ -73,6 +74,8 @@ source "net/bluetooth/bnep/Kconfig"
 source "net/bluetooth/cmtp/Kconfig"
 
 source "net/bluetooth/hidp/Kconfig"
+
+source "net/bluetooth/tihidp/Kconfig"
 
 source "drivers/bluetooth/Kconfig"
 

@@ -122,9 +122,24 @@ config SND_OMAP_SOC_SDP4430
 	  Say Y if you want to add support for SoC audio on Texas Instruments
 	  SDP4430 or PandaBoard.
 
+config SND_OMAP_SOC_COSMOPOLITAN
+	tristate "SoC Audio support for COSMOPOLITAN"
+	depends on MACH_LGE_COSMOPOLITAN
+	depends on TWL4030_CORE && SND_OMAP_SOC
+	select SND_OMAP_SOC_ABE
+	select SND_OMAP_SOC_MCPDM
+	select SND_SOC_TWL6040
+	select SND_OMAP_SOC_MCBSP
+	select SND_SOC_DMIC
+	select SND_OMAP_SOC_DMIC
+	select SND_OMAP_SOC_ABE_DSP
+	help
+	  Say Y if you want to add support for SoC audio on LGE Cosmopolitan.
+
+
 config SND_OMAP_SOC_HDMI
-	tristate "SoC Audio support for HDMI interface on SDP4430"
-	depends on SND_OMAP_SOC_SDP4430
+	tristate "SoC Audio support for HDMI interface on SDP4430 or Cosmopolitan"
+	depends on (SND_OMAP_SOC_SDP4430 || SND_OMAP_SOC_COSMOPOLITAN)
 	help
 	  Say Y if you want to add support for HDMI interface on SDP4430
 

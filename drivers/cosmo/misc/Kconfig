@@ -1,0 +1,45 @@
+config SENSORS_APDS9900
+	bool "Avago APDS9900 sensor"
+	default n
+        help
+          If you say yes here you get support for the Avago APDS9900
+          ambient light + proximity sensor.
+
+config COSMO_VIBRATOR
+	bool "Vibrator"
+	default y
+	help
+	  Linear vibrator runs with OMAP-PWM
+
+config	COSMO_KEYPAD_LEDS
+	bool "keypad led driver"
+	select NEW_LEDS
+	select LEDS_CLASS	
+	help
+	if you say yes here get driver support for the omap keypad backlight
+
+config BACKLIGHT_LM3528
+	bool "Backlight Driver for LM3528"
+	depends on BACKLIGHT_CLASS_DEVICE
+	select SUBPMIC_LM3528
+	help
+	  If you have a LCD backlight connected to the MAIN and(or) SUB/FB output of
+	  LM3528, say Y here to enable this driver.
+	  To compile this driver as a module, choose M here: the module will
+	  be called lm3528_bl.
+	  	
+config BACKLIGHT_LM3530
+    bool "Backlight Driver for LM3530"
+    depends on BACKLIGHT_CLASS_DEVICE
+    select SUBPMIC_LM3530
+    help
+        If you have a LCD backlight connected to the brightness output of
+        LM3530, say Y here to enable this driver.
+        To compile this driver as a module, choose M here: the module will
+        be called lm3528_bl.
+	  	
+config COSMO_CAMERAFLASH_LM3559
+	bool "flash driver for lm3559"
+	default y
+	help
+	This is a flash driver for lm3559.

@@ -228,11 +228,20 @@ static ssize_t twl6030_usb_vbus_show(struct device *dev,
 }
 static DEVICE_ATTR(vbus, 0444, twl6030_usb_vbus_show, NULL);
 
-static irqreturn_t twl6030_usb_irq(int irq, void *_twl)
+// LGE_UPDATE_S hunsoo.lee
+static struct work_struct twl6030_usb_irq_wq;
+static struct work_struct twl6030_usbotg_irq_wq;
+
+void *tmp_twl;
+void *tmp_twl_otg;
+
+static void twl6030_usb_irq_wq_func(struct work_struct *twl6030_usb_irq_wq)
+//static irqreturn_t twl6030_usb_irq_wq_func(int irq, void *_twl)
 {
-	struct twl6030_usb *twl = _twl;
+	struct twl6030_usb *twl = tmp_twl;// hunsoo _twl;
 	int status  = USB_EVENT_NONE;
 	int vbus_state, hw_state;
+
 
 	hw_state = twl6030_readb(twl, TWL6030_MODULE_ID0, STS_HW_CONDITIONS);
 
@@ -258,12 +267,23 @@ static irqreturn_t twl6030_usb_irq(int irq, void *_twl)
 	}
 	twl->prev_vbus = vbus_state & VBUS_DET;
 
+
 	return IRQ_HANDLED;
 }
 
-static irqreturn_t twl6030_usbotg_irq(int irq, void *_twl)
+
+static irqreturn_t twl6030_usb_irq(int irq, void *_twl)
 {
-	struct twl6030_usb *twl = _twl;
+	tmp_twl = _twl;
+
+	schedule_work(&twl6030_usb_irq_wq);
+}
+
+
+static void twl6030_usbotg_irq_wq_func(struct work_struct *twl6030_usbotg_irq_wq)
+//static irqreturn_t twl6030_usbotg_irq(int irq, void *_twl)
+{
+	struct twl6030_usb *twl = tmp_twl_otg; // _twl;
 	int status ;
 
 	status = twl6030_readb(twl, TWL_MODULE_USB, USB_ID_INT_SRC);
@@ -298,9 +318,19 @@ static irqreturn_t twl6030_usbotg_irq(int irq, void *_twl)
 					twl->otg.gadget);
 	}
 	twl6030_writeb(twl, TWL_MODULE_USB, USB_ID_INT_LATCH_CLR, status);
+
 	sysfs_notify(&twl->dev->kobj, NULL, "vbus");
+
 	return IRQ_HANDLED;
 }
+
+static irqreturn_t twl6030_usbotg_irq(int irq, void *_twl)
+{
+	tmp_twl_otg= _twl;
+
+	schedule_work(&twl6030_usbotg_irq_wq);
+}
+// LGE_UPDATE_E
 
 static int twl6030_set_suspend(struct otg_transceiver *x, int suspend)
 {
@@ -438,6 +468,20 @@ static void phy_shutdown(struct otg_transceiver *x)
 	__raw_writel(PHY_PD, ctrl_base + CONTROL_DEV_CONF);
 }
 
+int  twl6030_set_prevbus(struct otg_transceiver *x,int on)
+{
+	struct twl6030_usb *twl;
+
+	if (!x)
+		return -ENODEV;
+
+	twl = xceiv_to_twl(x);
+
+	twl->prev_vbus = on;
+
+	return 0;
+}
+
 static int __devinit twl6030_usb_probe(struct platform_device *pdev)
 {
 	struct twl6030_usb	*twl;
@@ -486,6 +530,11 @@ static int __devinit twl6030_usb_probe(struct platform_device *pdev)
 	 * set_host() and/or set_peripheral() ... OTG_capable boards
 	 * need both handles, otherwise just one suffices.
 	 */
+
+// LGE_UPDATE_S
+	INIT_WORK(&twl6030_usb_irq_wq, twl6030_usb_irq_wq_func);
+	INIT_WORK(&twl6030_usbotg_irq_wq, twl6030_usbotg_irq_wq_func);
+// LGE_UPDATE_E
 	twl->irq_enabled = true;
 	status = request_threaded_irq(twl->irq, NULL, twl6030_usbotg_irq,
 			IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,

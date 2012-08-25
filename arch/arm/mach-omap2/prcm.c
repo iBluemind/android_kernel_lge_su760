@@ -492,9 +492,20 @@ void omap_prcm_arch_reset(char mode, const char *cmd)
 	if (cpu_is_omap24xx() || cpu_is_omap34xx())
 		prm_set_mod_reg_bits(OMAP_RST_DPLL3_MASK, prcm_offs,
 						 OMAP2_RM_RSTCTRL);
+
+printk("dennis -- %s,%d -- reset resource : %08x\n", __FUNCTION__, __LINE__, omap_prcm_get_reset_sources());
+
+// TEMPORARY BLOCKED!!
+// Applying Cold reset instead  Warm reset, not working on ES2.0, Rev.B
+#if	0
 	if (cpu_is_omap44xx())
 		prm_set_mod_reg_bits(OMAP4430_RST_GLOBAL_WARM_SW_MASK,
 				     prcm_offs, OMAP4_RM_RSTCTRL);
+#else
+	if (cpu_is_omap44xx())
+		prm_set_mod_reg_bits(OMAP4430_RST_GLOBAL_COLD_SW_MASK,
+				     prcm_offs, OMAP4_RM_RSTCTRL);
+#endif
 }
 
 static inline u32 __omap_prcm_read(void __iomem *base, s16 module, u16 reg)
@@ -657,6 +668,24 @@ u32 cm_rmw_mod_reg_bits(u32 mask, u32 bits, s16 module, s16 idx)
 
 	return v;
 }
+
+//LGE_CHANGE_S [changseok.kim, kibum.lee] 2011-03-30, common : static dep func optimization
+u32 cm_rmw_mod_reg_bitsEx(u32 mask, u32 bits, s16 module, s16 idx)
+{
+	u32 v;
+
+	v = cm_read_mod_reg(module, idx);
+	
+	if(bits ==1)
+		v |= mask;
+	else if(bits== 0)
+		v &= ~mask;
+	cm_write_mod_reg(v, module, idx);
+
+	return v;
+}
+//LGE_CHANGE_E [changseok.kim, kibum.lee] 2011-03-30, common : static dep func optimization
+
 
 /**
  * omap2_cm_wait_idlest - wait for IDLEST bit to indicate module readiness

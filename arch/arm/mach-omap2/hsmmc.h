@@ -19,6 +19,9 @@ struct omap2_hsmmc_info {
 	bool	vcc_aux_disable_is_sleep; /* Regulator off remapped to sleep */
 	int	gpio_cd;	/* or -EINVAL */
 	int	gpio_wp;	/* or -EINVAL */
+#ifdef CONFIG_MACH_LGE_MMC_COVER
+	int sd_cover;
+#endif
 	char	*name;		/* or NULL for default */
 	struct device *dev;	/* returned: pointer to mmc adapter */
 	int	ocr_mask;	/* temporary HACK */

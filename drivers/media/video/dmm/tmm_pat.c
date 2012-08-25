@@ -21,6 +21,7 @@
 #include <linux/mutex.h>
 #include <linux/list.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 
 #include "tmm.h"
 
@@ -36,6 +37,7 @@
 
 /* Number of pages currently allocated */
 static unsigned long count;
+static struct dmm_mem *temppvt = NULL;
 
 /**
   * Used to keep track of mem per
@@ -80,14 +82,16 @@ static void dmm_free_fast_list(struct fast *fast)
 		f = list_entry(pos, struct fast, list);
 		for (i = 0; i < f->num; i++)
 			__free_page(f->mem[i]->pg);
-		kfree(f->pa);
-		kfree(f->mem);
+		vfree(f->pa);
+		vfree(f->mem);
 		list_del(pos);
 		kfree(f);
 	}
 }
 
-static u32 fill_page_stack(struct mem *mem, struct mutex *mtx)
+//LGE_UPDATE_FROM_TI_20110527
+//static u32 fill_page_stack(struct mem *mem, struct mutex *mtx)
+static u32 fill_page_stack(struct mem *mem)	
 {
 	s32 i = 0;
 	struct mem *m = NULL;
@@ -114,10 +118,13 @@ static u32 fill_page_stack(struct mem *mem, struct mutex *mtx)
 					(void *)page_address(m->pg) + DMM_PAGE);
 		outer_flush_range(m->pa, m->pa + DMM_PAGE);
 
-		mutex_lock(mtx);
+		//LGE_UPDATE_FROM_TI_20110527_START
+		//mutex_lock(mtx);
 		count++;
 		list_add(&m->list, &mem->list);
-		mutex_unlock(mtx);
+		//mutex_unlock(mtx);
+		//LGE_UPDATE_FROM_TI_20110527_END
+		
 	}
 	return 0x0;
 }
@@ -136,6 +143,21 @@ static void dmm_free_page_stack(struct mem *mem)
 	}
 }
 
+static void dmm_free_page_stack_with_count(struct mem *mem)
+{
+	struct list_head *pos = NULL, *q = NULL;
+	struct mem *m = NULL;
+
+	/* mutex is locked */
+	list_for_each_safe(pos, q, &mem->list) {
+		m = list_entry(pos, struct mem, list);
+		__free_page(m->pg);
+		list_del(pos);
+		kfree(m);
+		count--;
+	}
+}
+
 static void tmm_pat_deinit(struct tmm *tmm)
 {
 	struct dmm_mem *pvt = (struct dmm_mem *) tmm->pvt;
@@ -145,6 +167,17 @@ static void tmm_pat_deinit(struct tmm *tmm)
 	dmm_free_page_stack(&pvt->free_list);
 	dmm_free_page_stack(&pvt->used_list);
 	mutex_destroy(&pvt->mtx);
+}
+
+void tmm_dmm_free_page_stack(void)
+{
+	struct dmm_mem *pvt = temppvt;
+	printk(KERN_NOTICE "%s()[%x]\n", __func__, pvt); 
+
+	if(pvt != NULL)
+	{
+		dmm_free_page_stack_with_count(&pvt->free_list);
+	}
 }
 
 static u32 *tmm_pat_get_pages(struct tmm *tmm, s32 n)
@@ -158,9 +191,13 @@ static u32 *tmm_pat_get_pages(struct tmm *tmm, s32 n)
 	if (n <= 0 || n > 0x8000)
 		return NULL;
 
+//LGE_UPDATE_FROM_TI_20110527_START
+/*
 	if (list_empty_careful(&pvt->free_list.list))
 		if (fill_page_stack(&pvt->free_list, &pvt->mtx))
 			return NULL;
+*/			
+//LGE_UPDATE_FROM_TI_20110527_END
 
 	f = kmalloc(sizeof(*f), GFP_KERNEL);
 	if (!f)
@@ -168,16 +205,16 @@ static u32 *tmm_pat_get_pages(struct tmm *tmm, s32 n)
 	memset(f, 0x0, sizeof(*f));
 
 	/* array of mem struct pointers */
-	f->mem = kmalloc(n * sizeof(*f->mem), GFP_KERNEL);
+	f->mem = vmalloc(n * sizeof(*f->mem));
 	if (!f->mem) {
 		kfree(f); return NULL;
 	}
 	memset(f->mem, 0x0, n * sizeof(*f->mem));
 
 	/* array of physical addresses */
-	f->pa = kmalloc(n * sizeof(*f->pa), GFP_KERNEL);
+	f->pa = vmalloc(n * sizeof(*f->pa));
 	if (!f->pa) {
-		kfree(f->mem); kfree(f); return NULL;
+		vfree(f->mem); kfree(f); return NULL;
 	}
 	memset(f->pa, 0x0, n * sizeof(*f->pa));
 
@@ -188,11 +225,23 @@ static u32 *tmm_pat_get_pages(struct tmm *tmm, s32 n)
 	f->num = n;
 
 	for (i = 0; i < n; i++) {
-		if (list_empty_careful(&pvt->free_list.list))
-			if (fill_page_stack(&pvt->free_list, &pvt->mtx))
-				goto cleanup;
+//LGE_UPDATE_FROM_TI_20110527_START
+		mutex_lock(&pvt->mtx);	
+//LGE_UPDATE_FROM_TI_20110527_END
 
-		mutex_lock(&pvt->mtx);
+		if (list_empty_careful(&pvt->free_list.list))
+//LGE_UPDATE_FROM_TI_20110527_START
+			//if (fill_page_stack(&pvt->free_list, &pvt->mtx))
+			if (fill_page_stack(&pvt->free_list)) {
+				mutex_unlock(&pvt->mtx);			
+				goto cleanup;
+			}
+//LGE_UPDATE_FROM_TI_20110527_END
+
+//LGE_UPDATE_FROM_TI_20110527_START
+//		mutex_lock(&pvt->mtx);
+//LGE_UPDATE_FROM_TI_20110527_END
+
 		pos = NULL;
 		q = NULL;
 		m = NULL;
@@ -228,8 +277,8 @@ cleanup:
 		list_add(&f->mem[i - 1]->list, &pvt->free_list.list);
 		mutex_unlock(&pvt->mtx);
 	}
-	kfree(f->pa);
-	kfree(f->mem);
+	vfree(f->pa);
+	vfree(f->mem);
 	kfree(f);
 	return NULL;
 }
@@ -255,12 +304,16 @@ static void tmm_pat_free_pages(struct tmm *tmm, u32 *list)
 				} else {
 					__free_page(
 						((struct mem *)f->mem[i])->pg);
+//LGE_UPDATE_FROM_TI_20110527_START
+					//vfree(f->mem[i]);
+					kfree(f->mem[i]);
+//LGE_UPDATE_FROM_TI_20110527_END
 					count--;
 				}
 			}
 			list_del(pos);
-			kfree(f->pa);
-			kfree(f->mem);
+			vfree(f->pa);
+			vfree(f->mem);
 			kfree(f);
 			break;
 		}
@@ -299,6 +352,7 @@ struct tmm *tmm_pat_init(u32 pat_id)
 		pvt = kmalloc(sizeof(*pvt), GFP_KERNEL);
 	if (pvt) {
 		/* private data */
+		temppvt = pvt;
 		pvt->dmm = dmm;
 		INIT_LIST_HEAD(&pvt->free_list.list);
 		INIT_LIST_HEAD(&pvt->used_list.list);
@@ -307,8 +361,11 @@ struct tmm *tmm_pat_init(u32 pat_id)
 
 		count = 0;
 		if (list_empty_careful(&pvt->free_list.list))
-			if (fill_page_stack(&pvt->free_list, &pvt->mtx))
+//LGE_UPDATE_FROM_TI_20110527_START			
+			//if (fill_page_stack(&pvt->free_list, &pvt->mtx))
+			if (fill_page_stack(&pvt->free_list))
 				goto error;
+//LGE_UPDATE_FROM_TI_20110527_END		
 
 		/* public data */
 		tmm->pvt = pvt;

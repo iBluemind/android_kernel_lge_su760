@@ -70,7 +70,7 @@ config HID_A4TECH
 
 config HID_APPLE
 	tristate "Apple" if EMBEDDED
-	depends on (USB_HID || BT_HIDP)
+	depends on (USB_HID || BT_HIDP || BT_TIHIDP)
 	default !EMBEDDED
 	---help---
 	Support for some Apple devices which less or more break

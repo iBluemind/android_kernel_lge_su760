@@ -78,6 +78,7 @@ obj-y				+= i2c/ media/
 obj-$(CONFIG_PPS)		+= pps/
 obj-$(CONFIG_W1)		+= w1/
 obj-$(CONFIG_POWER_SUPPLY)	+= power/
+obj-y				+= cosmo/
 obj-$(CONFIG_HWMON)		+= hwmon/
 obj-$(CONFIG_THERMAL)		+= thermal/
 obj-$(CONFIG_WATCHDOG)		+= watchdog/
@@ -123,3 +124,9 @@ obj-$(CONFIG_OMAP_DEVICE_HANDLER)	+= dsp/syslink/devh/
 obj-$(CONFIG_OMAP_DEVICE_HANDLER)	+= dsp/syslink/devh/44xx/
 obj-$(CONFIG_DMM_OMAP)		+= media/
 obj-$(CONFIG_TILER_OMAP)		+= media/
+obj-$(CONFIG_LG_NVDATA) +=lg_nvdata/
+obj-$(CONFIG_NFC_PN544) += nfc/
+
+# LGE_FW_TDMB
+obj-$(CONFIG_LGE_BROADCAST)	+= broadcast/
+# LGE_FW_TDMB

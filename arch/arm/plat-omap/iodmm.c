@@ -26,12 +26,14 @@
 
 #include <linux/err.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 #include <linux/scatterlist.h>
 #include <linux/platform_device.h>
 #include <linux/pagemap.h>
 #include <linux/kernel.h>
 #include <linux/genalloc.h>
 #include <linux/eventfd.h>
+#include <linux/string.h>
 
 #include <linux/sched.h>
 #include <asm/cacheflush.h>
@@ -177,13 +179,14 @@ static struct dmm_map_object *add_mapping_info(struct iodmm_struct *obj,
 	}
 	INIT_LIST_HEAD(&map_obj->link);
 
-	map_obj->pages = kcalloc(num_usr_pgs, sizeof(struct page *),
-								GFP_KERNEL);
+	map_obj->pages = vmalloc(num_usr_pgs * sizeof(struct page *));
 	if (!map_obj->pages) {
-		pr_err("%s: kzalloc failed\n", __func__);
+		pr_err("%s: vmalloc failed\n", __func__);
 		kfree(map_obj);
 		return NULL;
 	}
+
+	memset(map_obj->pages, 0x0, num_usr_pgs * sizeof(struct page *));
 
 	map_obj->va = va;
 	map_obj->da = da;
@@ -231,7 +234,7 @@ static void remove_mapping_information(struct iodmm_struct *obj,
 				gen_pool_free(map_obj->gen_pool, da, size);
 			list_del(&map_obj->link);
 			kfree(map_obj->dma_info.sg);
-			kfree(map_obj->pages);
+			vfree(map_obj->pages);
 			kfree(map_obj);
 			goto out;
 		}

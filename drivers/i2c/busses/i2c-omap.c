@@ -264,17 +264,20 @@ static inline u16 omap_i2c_read_reg(struct omap_i2c_dev *i2c_dev, int reg)
 				(i2c_dev->regs[reg] << i2c_dev->reg_shift));
 }
 
-static void omap_i2c_hwspinlock_lock(struct omap_i2c_dev *dev)
+static int omap_i2c_hwspinlock_lock(struct omap_i2c_dev *dev)
 {
+	int ret = 0;
 	struct platform_device *pdev;
 	struct omap_i2c_bus_platform_data *pdata;
 
 	pdev = container_of(dev->dev, struct platform_device, dev);
 	pdata = pdev->dev.platform_data;
 	if (pdata->hwspinlock_lock)
-		pdata->hwspinlock_lock(pdata->handle);
+		ret = pdata->hwspinlock_lock(pdata->handle);
 
+	return ret;
 }
+
 
 static void omap_i2c_hwspinlock_unlock(struct omap_i2c_dev *dev)
 {
@@ -285,7 +288,6 @@ static void omap_i2c_hwspinlock_unlock(struct omap_i2c_dev *dev)
 	pdata = pdev->dev.platform_data;
 	if (pdata->hwspinlock_unlock)
 		pdata->hwspinlock_unlock(pdata->handle);
-
 }
 
 static void omap_i2c_unidle(struct omap_i2c_dev *dev)
@@ -628,6 +630,7 @@ static int omap_i2c_xfer_msg(struct i2c_adapter *adap,
 	if (dev->set_mpu_wkup_lat != NULL)
 		dev->set_mpu_wkup_lat(&qos_handle, -1);
 	dev->buf_len = 0;
+	
 	if (r < 0)
 		return r;
 	if (r == 0) {
@@ -677,7 +680,12 @@ omap_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
 	 * Ducati sub system I2C IRQ is enabled and disabled on i2c transfers.
 	 */
 
-	omap_i2c_hwspinlock_lock(dev);
+	r = omap_i2c_hwspinlock_lock(dev);
+	if ( r < 0 ) {
+		dev_err(dev->dev, "hwspinlock timed out %d\n", r); 
+		goto fail_hwspinlock;
+		}
+
 	omap_i2c_unidle(dev);
 	enable_irq(dev->irq);
 
@@ -697,6 +705,7 @@ out:
 	disable_irq_nosync(dev->irq);
 	omap_i2c_idle(dev);
 	omap_i2c_hwspinlock_unlock(dev);
+fail_hwspinlock:
 	return r;
 }
 

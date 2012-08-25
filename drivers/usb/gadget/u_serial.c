@@ -420,6 +420,8 @@ __acquires(&port->port_lock)
 	struct usb_ep		*out = port->port_usb->out;
 	unsigned		started = 0;
 
+	if (!port || !port->port_usb) { return 0; }
+
 	while (!list_empty(pool)) {
 		struct usb_request	*req;
 		int			status;
@@ -1158,6 +1160,7 @@ void gserial_cleanup(void)
 {
 	unsigned	i;
 	struct gs_port	*port;
+	unsigned long	flags;
 
 	if (!gs_tty_driver)
 		return;
@@ -1175,14 +1178,31 @@ void gserial_cleanup(void)
 
 		tasklet_kill(&port->push);
 
+		/* NOTE: TTY can have been opened after gserial_disconnect().
+		 * when we don't do anything here the application will not have
+		 * a chance to release the tty and wait_event() below will block
+		 * forever. */
+		spin_lock_irqsave(&port->port_lock, flags);
+		if (port->open_count > 0 || port->openclose) {
+			wake_up_interruptible(&port->drain_wait);
+			if (port->port_tty)
+				tty_hangup(port->port_tty);
+		}
+		spin_unlock_irqrestore(&port->port_lock, flags);
+
 		/* wait for old opens to finish */
-		wait_event(port->close_wait, gs_closed(port));
+		pr_debug("%s: waiting for port %d\n", __func__, i);
+		while (!wait_event_interruptible_timeout(port->close_wait, gs_closed(port), HZ)) {
+			pr_warning("%s: port->open_count=%d port->openclose=%d\n", __func__,
+				   port->open_count, port->openclose);
+		}
 
 		WARN_ON(port->port_usb != NULL);
 
 		kfree(port);
 	}
 	n_ports = 0;
+	pr_debug("%s: will unregister tty driver\n", __func__);
 
 	tty_unregister_driver(gs_tty_driver);
 	put_tty_driver(gs_tty_driver);

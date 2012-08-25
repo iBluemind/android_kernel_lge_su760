@@ -1,0 +1,9 @@
+menu "NFC(Near Field Communication) support"
+
+config NFC_PN544 
+	bool "PN544 - NFC controller"
+	default n
+	help
+	  Say 'Y' to support NFC controller, NXP NFC controller "PN544"
+
+endmenu

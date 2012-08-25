@@ -1,0 +1,33 @@
+# drivers/cosmo/Kconfig
+
+
+config SUBPMIC_LP8720
+	bool "SUB PMIC LP8720"
+	default n
+	#depends on MACH_LGE_COSMO_REV_A || MACH_LGE_COSMO_REV_A2
+	help
+	  Support for LP8720 SUB PMIC driver.
+
+config SUBPMIC_RT8053
+	bool "SUB PMIC RT8053"
+	default n
+	help
+	  Support for RT8053 SUB PMIC driver.
+
+config SUBPMIC_LM3528
+	bool "Backlight driver for LM3528 using OLED"
+	default n
+	help
+	  If you have a LCD backlight connected to the MAIN and(or) SUB/FB output of
+	  LM3528, say Y here to enable this driver.
+	  To compile this driver as a module, choose M here: the module will
+	  be called lm3528_bl.
+
+config SUBPMIC_LM3530
+        bool "Backlight driver for LM3528 using OLED"
+        default n
+        help
+            If you have a LCD backlight connected to the brightness output of
+            LM3530, say Y here to enable this driver.
+            To compile this driver as a module, choose M here: the module will
+            be called lm3530_bl.

@@ -272,7 +272,7 @@ static int twl6030_gpadc_channel_raw_read(struct twl6030_gpadc_data *gpadc,
 }
 
 static int twl6030_gpadc_read_channels(struct twl6030_gpadc_data *gpadc,
-		u8 reg_base, u32 channels, struct twl6030_gpadc_request *req)
+		u8 reg_base, u16 channels, struct twl6030_gpadc_request *req)
 {
 	int count = 0;
 	u8 reg, i;
@@ -653,9 +653,9 @@ static int __devinit twl6030_gpadc_probe(struct platform_device *pdev)
 		goto err_misc;
 	}
 
-	ret = request_irq(platform_get_irq(pdev, 0), twl6030_gpadc_irq_handler,
+	ret = request_threaded_irq(platform_get_irq(pdev, 0), NULL, twl6030_gpadc_irq_handler,
 			0, "twl6030_gpadc", &gpadc->requests[TWL6030_GPADC_RT]);
-	ret = request_irq(platform_get_irq(pdev, 1), twl6030_gpadc_irq_handler,
+	ret = request_threaded_irq(platform_get_irq(pdev, 1), NULL, twl6030_gpadc_irq_handler,
 		0, "twl6030_gpadc", &gpadc->requests[TWL6030_GPADC_SW2]);
 
 	if (ret) {

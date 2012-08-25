@@ -919,6 +919,10 @@ static int vfat_rename(struct inode *old_dir, struct dentry *old_dentry,
 	int err, is_dir, update_dotdot, corrupt = 0;
 	struct super_block *sb = old_dir->i_sb;
 
+	// WBT 20110314	[START]
+	memset(&sinfo, 0x0, sizeof(sinfo));
+	// WBT 20110314	[END]
+
 	old_sinfo.bh = sinfo.bh = dotdot_bh = NULL;
 	old_inode = old_dentry->d_inode;
 	new_inode = new_dentry->d_inode;

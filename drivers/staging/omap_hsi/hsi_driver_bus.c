@@ -181,7 +181,8 @@ int hsi_register_driver(struct hsi_device_driver *driver)
 	ret = driver_register(&driver->driver);
 
 	if (ret == 0)
-		pr_debug("hsi: driver %s registered\n", driver->driver.name);
+		pr_debug("HSI DRIVER BUS : driver %s registered\n",
+			 driver->driver.name);
 
 	return ret;
 }
@@ -198,6 +199,7 @@ void hsi_unregister_driver(struct hsi_device_driver *driver)
 
 	driver_unregister(&driver->driver);
 
-	pr_debug("hsi: driver %s unregistered\n", driver->driver.name);
+	pr_debug("HSI DRIVER BUS : driver %s unregistered\n",
+		 driver->driver.name);
 }
 EXPORT_SYMBOL(hsi_unregister_driver);

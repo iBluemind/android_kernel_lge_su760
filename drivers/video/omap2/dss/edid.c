@@ -264,6 +264,43 @@ int hdmi_get_audio_format(u8 *edid, struct audio_format *format)
 	}
 	return 0;
 }
+bool hdmi_has_ieee_id(u8 *edid)
+{
+	int offset, current_byte, length = 0;
+	enum extension_edid_db vsdb =  DATABLOCK_VENDOR;
+	u32 hdmi_identifier = 0;
+
+	if (!hdmi_get_datablock_offset(edid, vsdb, &offset)) {
+	current_byte = edid[offset];
+	length = current_byte & HDMI_EDID_EX_DATABLOCK_LEN_MASK;
+
+	if (length < 3)
+		return 0;
+	offset++;
+	hdmi_identifier = edid[offset] | edid[offset+1]<<8
+							| edid[offset+2]<<16;
+	if (hdmi_identifier == HDMI_IEEE_REGISTRATION_ID)
+		return 1;
+
+	}
+	return 0;
+}
+
+int hdmi_get_video_svds(u8 *edid, int *offset, int *length)
+{
+	enum extension_edid_db vdb =  DATABLOCK_VIDEO;
+	if ((offset == NULL) || (length == NULL))
+		return 0;
+	if (!hdmi_get_datablock_offset(edid, vdb, offset)) {
+		*length = edid[*offset] & HDMI_EDID_EX_DATABLOCK_LEN_MASK;
+		(*offset)++;
+		return 1;
+	}
+	*length = 0;
+	*offset = 0;
+	return 0;
+}
+
 
 void hdmi_get_av_delay(u8 *edid, struct latency *lat)
 {
@@ -336,3 +373,18 @@ bool hdmi_s3d_supported(u8 *edid)
 	}
 	return s3d_support;
 }
+bool hdmi_ai_supported(u8 *edid)
+{
+	int offset, current_byte, length = 0;
+	if (!hdmi_get_datablock_offset(edid, DATABLOCK_VENDOR, &offset)) {
+		current_byte = edid[offset];
+	length = current_byte & HDMI_EDID_EX_DATABLOCK_LEN_MASK;
+	if (length < 6)
+		return false;
+	offset += 6;
+	if (edid[offset] & HDMI_EDID_EX_SUPPORTS_AI_MASK)
+		return true;
+	}
+	return false;
+}
+

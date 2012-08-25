@@ -1023,7 +1023,20 @@ int device_add(struct device *dev)
 					     BUS_NOTIFY_ADD_DEVICE, dev);
 
 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+
+  #ifdef CONFIG_MACH_LGE_MMC_REFRESH	  //FW KIMBYUNGCHUL 20110516 [START]
+
+  	error=bus_probe_device(dev);	//what the hell!!!!!
+	if(error == 0xbcbc)
+		goto DPMError;
+  #else
+	
 	bus_probe_device(dev);
+  
+  #endif								  //FW KIMBYUNGCHUL 20110516 [END]
+
+
+	
 	if (parent)
 		klist_add_tail(&dev->p->knode_parent,
 			       &parent->p->klist_children);

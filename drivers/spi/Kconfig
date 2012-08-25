@@ -361,6 +361,15 @@ config SPI_DW_MMIO
 #
 comment "SPI Protocol Masters"
 
+# LGE_FW_TDMB
+config SPI_TDMB
+	tristate "TDMB use SPI with DMB Chip"
+	default y
+	depends on ARCH_OMAP24XX || ARCH_OMAP34XX
+	help
+	Enable this driver to support SPI with RFBB chipset
+# LGE_FW_TDMB
+
 config SPI_SPIDEV
 	tristate "User mode SPI device driver support"
 	depends on EXPERIMENTAL
@@ -378,6 +387,13 @@ config SPI_TLE62X0
 	  such as the TLE6220, TLE6230 and TLE6240.  This provides a
 	  sysfs interface, with each line presented as a kind of GPIO
 	  exposing both switch control and diagnostic feedback.
+
+config SPI_IFX
+	tristate "SPI IFXn721 from Infenion"
+	#depends on ARCH_OMAP24XX || ARCH_OMAP34XX
+	depends on ARCH_OMAP24XX || ARCH_OMAP34XX || ARCH_OMAP4
+	help
+	  Enable this driver to support IFX n721 Modem
 
 #
 # Add new SPI protocol masters in alphabetical order above this line

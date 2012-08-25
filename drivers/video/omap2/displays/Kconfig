@@ -3,31 +3,27 @@ menu "OMAP2/3 Display Device Drivers"
 
 config PANEL_GENERIC
         tristate "Generic Panel"
-	default y
         help
 	  Generic panel driver.
 	  Used for DVI output for Beagle and OMAP3 SDP.
 
+config PANEL_SAMSUNG_LTE430WQ_F0C
+        tristate "Samsung LTE430WQ-F0C LCD Panel"
+        depends on OMAP2_DSS
+        help
+          LCD Panel used on Overo Palo43
+
 config PANEL_SHARP_LS037V7DW01
         tristate "Sharp LS037V7DW01 LCD Panel"
         depends on OMAP2_DSS
-	default y
-        select BACKLIGHT_CLASS_DEVICE
         help
           LCD Panel used in TI's SDP3430 and EVM boards
 
-config PANEL_SHARP_LQ043T1DG01
-        tristate "Sharp LQ043T1DG01 LCD Panel"
-        depends on OMAP2_DSS
-        help
-
-          LCD Panel used in TI's OMAP3517 EVM boards
-
 config PANEL_PICO_DLP
-        tristate "OMAP PICO DLP Panel"
-        depends on OMAP2_DSS
-        help
-          LCD Panel used in TI's SDP4430 and EVM boards
+	tristate "OMAP PICO DLP Panel"
+	depends on OMAP2_DSS
+	help
+	LCD Panel used in TI's SDP4430 and EVM boards
 
 config PANEL_TAAL
         tristate "Taal DSI Panel"
@@ -35,29 +31,55 @@ config PANEL_TAAL
         help
           Taal DSI command mode panel from TPO.
 
-config PANEL_NEC_NL8048HL11_01B
-        tristate "NEC NL8048HL11-01B Panel"
-	depends on OMAP2_DSS
-	default y
+config PANEL_SHOLES
+        tristate "Sholes Panel"
         help
-          LCD Panel used in the Zoom boards
+	  LCD Panel used in sholes
 
-config PANEL_TOPPOLY_TDO35S
-        tristate "Toppoly TDO35S LCD Panel support"
-        depends on OMAP2_DSS
+config LCD_4430SDP
+        tristate "OMAP4 LCD Panel"
         help
-          LCD Panel used in CM-T35
+          LCD Panel used in OMAP4
 
-config PANEL_TPO_TD043MTEA1
-        tristate "TPO TD043MTEA1 LCD Panel"
-        depends on OMAP2_DSS && SPI
-        help
-          LCD Panel used in OMAP3 Pandora
-
-config PANEL_ACX565AKM
-	tristate "ACX565AKM Panel"
-	depends on OMAP2_DSS_SDI
-	select BACKLIGHT_CLASS_DEVICE
+config PANEL_NEC
+	tristate "NEC Panel"
 	help
-	  This is the LCD panel used on Nokia N900
+		LCD Panel used in the Zoom board
+config PANEL_HUB
+       tristate "OMAP4 Hub LCD Panel"
+       help
+	  LCD Panel used for LGE cosmopolitan evb board   
+config PANEL_SIL9022
+	tristate "HDMI interface"
+	help
+		HDMI interface used in the Zoom board
+config PANEL_COSMO
+       tristate "OMAP4 Cosmopolitan 3D LCD Panel"
+       help
+	  LCD Panel used for LGE cosmopolitan board   
+
+config PANEL_LH430WV1_SD02
+    tristate "justin panel(LH430WV1-SD02) LG4572 driver IC"
+    default n
+    help
+    This is the justin panel(LH430WV1-SD02) LG4572 driver IC
+
+config PANEL_LH430WV4_SD02
+    tristate "B2 Rev.A panel(LH430WV4-SD02) LG4574 driver IC"
+    default n
+    help
+        This is the B2 Rev.A panel(LH430WV4-SD02) LG4574 driver IC
+        
+config PANEL_LH430WV5_SD01
+    tristate "CX2 Rev.A panel(LH430WV5-SD01) LG4574 driver IC"
+    default n
+    help
+        This is the CX2 Rev.A panel(LH430WV5-SD01) LG4574 driver IC
+        
+config PANEL_TX11D101VM_0EAA
+    tristate "B2 Korea and Docomo panel(TX11D101VM_0EAA) LG4574 driver IC"
+    default n
+    help
+        This is the B2 Korea and Docomo HITACHI panel(TX11D101VM_0EAA) LG4574 driver IC
+
 endmenu

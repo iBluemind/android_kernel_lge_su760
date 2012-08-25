@@ -174,6 +174,18 @@ static ssize_t print_cpus_kernel_max(struct sysdev_class *class,
 }
 static SYSDEV_CLASS_ATTR(kernel_max, 0444, print_cpus_kernel_max, NULL);
 
+#ifdef CONFIG_ARCH_OMAP
+extern unsigned int omap_rev(void);
+
+static ssize_t print_cpus_omap_revision(struct sysdev_class *class,
+				     struct sysdev_class_attribute *attr, char *buf)
+{
+	int n = snprintf(buf, PAGE_SIZE-2, "%d\n", omap_rev());
+	return n;
+}
+static SYSDEV_CLASS_ATTR(omap_revision, 0444, print_cpus_omap_revision, NULL);
+#endif
+
 /* arch-optional setting to enable display of offline cpus >= nr_cpu_ids */
 unsigned int total_cpus;
 
@@ -270,5 +282,8 @@ static struct sysdev_class_attribute *cpu_sysdev_class_attrs[] = {
 	&cpu_attrs[2].attr,
 	&attr_kernel_max,
 	&attr_offline,
+#ifdef CONFIG_ARCH_OMAP	
+	&attr_omap_revision,
+#endif
 	NULL
 };

@@ -1,5 +1,7 @@
 menu "Device Drivers"
 
+source "drivers/lg_nvdata/Kconfig"
+
 source "drivers/base/Kconfig"
 
 source "drivers/connector/Kconfig"
@@ -57,6 +59,7 @@ source "drivers/gpio/Kconfig"
 source "drivers/w1/Kconfig"
 
 source "drivers/power/Kconfig"
+source "drivers/cosmo/Kconfig"
 
 source "drivers/hwmon/Kconfig"
 
@@ -115,5 +118,11 @@ source "drivers/staging/Kconfig"
 source "drivers/platform/Kconfig"
 
 source "drivers/dsp/syslink/Kconfig"
+
+source "drivers/nfc/Kconfig"
+
+# LGE_FW_TDMB
+source "drivers/broadcast/Kconfig"
+# LGE_FW_TDMB
 
 endmenu

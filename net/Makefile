@@ -63,6 +63,12 @@ obj-y				+= dcb/
 endif
 obj-y				+= ieee802154/
 
+# GAN Lite LGE Update 01202011
+ifeq ($(PRODUCT_OPERATOR),TMUS)
+obj -y += kineto_gan.o
+endif
+# GAN Lite LGE Update 01202011
+
 ifeq ($(CONFIG_NET),y)
 obj-$(CONFIG_SYSCTL)		+= sysctl_net.o
 endif

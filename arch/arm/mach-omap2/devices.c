@@ -217,7 +217,7 @@ static int omap4_init_keypad(struct omap_hwmod *oh, void *user)
 	struct omap4_keypad_platform_data *sdp4430_keypad_data;
 	unsigned int id = -1;
 	char *name = "omap-keypad";
-	keyboard_mux_init();
+//	keyboard_mux_init();
 	sdp4430_keypad_data = user;
 
 	od = omap_device_build(name, id, oh, sdp4430_keypad_data,
@@ -474,6 +474,10 @@ struct omap_device_pm_latency omap_mcspi_latency[] = {
 	},
 };
 
+#ifdef CONFIG_MACH_LGE_COSMO_DOMASTIC
+#define LGE_FW_TDMB
+#endif // CONFIG_MACH_LGE_COSMO_DOMASTIC
+
 static int omap_mcspi_init(struct omap_hwmod *oh, void *user)
 {
 	struct omap_device *od;
@@ -490,9 +494,20 @@ static int omap_mcspi_init(struct omap_hwmod *oh, void *user)
 
 	switch (spi_num) {
 	case 0:
+
+#ifdef LGE_FW_TDMB
+		pdata->num_cs 			= 1;
+		pdata->mode				= OMAP2_MCSPI_MASTER;
+		pdata->dma_mode		= 0;
+		pdata->force_cs_mode		= 1;
+		pdata->fifo_depth			= 0;
+#else // LGE_FW_TDMB
 		pdata->num_cs = 4;
 		pdata->force_cs_mode = 1;
+#endif // LGE_FW_TDMB
+	
 		break;
+		
 	case 1:
 		pdata->num_cs = 2;
 		pdata->mode = OMAP2_MCSPI_MASTER;
@@ -500,9 +515,11 @@ static int omap_mcspi_init(struct omap_hwmod *oh, void *user)
 		pdata->force_cs_mode = 0;
 		pdata->fifo_depth = 0;
 		break;
+
 	case 2:
 		pdata->num_cs = 2;
 		break;
+		
 	case 3:
 		pdata->num_cs = 1;
 		break;
@@ -932,17 +949,19 @@ void __init omap_display_init(struct omap_dss_board_info *board_data)
 	defined(CONFIG_VIDEO_OMAP2_VOUT_MODULE)
 #if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
 #ifdef CONFIG_ARCH_OMAP4
-static struct resource omap_vout_resource[4 - CONFIG_FB_OMAP2_NUM_FBS] = {
+static struct resource omap_vout_resource[4 - CONFIG_FB_OMAP2_NUM_FBS] = 
 #else
-static struct resource omap_vout_resource[3 - CONFIG_FB_OMAP2_NUM_FBS] = {
+static struct resource omap_vout_resource[3 - CONFIG_FB_OMAP2_NUM_FBS] =
 #endif
+{
 };
 #else
 #ifdef CONFIG_ARCH_OMAP4
-static struct resource omap_vout_resource[3] = {
+static struct resource omap_vout_resource[3] = 
 #else
-static struct resource omap_vout_resource[2] = {
+static struct resource omap_vout_resource[2] = 
 #endif
+}
 };
 #endif
 

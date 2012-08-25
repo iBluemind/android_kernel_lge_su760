@@ -261,6 +261,7 @@ struct omap_sr_data {
  */
 void omap_smartreflex_enable(struct voltagedomain *voltdm);
 void omap_smartreflex_disable(struct voltagedomain *voltdm);
+void omap_smartreflex_disable_and_update_volt(struct voltagedomain *voltdm);
 void omap_smartreflex_disable_reset_volt(struct voltagedomain *voltdm);
 
 /* Smartreflex driver hooks to be called from Smartreflex class driver */

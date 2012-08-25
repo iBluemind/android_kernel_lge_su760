@@ -123,7 +123,10 @@ extern void tcp_time_wait(struct sock *sk, int state, int timeo);
 #define TCP_DELACK_MIN	4U
 #define TCP_ATO_MIN	4U
 #endif
-#define TCP_RTO_MAX	((unsigned)(120*HZ))
+//[START]Fix a problem that a bigger mms of 600K is not transferred in 2G. 
+#define TCP_RTO_MAX	((unsigned)(10*HZ))
+//#define TCP_RTO_MAX	((unsigned)(120*HZ))//NativeAndroidOriginal
+//[END]Fix a problem that a bigger mms of 600K is not transferred in 2G. 
 #define TCP_RTO_MIN	((unsigned)(HZ/5))
 #define TCP_TIMEOUT_INIT ((unsigned)(3*HZ))	/* RFC 1122 initial RTO value	*/
 

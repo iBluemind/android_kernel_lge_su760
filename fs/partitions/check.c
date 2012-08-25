@@ -509,7 +509,16 @@ out_put:
 }
 
 /* Not exported, helper to add_disk(). */
+
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH	  //FW KIMBYUNGCHUL 20110516 [START]
+
+int register_disk(struct gendisk *disk)
+
+#else
 void register_disk(struct gendisk *disk)
+
+#endif								  //FW KIMBYUNGCHUL 20110516 [END]
+
 {
 	struct device *ddev = disk_to_dev(disk);
 	struct block_device *bdev;
@@ -565,6 +574,14 @@ exit:
 	while ((part = disk_part_iter_next(&piter)))
 		kobject_uevent(&part_to_dev(part)->kobj, KOBJ_ADD);
 	disk_part_iter_exit(&piter);
+
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH	  //FW KIMBYUNGCHUL 20110516 [START]
+	if(err == -ENOMEM)
+		return 0xbcbc;
+	else 
+		return 0;
+#endif
+	
 }
 
 static bool disk_unlock_native_capacity(struct gendisk *disk)
@@ -610,8 +627,24 @@ rescan:
 		disk->fops->revalidate_disk(disk);
 	check_disk_size_change(disk, bdev);
 	bdev->bd_invalidated = 0;
-	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
-		return 0;
+
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH	  //FW KIMBYUNGCHUL 20110516 [START]
+				  state = -ENOMEM;
+
+		if (!get_capacity(disk))
+			return 0;
+
+		if(!(state = check_partition(disk, bdev)))
+			return -ENOMEM;
+
+		
+
+#else	  
+	  if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
+		  return 0;
+#endif								  //FW KIMBYUNGCHUL 20110516 [END]
+
+	
 	if (IS_ERR(state)) {
 		/*
 		 * I/O error reading the partition table.  If any

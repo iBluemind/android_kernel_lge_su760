@@ -228,6 +228,11 @@ void tcp_select_initial_window(int __space, __u32 mss,
 	 * following RFC2414. Senders, not following this RFC,
 	 * will be satisfied with 2.
 	 */
+//hwayoung.lim@lge.com patched TCP windows size for kernel bug [start]
+#ifdef TARGET_CARRIER_ATT
+	(*rcv_wnd) = space;
+
+#else // Native Android
 	if (mss > (1 << *rcv_wscale)) {
 		int init_cwnd = 4;
 		if (mss > 1460 * 3)
@@ -243,7 +248,8 @@ void tcp_select_initial_window(int __space, __u32 mss,
 		else if (*rcv_wnd > init_cwnd * mss)
 			*rcv_wnd = init_cwnd * mss;
 	}
-
+#endif /* TARGET_CARRIER_ATT */
+//hwayoung.lim@lge.com patched TCP windows size for kernel bug [end]
 	/* Set the clamp no higher than max representable value */
 	(*window_clamp) = min(65535U << (*rcv_wscale), *window_clamp);
 }

@@ -295,6 +295,27 @@ static void input_handle_event(struct input_dev *dev,
 	case EV_PWR:
 		disposition = INPUT_PASS_TO_ALL;
 		break;
+	 /*selwin*/
+        case EV_TG:
+                if (is_event_supported(code, dev->absbit, ABS_MAX)) {
+
+                        if (test_bit(code, input_abs_bypass)) {
+
+                                disposition = INPUT_PASS_TO_HANDLERS;
+                                break;
+                        }
+
+                        value = input_defuzz_abs_event(value,
+                                        dev->abs[code], dev->absfuzz[code]);
+
+                        if (dev->abs[code] != value) {
+                                dev->abs[code] = value;
+                                disposition = INPUT_PASS_TO_HANDLERS;
+                        }
+
+                }
+                break;
+     
 	}
 
 	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)

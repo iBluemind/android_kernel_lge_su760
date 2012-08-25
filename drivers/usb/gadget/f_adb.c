@@ -32,6 +32,13 @@
 
 #include <linux/usb/android_composite.h>
 
+// LGE_UPDATE_S
+//#ifdef DBG
+//#undef DBG
+//#define DBG(a, x...) printk(x)
+//#endif
+// LGE_UPDATE_E
+
 #define BULK_BUFFER_SIZE           4096
 
 /* number of tx requests to allocate */
@@ -178,19 +185,25 @@ void req_put(struct adb_dev *dev, struct list_head *head,
 	spin_unlock_irqrestore(&dev->lock, flags);
 }
 
-/* remove a request from the head of a list */
-struct usb_request *req_get(struct adb_dev *dev, struct list_head *head)
+static struct usb_request *req_get_locked(struct adb_dev *dev, struct list_head *head)
 {
-	unsigned long flags;
 	struct usb_request *req;
-
-	spin_lock_irqsave(&dev->lock, flags);
 	if (list_empty(head)) {
 		req = 0;
 	} else {
 		req = list_first_entry(head, struct usb_request, list);
 		list_del(&req->list);
 	}
+	return req;
+}
+
+/* remove a request from the head of a list */
+struct usb_request *req_get(struct adb_dev *dev, struct list_head *head)
+{
+	unsigned long flags;
+	struct usb_request *req;
+	spin_lock_irqsave(&dev->lock, flags);
+	req = req_get_locked(dev, head);
 	spin_unlock_irqrestore(&dev->lock, flags);
 	return req;
 }
@@ -278,7 +291,7 @@ static ssize_t adb_read(struct file *fp, char __user *buf,
 	int r = count, xfer;
 	int ret;
 
-	DBG(cdev, "adb_read(%d)\n", count);
+//	DBG(cdev, "adb_read(%d)\n", count);
 
 	if (count > BULK_BUFFER_SIZE)
 		return -EINVAL;
@@ -313,7 +326,7 @@ requeue_req:
 		dev->error = 1;
 		goto done;
 	} else {
-		DBG(cdev, "rx %p queue\n", req);
+//		DBG(cdev, "rx %p queue\n", req);
 	}
 
 	/* wait for a request to complete */
@@ -328,7 +341,7 @@ requeue_req:
 		if (req->actual == 0)
 			goto requeue_req;
 
-		DBG(cdev, "rx %p %d\n", req, req->actual);
+//		DBG(cdev, "rx %p %d\n", req, req->actual);
 		xfer = (req->actual < count) ? req->actual : count;
 		if (copy_to_user(buf, req->buf, xfer))
 			r = -EFAULT;
@@ -337,7 +350,7 @@ requeue_req:
 
 done:
 	_unlock(&dev->read_excl);
-	DBG(cdev, "adb_read returning %d\n", r);
+//	DBG(cdev, "adb_read returning %d\n", r);
 	return r;
 }
 
@@ -350,7 +363,7 @@ static ssize_t adb_write(struct file *fp, const char __user *buf,
 	int r = count, xfer;
 	int ret;
 
-	DBG(cdev, "adb_write(%d)\n", count);
+//	DBG(cdev, "adb_write(%d)\n", count);
 
 	if (_lock(&dev->write_excl))
 		return -EBUSY;
@@ -403,7 +416,7 @@ static ssize_t adb_write(struct file *fp, const char __user *buf,
 		req_put(dev, &dev->tx_idle, req);
 
 	_unlock(&dev->write_excl);
-	DBG(cdev, "adb_write returning %d\n", r);
+//	DBG(cdev, "adb_write returning %d\n", r);
 	return r;
 }
 
@@ -411,8 +424,12 @@ static int adb_open(struct inode *ip, struct file *fp)
 {
 	printk(KERN_INFO "adb_open\n");
 	if (_lock(&_adb_dev->open_excl))
+	{
+		printk(KERN_INFO "adb_open, _lock(&_adb_dev->open_excl) == true\n");
 		return -EBUSY;
+	}
 
+	printk(KERN_INFO "adb_open, _lock(&_adb_dev->open_excl) == false\n");
 	fp->private_data = _adb_dev;
 
 	/* clear the error latch */
@@ -424,7 +441,7 @@ static int adb_open(struct inode *ip, struct file *fp)
 static int adb_release(struct inode *ip, struct file *fp)
 {
 	printk(KERN_INFO "adb_release\n");
-	_unlock(&_adb_dev->open_excl);
+	if (_adb_dev) { _unlock(&_adb_dev->open_excl); }
 	return 0;
 }
 
@@ -522,7 +539,7 @@ adb_function_unbind(struct usb_configuration *c, struct usb_function *f)
 	spin_lock_irq(&dev->lock);
 
 	adb_request_free(dev->rx_req, dev->ep_out);
-	while ((req = req_get(dev, &dev->tx_idle)))
+	while ((req = req_get_locked(dev, &dev->tx_idle)))
 		adb_request_free(req, dev->ep_in);
 
 	dev->online = 0;
@@ -581,7 +598,7 @@ static void adb_function_disable(struct usb_function *f)
 	VDBG(cdev, "%s disabled\n", dev->function.name);
 }
 
-static int adb_bind_config(struct usb_configuration *c)
+/* static */ int adb_bind_config(struct usb_configuration *c)
 {
 	struct adb_dev *dev;
 	int ret;
@@ -611,10 +628,10 @@ static int adb_bind_config(struct usb_configuration *c)
 	dev->function.unbind = adb_function_unbind;
 	dev->function.set_alt = adb_function_set_alt;
 	dev->function.disable = adb_function_disable;
-
+#ifndef CONFIG_USB_PERSONALITY
 	/* start disabled */
 	dev->function.disabled = 1;
-
+#endif
 	/* _adb_dev must be set before calling usb_gadget_register_driver */
 	_adb_dev = dev;
 
@@ -641,6 +658,7 @@ err1:
 	return ret;
 }
 
+#ifdef CONFIG_USB_ANDROID_ADB
 static struct android_usb_function adb_function = {
 	.name = "adb",
 	.bind_config = adb_bind_config,
@@ -653,3 +671,4 @@ static int __init init(void)
 	return 0;
 }
 module_init(init);
+#endif

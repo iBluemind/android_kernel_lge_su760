@@ -144,11 +144,27 @@ probe_failed:
 		       "%s: probe of %s failed with error %d\n",
 		       drv->name, dev_name(dev), ret);
 	}
+
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH	  //FW KIMBYUNGCHUL 20110516 [START]
+
+	if (ret == 0xbcbc) {
+		/* driver matched but the probe failed */
+		printk(KERN_WARNING
+			   "[microSD]%s: probe of %s failed with error %d\n",
+			   drv->name, dev_name(dev), ret);
+	}else
+		ret = 0;
+#else
+
 	/*
 	 * Ignore errors returned by ->probe so that the next driver can try
 	 * its luck.
 	 */
 	ret = 0;
+
+
+#endif								  //FW KIMBYUNGCHUL 20110516 [END]
+
 done:
 	atomic_dec(&probe_count);
 	wake_up(&probe_waitqueue);

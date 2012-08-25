@@ -1,0 +1,17 @@
+config LGE_COSMO_MUIC
+	bool "Comopolitan MUIC"
+	depends on MACH_LGE_COSMOPOLITAN
+	help
+	  Support for MUIC Driver
+
+config LGE_CX2_MUIC
+	bool "CX2 MUIC"
+	depends on MACH_LGE_CX2
+	help
+	  Support for MUIC Driver
+
+config LG_FW_MUIC_CONTROL_E920
+	bool "MUIC - P350,C550 MUIC CONTROL"
+	depends on LG_FW_MUIC_MAX14526
+	help
+	  support to control muic

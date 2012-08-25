@@ -109,7 +109,12 @@ extern int system_bus_init(void);
 extern int cpu_dev_init(void);
 
 extern int bus_add_device(struct device *dev);
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH		//FW KIMBYUNGCHUL 20110516 [START]
+extern int bus_probe_device(struct device *dev);
+
+#else
 extern void bus_probe_device(struct device *dev);
+#endif									//FW KIMBYUNGCHUL 20110516 [END]
 extern void bus_remove_device(struct device *dev);
 
 extern int bus_add_driver(struct device_driver *drv);

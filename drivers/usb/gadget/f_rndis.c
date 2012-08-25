@@ -198,9 +198,17 @@ rndis_iad_descriptor = {
 
 	.bFirstInterface =	0, /* XXX, hardcoded */
 	.bInterfaceCount = 	2,	// control + data
+
+#ifdef CONFIG_USB_ANDROID_RNDIS_WCEIS
+	/* "Wireless" RNDIS; auto-detected by Windows */
+	.bFunctionClass =	USB_CLASS_WIRELESS_CONTROLLER,
+	.bFunctionSubClass = 1,
+	.bFunctionProtocol =	3,
+#else
 	.bFunctionClass =	USB_CLASS_COMM,
 	.bFunctionSubClass =	USB_CDC_SUBCLASS_ETHERNET,
 	.bFunctionProtocol =	USB_CDC_PROTO_NONE,
+#endif
 	/* .iFunction = DYNAMIC */
 };
 
@@ -864,8 +872,10 @@ rndis_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN])
 	rndis->port.func.disable = rndis_disable;
 
 #ifdef CONFIG_USB_ANDROID_RNDIS
+#ifndef CONFIG_USB_PERSONALITY
 	/* start disabled */
 	rndis->port.func.disabled = 1;
+#endif /* ndef CONFIG_USB_PERSONALITY */
 #endif
 
 	status = usb_add_function(c, &rndis->port.func);
@@ -912,6 +922,8 @@ int rndis_function_bind_config(struct usb_configuration *c)
 	return ret;
 }
 
+#ifndef CONFIG_USB_PERSONALITY
+
 static struct android_usb_function rndis_function = {
 	.name = "rndis",
 	.bind_config = rndis_function_bind_config,
@@ -925,5 +937,7 @@ static int __init init(void)
 	return 0;
 }
 module_init(init);
+
+#endif /* ndef CONFIG_USB_PERSONALITY */
 
 #endif /* CONFIG_USB_ANDROID_RNDIS */

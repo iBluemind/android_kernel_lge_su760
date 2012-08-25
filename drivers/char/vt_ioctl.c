@@ -1761,10 +1761,13 @@ int vt_move_to_console(unsigned int vt, int alloc)
 		return -EIO;
 	}
 	release_console_sem();
+	lock_kernel();
 	if (vt_waitactive(vt + 1)) {
 		pr_debug("Suspend: Can't switch VCs.");
+		unlock_kernel();
 		return -EINTR;
 	}
+	unlock_kernel();
 	return prev;
 }
 

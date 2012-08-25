@@ -43,6 +43,26 @@ menuconfig USB_GADGET
 
 if USB_GADGET
 
+# LGE_UPDATE_S hunsoo.lee
+config LGE_ANDRIOD_USB
+	boolean "LGE Android USB driver"
+	depends on USB_GADGET
+	help
+	   LGE USB driver for Android mobile
+
+config LGE_ANDROID_USB_DIAG
+	boolean "DIAG port for LGE Android USB driver"
+	depends on USB_GADGET
+	help
+	   LGE Diag port
+
+config LGE_ANDROID_USB_NMEA
+	boolean "NMEA port forLGE Android USB driver"
+	depends on USB_GADGET
+	help
+	   LGE NMEA port
+# LGE_UPDATE_E
+
 config USB_GADGET_DEBUG
 	boolean "Debugging messages (DEVELOPMENT)"
 	depends on DEBUG_KERNEL
@@ -836,6 +856,22 @@ config USB_ANDROID
 	  The Android gadget driver supports multiple USB functions.
 	  The functions can be configured via a board file and may be
 	  enabled and disabled dynamically.
+
+
+config USB_PERSONALITY
+       boolean "Personality Gadget"
+       depends on USB_ANDROID
+       help
+  This module can cause the Gadget to present a different personality
+  to the USB host, without requiring the user to disconnect-reconnect
+  the USB cable.
+
+  It adds "state" and "personalities" sysfs attributes to the device.
+
+  Read "personalities" to see the supported modes.  Read "state" to
+  see the currents state.  Poll the "state" (poll() with POLLPRI) to
+  receive change notifications.  Write "state" to change the selected
+  personality.
 
 config USB_ANDROID_ACM
 	boolean "Android gadget ACM serial function"

@@ -126,7 +126,7 @@ static struct twl4030_keypad_data zoom_kp_twl4030_data = {
 	.keymap_data	= &board_map_data,
 	.rows		= 8,
 	.cols		= 8,
-	.rep		= 0,
+	.rep		= 1,
 };
 
 static struct regulator_consumer_supply zoom_vmmc1_supply = {
@@ -416,35 +416,55 @@ static struct omap_musb_board_data musb_board_data = {
 
 static struct omap_uart_port_info omap_serial_platform_data[] = {
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART1_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART1_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART1_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART1_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART1_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
 	},
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART2_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART2_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART2_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART2_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART2_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
 	},
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART3_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART3_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART3_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART3_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART3_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
 	},
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART4_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART4_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART4_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART4_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART3_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
 	},
 	{

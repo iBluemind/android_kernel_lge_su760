@@ -38,13 +38,12 @@ static struct hsmmc_controller {
 	char				name[HSMMC_NAME_LEN + 1];
 } hsmmc[OMAP44XX_NR_MMC];
 
-#if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4) && defined(CONFIG_PM)
 
+#if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4) && defined(CONFIG_PM)
 static int hsmmc_get_context_loss(struct device *dev)
 {
 	return omap_pm_get_dev_context_loss_count(dev);
 }
-
 #else
 #define hsmmc_get_context_loss NULL
 #endif
@@ -142,9 +141,19 @@ static void omap4_hsmmc1_before_set_reg(struct device *dev, int slot,
 	 * FIXME handle VMMC1A as needed ...
 	 */
 	reg = omap4_ctrl_pad_readl(control_pbias_offset);
+// LGE_START 20101213++
+#if 0	
 	reg &= ~(OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK |
 		OMAP4_MMC1_PWRDNZ_MASK |
 		OMAP4_USBC1_ICUSB_PWRDNZ_MASK);
+
+#elif defined (CONFIG_MACH_LGE_VMMC_AUTO_OFF)
+// KIMBYUNGCHUL
+reg &= ~(OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK |
+	OMAP4_MMC1_PWRDNZ_MASK );
+
+#endif	 
+// LGE_END   20101213--
 	omap4_ctrl_pad_writel(reg, control_pbias_offset);
 }
 
@@ -153,34 +162,88 @@ static void omap4_hsmmc1_after_set_reg(struct device *dev, int slot,
 {
 	u32 reg;
 
+
+
+
 	if (power_on) {
+	#if defined (CONFIG_MACH_LGE_VMMC_AUTO_OFF)
+		extern int twl6030_mmc_ok_card(void);
+
+		twl6030_mmc_ok_card();
+
+		udelay(400);
+	#endif	
 		reg = omap4_ctrl_pad_readl(control_pbias_offset);
 		reg |= OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK;
 		if ((1 << vdd) <= MMC_VDD_165_195)
 			reg &= ~OMAP4_MMC1_PBIASLITE_VMODE_MASK;
 		else
 			reg |= OMAP4_MMC1_PBIASLITE_VMODE_MASK;
+// LGE_START 20101213++
+#if 0	
 		reg |= (OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK |
 			OMAP4_MMC1_PWRDNZ_MASK |
 			OMAP4_USBC1_ICUSB_PWRDNZ_MASK);
+#else
+		reg |= (OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK | OMAP4_MMC1_PWRDNZ_MASK);
+#endif	 
+// LGE_END   20101213--
 		omap4_ctrl_pad_writel(reg, control_pbias_offset);
 		/* 4 microsec delay for comparator to generate an error*/
+	#if defined (CONFIG_MACH_LGE_VMMC_AUTO_OFF)
+		udelay(400);
+	#else
 		udelay(4);
+
+	#endif	
 		reg = omap4_ctrl_pad_readl(control_pbias_offset);
 		if (reg & OMAP4_MMC1_PBIASLITE_VMODE_ERROR_MASK) {
-			pr_err("Pbias Voltage is not same as LDO\n");
+			pr_err("Pbias Voltage is not same as LDO 0x%x \n",reg);
+			
+
+
+
+			
 			/* Caution : On VMODE_ERROR Power Down MMC IO */
+// LGE_START 20101213++
+#if 0	
 			reg &= ~(OMAP4_MMC1_PWRDNZ_MASK |
 				OMAP4_USBC1_ICUSB_PWRDNZ_MASK);
+#else
+			reg &= ~(OMAP4_MMC1_PWRDNZ_MASK);
+#endif	 
+// LGE_END   20101213--
 			omap4_ctrl_pad_writel(reg, control_pbias_offset);
 		}
 	} else {
+	#if defined (CONFIG_MACH_LGE_VMMC_AUTO_OFF)
+		extern int twl6030_mmc_no_card(void);
+	#endif	
 		reg = omap4_ctrl_pad_readl(control_pbias_offset);
+// LGE_START 20101213++
+#if 0	
 		reg |= (OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK |
 			OMAP4_MMC1_PWRDNZ_MASK |
 			OMAP4_MMC1_PBIASLITE_VMODE_MASK |
 			OMAP4_USBC1_ICUSB_PWRDNZ_MASK);
+#else
+  #if defined (CONFIG_MACH_LGE_VMMC_AUTO_OFF)|| defined(CONFIG_MACH_LGE_MMC_ALWAYSON)	//FW KIMBYUNGCHUL 20110702 40mA problem	[START]
+
+		reg &= ~(OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK |
+			OMAP4_MMC1_PWRDNZ_MASK | OMAP4_MMC1_PBIASLITE_VMODE_MASK);
+
+
+  #else
+		reg |= (OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK |
+			OMAP4_MMC1_PWRDNZ_MASK | OMAP4_MMC1_PBIASLITE_VMODE_MASK);
+  #endif		//CONFIG_MACH_LGE_VMMC_AUTO_OFF	//FW KIMBYUNGCHUL 20110702 40mA problem	[END]
+#endif	 
+// LGE_END   20101213--
 		omap4_ctrl_pad_writel(reg, control_pbias_offset);
+	#if defined (CONFIG_MACH_LGE_VMMC_AUTO_OFF)
+		udelay(400);
+		twl6030_mmc_no_card();
+	#endif	
 	}
 }
 
@@ -275,6 +338,22 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 		omap4_ctrl_pad_writel(reg, control_mmc1);
 	}
 
+
+#if defined (CONFIG_MACH_LGE_VMMC_AUTO_OFF)|| defined(CONFIG_MACH_LGE_MMC_ALWAYSON)	//FW KIMBYUNGCHUL 20110702 40mA problem	[START]
+
+{
+
+	u32 reg_PBIAS;
+
+	reg_PBIAS = omap4_ctrl_pad_readl(control_pbias_offset);				
+	reg_PBIAS &= ~(OMAP4_MMC1_PBIASLITE_PWRDNZ_MASK |
+		OMAP4_MMC1_PWRDNZ_MASK | OMAP4_MMC1_PBIASLITE_VMODE_MASK);
+	omap4_ctrl_pad_writel(reg_PBIAS, control_pbias_offset);
+
+}
+
+#endif	//CONFIG_MACH_LGE_VMMC_AUTO_OFF	//FW KIMBYUNGCHUL 20110702 40mA problem	[END]
+
 	for (c = controllers; c->mmc; c++) {
 		struct hsmmc_controller *hc = hsmmc + controller_cnt;
 		struct omap_mmc_platform_data *mmc = hsmmc_data[controller_cnt];
@@ -327,6 +406,12 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 		mmc->slots[0].switch_pin = c->gpio_cd;
 		mmc->slots[0].gpio_wp = c->gpio_wp;
 
+#ifdef CONFIG_MACH_LGE_MMC_COVER
+        if (c->sd_cover) 
+			mmc->slots[0].sd_cover = c->sd_cover;
+
+#endif
+
 		mmc->slots[0].remux = c->remux;
 
 		if (c->cover_only)
@@ -357,12 +442,18 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 		else
 			mmc->slots[0].features |= HSMMC_HAS_PBIAS;
 
-		if (cpu_is_omap44xx() && (omap_rev() > OMAP4430_REV_ES1_0))
-			mmc->slots[0].features |= HSMMC_HAS_UPDATED_RESET;
+		if (cpu_is_omap44xx()) {
+			if (omap_rev() > OMAP4430_REV_ES1_0)
+				mmc->slots[0].features |= HSMMC_HAS_UPDATED_RESET;
 
-		if (cpu_is_omap44xx())
 			mmc->slots[0].features |= HSMMC_DVFS_24MHZ_CONST;
 
+			if (c->mmc >= 3 && c->mmc <= 5) {
+				mmc->slots[0].features |= HSMMC_HAS_48MHZ_MASTER_CLK;
+				mmc->get_context_loss_count =
+						hsmmc_get_context_loss;
+			}
+		}
 		switch (c->mmc) {
 		case 1:
 			if (mmc->slots[0].features & HSMMC_HAS_PBIAS) {
@@ -406,7 +497,7 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 			break;
 		case 4:
 		case 5:
-			mmc->get_context_loss_count = hsmmc_get_context_loss;
+//			mmc->get_context_loss_count = hsmmc_get_context_loss;
 			/* TODO Update required */
 			mmc->slots[0].before_set_reg = NULL;
 			mmc->slots[0].after_set_reg = NULL;

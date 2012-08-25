@@ -46,6 +46,9 @@ u32 cm_read_mod_reg(s16 module, u16 idx);
 void cm_write_mod_reg(u32 val, s16 module, u16 idx);
 u32 cm_rmw_mod_reg_bits(u32 mask, u32 bits, s16 module, s16 idx);
 
+//LGE_CHANGE_S [changseok.kim, kibum.lee] 2011-03-30, common : static dep func optimization
+u32 cm_rmw_mod_reg_bitsEx(u32 mask, u32 bits, s16 module, s16 idx);
+//LGE_CHANGE_E [changseok.kim, kibum.lee] 2011-03-30, common : static dep func optimization
 #endif
 
 

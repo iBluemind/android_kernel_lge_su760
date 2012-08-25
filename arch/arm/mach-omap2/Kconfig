@@ -82,7 +82,9 @@ config MACH_OMAP3EVM
 
 config WIFI_CONTROL_FUNC
         bool "Enable WiFi control function abstraction"
-        depends on MACH_OMAP_4430SDP
+#LGE_CHANGES_S Wi-Fi jiwoong.eom@lge.com 20101124 for TI WLAN kernel 35 ver.
+        depends on MACH_OMAP_4430SDP || MACH_LGE_COSMOPOLITAN
+#LGE_CHANGES_E Wi-Fi jiwoong.eom@lge.com 20101124 for TI WLAN kernel 35 ver.
         select WIRELESS_EXT
         select WEXT_CORE
         select WEXT_PROC
@@ -234,6 +236,141 @@ config MACH_OMAP_4430SDP
 config MACH_OMAP4_PANDA
 	bool "OMAP4 based Panda board"
 	depends on ARCH_OMAP4
+
+config MACH_LGE_COSMOPOLITAN
+	bool "LGE Cosmopolitan board"
+	depends on ARCH_OMAP4
+	select HIGHMEM
+	select TWL6030_PWM
+	select TWL6030_GPADC
+#	select TWL6040_VIB if ANDROID_TIMED_OUTPUT && TWL6040_CODEC
+#	select NEW_LEDS
+#	select LEDS_CLASS
+#	select LEDS_PWM
+#	select LEDS_GPIO
+#	select LEDS_GPIO_PLATFORM
+#	select LEDS_OMAP4430_SDP_DISPLAY
+#	select LEDS_OMAP4430_SDP_KEYPAD
+#	select LEDS_TRIGGERS
+#	select LEDS_TRIGGER_TIMER
+	select MISC_DEVICES
+	select STAGING
+	select IIO
+	select HWMON
+	select INPUT_MISC
+	select INPUT_KEYBOARD
+	select INPUT_TOUCHSCREEN
+	select POWER_SUPPLY
+	select TWL6030_BCI_BATTERY
+	select SECURITY_MIDDLEWARE_COMPONENT
+
+choice
+	prompt "Choose the LGE COSMOPOLITAN Board Revision"
+	depends on MACH_LGE_COSMOPOLITAN
+	default MACH_LGE_COSMO_REV_A
+
+config MACH_LGE_COSMO_EVB_B
+	bool "Select LGE COSMOPOLITAN EVB_B H/W Revision"
+	depends on MACH_LGE_COSMOPOLITAN
+
+config MACH_LGE_COSMO_EVB_C
+	bool "Select LGE COSMOPOLITAN EVB_C H/W Revision"
+	depends on MACH_LGE_COSMOPOLITAN
+
+config MACH_LGE_COSMO_REV_A
+	bool "Select LGE COSMOPOLITAN REV_A H/W Revision"
+	depends on MACH_LGE_COSMOPOLITAN
+
+config MACH_LGE_COSMO_REV_B
+	bool "Select LGE COSMOPOLITAN REV_B H/W Revision"
+	depends on MACH_LGE_COSMOPOLITAN
+
+config MACH_LGE_COSMO_REV_C
+	bool "Select LGE COSMOPOLITAN REV_C H/W Revision"
+	depends on MACH_LGE_COSMOPOLITAN
+ 
+config MACH_LGE_COSMO_REV_D
+    bool "Select LGE COSMOPOLITAN REV_D H/W Revision"
+	depends on MACH_LGE_COSMOPOLITAN
+
+config MACH_LGE_COSMO_REV_E
+    bool "Select LGE COSMOPOLITAN REV_E H/W Revision"
+	    depends on MACH_LGE_COSMOPOLITAN
+
+config MACH_LGE_COSMO_REV_10
+    bool "Select LGE COSMOPOLITAN REV_10 H/W Revision"
+	    depends on MACH_LGE_COSMOPOLITAN
+
+config MACH_LGE_COSMO_REV_11
+    bool "Select LGE COSMOPOLITAN REV_11 H/W Revision"
+	    depends on MACH_LGE_COSMOPOLITAN
+endchoice
+
+#LGE_CHANGE_DOMASTIC - start
+config MACH_LGE_COSMO_DOMASTIC
+	bool "Select LGE COSMOPOLITAN DOMASTIC H/W Revision"
+	depends on ARCH_OMAP4
+
+choice
+	prompt "Choose the LGE COSMOPOLITAN DOMASTIC Board Revision"
+	depends on MACH_LGE_COSMO_DOMASTIC
+	default MACH_LGE_COSMO_DOMASTIC_REV_A
+
+config MACH_LGE_COSMO_DOMASTIC_REV_A
+	bool "Select LGE COSMOPOLITAN DOMASTIC_REV_A H/W Revision"
+	depends on MACH_LGE_COSMO_DOMASTIC
+
+config MACH_LGE_COSMO_DOMASTIC_REV_B
+	bool "Select LGE COSMOPOLITAN DOMASTIC_REV_B H/W Revision"
+	depends on MACH_LGE_COSMO_DOMASTIC
+endchoice
+
+#LGE_CHANGE_DOMASTIC - end	
+
+#[kyungyoon.kim@lge.com]
+config MACH_LGE_CX2
+	bool "LGE CX2 board"
+	depends on ARCH_OMAP4
+
+choice
+	prompt "Choose the LGE CX2 Board Revision"
+	depends on MACH_LGE_CX2
+	default MACH_LGE_CX2_REV_A
+	
+config MACH_LGE_CX2_EVB
+	bool "Select LGE CX2 EVB_H/W Revision"
+	depends on MACH_LGE_CX2
+
+config MACH_LGE_CX2_REV_A
+	bool "Select LGE CX2 REV_A H/W Revision"
+	depends on MACH_LGE_CX2
+
+config MACH_LGE_CX2_REV_B
+	bool "Select LGE CX2 REV_B H/W Revision"
+	depends on MACH_LGE_CX2
+
+config MACH_LGE_CX2_REV_C
+	bool "Select LGE CX2 REV_C H/W Revision"
+	depends on MACH_LGE_CX2
+ 
+config MACH_LGE_CX2_REV_D
+	bool "Select LGE CX2 REV_D H/W Revision"
+	depends on MACH_LGE_CX2
+
+config MACH_LGE_CX2_REV_E
+	bool "Select LGE CX2 REV_E H/W Revision"
+	depends on MACH_LGE_CX2
+
+config MACH_LGE_CX2_REV_10
+    bool "Select LGE CX2 REV_10 H/W Revision"
+	    depends on MACH_LGE_CX2
+
+config MACH_LGE_CX2_REV_11
+    bool "Select LGE CX2 REV_11 H/W Revision"
+	depends on MACH_LGE_CX2
+endchoice
+
+#[kyungyoon.kim] - end	
 
 config ERRATA_OMAP4_AXI2OCP
 	bool "OMAP 4430 axi2ocp errata workaround"

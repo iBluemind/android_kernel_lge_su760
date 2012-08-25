@@ -45,3 +45,14 @@ obj-$(CONFIG_OMAP_PM_NOOP) += omap-pm-noop.o
 obj-$(CONFIG_OMAP_PM) += omap-pm.o
 
 obj-$(CONFIG_ARCH_OMAP4) += hwspinlock.o
+
+# HDMI audio WA for OMAP4430 ES2.0,1,2 to use Notify module
+ifdef CONFIG_OMAP_HDMI_AUDIO_WA
+ccflags-y += -Iarch/arm/plat-omap/include/syslink
+endif
+
+# LGE err handler
+obj-$(CONFIG_ARCH_OMAP4) += lge_err_handler.o
+
+#LGE nvdata handler
+obj-$(CONFIG_ARCH_OMAP4) += lge_nvdata_handler.o

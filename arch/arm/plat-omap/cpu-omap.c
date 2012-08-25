@@ -36,6 +36,7 @@
 #if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
 #include <plat/omap-pm.h>
 #include <plat/opp.h>
+#include <mach/omap4-common.h>
 #endif
 
 #define VERY_HI_RATE	900000000
@@ -98,7 +99,6 @@ static int omap_target(struct cpufreq_policy *policy,
 #if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
 	int i;
 	unsigned long freq;
-	struct cpufreq_freqs freqs_notify;
 	struct device *mpu_dev = omap2_get_mpuss_device();
 	int ret = 0;
 #endif
@@ -133,7 +133,7 @@ static int omap_target(struct cpufreq_policy *policy,
 #elif defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
 #ifdef CONFIG_SMP
 	freqs.old = omap_getspeed(policy->cpu);;
-	freqs_notify.new = clk_round_rate(mpu_clk, target_freq * 1000) / 1000;
+	freqs.new = clk_round_rate(mpu_clk, target_freq * 1000) / 1000;
 	freqs.cpu = policy->cpu;
 
 	if (freqs.old == freqs.new)
@@ -146,9 +146,16 @@ static int omap_target(struct cpufreq_policy *policy,
 	}
 #endif
 
+	if (cpu_is_omap44xx() && target_freq > policy->min)
+		dpll_cascading_blocker_hold(mpu_dev);
+
 	freq = target_freq * 1000;
 	if (opp_find_freq_ceil(mpu_dev, &freq))
 		omap_device_set_rate(mpu_dev, mpu_dev, freq);
+
+	if (cpu_is_omap44xx() && target_freq == policy->min)
+		dpll_cascading_blocker_release(mpu_dev);
+
 #ifdef CONFIG_SMP
 	/*
 	 * Note that loops_per_jiffy is not updated on SMP systems in

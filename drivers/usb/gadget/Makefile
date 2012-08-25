@@ -5,6 +5,17 @@ ifeq ($(CONFIG_USB_GADGET_DEBUG),y)
 	EXTRA_CFLAGS		+= -DDEBUG
 endif
 
+ifeq ($(CONFIG_USB_PERSONALITY),y)
+  CONFIG_USB_ANDROID := n
+  CONFIG_USB_ANDROID_ACM := n
+  CONFIG_USB_ANDROID_ADB := n
+  CONFIG_USB_ANDROID_MASS_STORAGE := n
+  CONFIG_USB_ANDROID_MTP := n
+  CONFIG_USB_ANDROID_RNDIS := n
+  CONFIG_LGE_ANDROID_USB_DIAG := n
+  CONFIG_LGE_ANDROID_USB_NMEA := n
+endif
+
 obj-$(CONFIG_USB_DUMMY_HCD)	+= dummy_hcd.o
 obj-$(CONFIG_USB_NET2280)	+= net2280.o
 obj-$(CONFIG_USB_AMD5536UDC)	+= amd5536udc.o
@@ -65,9 +76,17 @@ obj-$(CONFIG_USB_G_MULTI)	+= g_multi.o
 obj-$(CONFIG_USB_G_NOKIA)	+= g_nokia.o
 obj-$(CONFIG_USB_G_WEBCAM)	+= g_webcam.o
 obj-$(CONFIG_USB_ANDROID)	+= android.o
-obj-$(CONFIG_USB_ANDROID_ACM)	+= f_acm.o u_serial.o
-obj-$(CONFIG_USB_ANDROID_ADB)	+= f_adb.o
-obj-$(CONFIG_USB_ANDROID_MASS_STORAGE)	+= f_mass_storage.o
-obj-$(CONFIG_USB_ANDROID_MTP)	+= f_mtp.o
 obj-$(CONFIG_USB_ANDROID_RNDIS)	+= f_rndis.o u_ether.o
+obj-$(CONFIG_USB_ANDROID_ACM)	+= f_acm.o u_serial.o
+obj-$(CONFIG_LGE_ANDROID_USB_DIAG)	+= f_serial.o
+obj-$(CONFIG_LGE_ANDROID_USB_NMEA)	+= f_nmea.o
+obj-$(CONFIG_USB_ANDROID_MASS_STORAGE)	+= f_mass_storage.o
+obj-$(CONFIG_USB_ANDROID_ADB)	+= f_adb.o
+obj-$(CONFIG_USB_ANDROID_MTP)	+= f_mtp.o
+# LGE_UPDATE_S hunsoo.lee
+ifeq ($(CONFIG_USB_PERSONALITY),y)
+obj-$(CONFIG_USB_PERSONALITY)	+= personality/
+obj-$(CONFIG_USB_PERSONALITY)   += u_ether.o
+endif
+# LGE_UPDATE_E
 

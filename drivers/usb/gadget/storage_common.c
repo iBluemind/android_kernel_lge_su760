@@ -291,6 +291,11 @@ struct fsg_lun {
 	u32		unit_attention_data;
 
 	struct device	dev;
+// LGE_UPDATE_S
+	/* Vendor (8 chars), product (16 chars), release (4
+	 * hexadecimal digits) and NUL byte */
+	char inquiry_string[8 + 16 + 4 + 1];
+// LGE_UPDATE_E	
 };
 
 #define fsg_lun_is_open(curlun)	((curlun)->filp != NULL)

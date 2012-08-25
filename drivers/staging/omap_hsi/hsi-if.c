@@ -50,6 +50,7 @@
 		(dst)->frame_size = (src)->frame_size; \
 		(dst)->channels = (src)->channels; \
 		(dst)->divisor = (src)->divisor; \
+		(dst)->counters = (src)->counters; \
 	} while (0)
 
 #define TXCONV(dst, src) \
@@ -218,11 +219,11 @@ void if_hsi_send_break(int ch)
 	hsi_ioctl(channel->dev, HSI_IOCTL_SEND_BREAK, NULL);
 }
 
-void if_hsi_flush_rx(int ch)
+void if_hsi_flush_rx(int ch, size_t *nb_flushed_frames)
 {
 	struct if_hsi_channel *channel;
 	channel = &hsi_iface.channels[ch];
-	hsi_ioctl(channel->dev, HSI_IOCTL_FLUSH_RX, NULL);
+	hsi_ioctl(channel->dev, HSI_IOCTL_FLUSH_RX, nb_flushed_frames);
 }
 
 void if_hsi_flush_ch(int ch)
@@ -232,26 +233,33 @@ void if_hsi_flush_ch(int ch)
 	channel = &hsi_iface.channels[ch];
 }
 
-void if_hsi_flush_tx(int ch)
+void if_hsi_flush_tx(int ch, size_t *nb_flushed_frames)
 {
 	struct if_hsi_channel *channel;
 	channel = &hsi_iface.channels[ch];
-	hsi_ioctl(channel->dev, HSI_IOCTL_FLUSH_TX, NULL);
+	hsi_ioctl(channel->dev, HSI_IOCTL_FLUSH_TX, nb_flushed_frames);
 }
 
-void if_hsi_get_wakeline(int ch, unsigned int *state)
+void if_hsi_get_acwakeline(int ch, unsigned int *state)
 {
 	struct if_hsi_channel *channel;
 	channel = &hsi_iface.channels[ch];
 	hsi_ioctl(channel->dev, HSI_IOCTL_GET_ACWAKE, state);
 }
 
-void if_hsi_set_wakeline(int ch, unsigned int state)
+void if_hsi_set_acwakeline(int ch, unsigned int state)
 {
 	struct if_hsi_channel *channel;
 	channel = &hsi_iface.channels[ch];
 	hsi_ioctl(channel->dev,
 		  state ? HSI_IOCTL_ACWAKE_UP : HSI_IOCTL_ACWAKE_DOWN, NULL);
+}
+
+void if_hsi_get_cawakeline(int ch, unsigned int *state)
+{
+	struct if_hsi_channel *channel;
+	channel = &hsi_iface.channels[ch];
+	hsi_ioctl(channel->dev, HSI_IOCTL_GET_CAWAKE, state);
 }
 
 int if_hsi_set_rx(int ch, struct hsi_rx_config *cfg)
@@ -316,6 +324,13 @@ void if_hsi_sw_reset(int ch)
 		channel->state = HSI_CHANNEL_STATE_UNAVAIL;
 	}
 	spin_unlock_bh(&hsi_iface.lock);
+}
+
+void if_hsi_get_fifo_occupancy(int ch, size_t *occ)
+{
+	struct if_hsi_channel *channel;
+	channel = &hsi_iface.channels[ch];
+	hsi_ioctl(channel->dev, HSI_IOCTL_GET_FIFO_OCCUPANCY, occ);
 }
 
 void if_hsi_cancel_read(int ch)
@@ -474,7 +489,7 @@ static int __devinit if_hsi_probe(struct hsi_device *dev)
 	if (port == HSI_MAX_PORTS)
 		return -ENXIO;
 
-	if (dev->n_ch >= HSI_MAX_CHAR_DEVS) {
+	if (dev->n_ch >= HSI_MAX_CHAR_DEV_ID) {
 		pr_err("HSI char driver cannot handle channel %d\n", dev->n_ch);
 		return -ENXIO;
 	}
@@ -573,7 +588,8 @@ static void if_hsi_port_event(struct hsi_device *dev, unsigned int event,
 	}
 }
 
-int __init if_hsi_init(unsigned int port, unsigned int *channels_map)
+int __init if_hsi_init(unsigned int port, unsigned int *channels_map,
+		      unsigned int num_channels)
 {
 	struct if_hsi_channel *channel;
 	int i, ret = 0;
@@ -599,10 +615,10 @@ int __init if_hsi_init(unsigned int port, unsigned int *channels_map)
 		spin_lock_init(&channel->lock);
 	}
 
-	for (i = 0; (i < HSI_MAX_CHAR_DEVS) && channels_map[i]; i++) {
+	for (i = 0; (i < num_channels) && channels_map[i]; i++) {
 		pr_debug("%s, port = %d, channels_map[i] = %d\n", __func__,
 			 port, channels_map[i]);
-		if ((channels_map[i] - 1) < HSI_MAX_CHAR_DEVS)
+		if ((channels_map[i] - 1) < HSI_MAX_CHAR_DEV_ID)
 			if_hsi_char_driver.ch_mask[port] |=
 			    (1 << ((channels_map[i] - 1)));
 		else {
@@ -647,7 +663,7 @@ int __devexit if_hsi_exit(void)
 	for (i = 0; i < HSI_MAX_CHAR_DEVS; i++) {
 		channel = &hsi_iface.channels[i];
 		if (channel->opened) {
-			if_hsi_set_wakeline(i, HSI_IOCTL_ACWAKE_DOWN);
+			if_hsi_set_acwakeline(i, HSI_IOCTL_ACWAKE_DOWN);
 			if_hsi_closechannel(channel);
 		}
 	}

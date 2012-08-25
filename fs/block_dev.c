@@ -1392,8 +1392,23 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
 					bdi = &default_backing_dev_info;
 				bdev->bd_inode->i_data.backing_dev_info = bdi;
 			}
+
+			
+		#ifdef CONFIG_MACH_LGE_MMC_REFRESH	//FW KIMBYUNGCHUL 20110516 [START]
+			if (bdev->bd_invalidated)
+			{
+				if(rescan_partitions(disk, bdev)== -ENOMEM )
+				{
+					ret =-ENOMEM;
+					goto out_clear;
+				}
+			}
+		#else
 			if (bdev->bd_invalidated)
 				rescan_partitions(disk, bdev);
+
+		#endif								//FW KIMBYUNGCHUL 20110516 [END]
+			
 		} else {
 			struct block_device *whole;
 			whole = bdget_disk(disk, 0);
@@ -1425,8 +1440,26 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
 				if (ret)
 					goto out_unlock_bdev;
 			}
+
+		#ifdef CONFIG_MACH_LGE_MMC_REFRESH	//FW KIMBYUNGCHUL 20110516 [START]
+		
+			if (bdev->bd_invalidated)
+			{
+				if(rescan_partitions(bdev->bd_disk, bdev)==-ENOMEM)
+				{
+					ret =-ENOMEM;
+					
+				goto out_clear;
+				}
+			}
+
+		#else
+
 			if (bdev->bd_invalidated)
 				rescan_partitions(bdev->bd_disk, bdev);
+
+
+		#endif								//FW KIMBYUNGCHUL 20110516 [END]
 		}
 	}
 	bdev->bd_openers++;

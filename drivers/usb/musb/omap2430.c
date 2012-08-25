@@ -119,6 +119,7 @@ int musb_notifier_call(struct notifier_block *nb,
 
 	case USB_EVENT_VBUS:
 		DBG(1, "VBUS Connect\n");
+		usb_gadget_vbus_connect(&musb->g);
 		wake_lock(&usb_lock);
 
 		/* configure musb into smartidle with wakeup enabled
@@ -151,6 +152,7 @@ int musb_notifier_call(struct notifier_block *nb,
 
 	case USB_EVENT_NONE:
 		DBG(1, "VBUS Disconnect\n");
+		usb_gadget_vbus_disconnect(&musb->g);
 		if (data->interface_type == MUSB_INTERFACE_UTMI) {
 			/* enable this clock because in suspend interrupt
 			 * handler phy clocks are disabled. If phy clocks are

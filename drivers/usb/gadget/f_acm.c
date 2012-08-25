@@ -335,7 +335,7 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
 			| USB_CDC_REQ_SET_LINE_CODING:
 		if (w_length != sizeof(struct usb_cdc_line_coding)
-				|| w_index != acm->ctrl_id)
+				/*|| w_index != acm->ctrl_id*/)
 			goto invalid;
 
 		value = w_length;
@@ -346,8 +346,8 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	/* GET_LINE_CODING ... return what host sent, or initial value */
 	case ((USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
 			| USB_CDC_REQ_GET_LINE_CODING:
-		if (w_index != acm->ctrl_id)
-			goto invalid;
+//		if (w_index != acm->ctrl_id)
+//			goto invalid;
 
 		value = min_t(unsigned, w_length,
 				sizeof(struct usb_cdc_line_coding));
@@ -357,8 +357,8 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	/* SET_CONTROL_LINE_STATE ... save what the host sent */
 	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
 			| USB_CDC_REQ_SET_CONTROL_LINE_STATE:
-		if (w_index != acm->ctrl_id)
-			goto invalid;
+//		if (w_index != acm->ctrl_id)
+//			goto invalid;
 
 		value = 0;
 
@@ -792,8 +792,12 @@ int acm_bind_config(struct usb_configuration *c, u8 port_num)
 int acm_function_bind_config(struct usb_configuration *c)
 {
 	int ret = acm_bind_config(c, 0);
+// LGE_UPDATE_S hunsoo.lee
+#if !defined(CONFIG_LGE_ANDRIOD_USB)
 	if (ret == 0)
 		gserial_setup(c->cdev->gadget, 1);
+#endif 
+// LGE_UPDATE_E
 	return ret;
 }
 

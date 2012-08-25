@@ -33,7 +33,10 @@ int sysctl_panic_on_oom;
 int sysctl_oom_kill_allocating_task;
 int sysctl_oom_dump_tasks;
 static DEFINE_SPINLOCK(zone_scan_lock);
-/* #define DEBUG */
+#define DEBUG
+
+#define K(x) ((x) << (PAGE_SHIFT-10))
+
 
 /*
  * Is all threads of the target process nodes overlap ours?
@@ -262,6 +265,31 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
 		 */
 		if (!p->mm)
 			continue;
+
+#ifdef DEBUG
+
+		printk(KERN_ERR "select_bad_process %d (%s) "
+			"vsz:%lukB, anon-rss:%lukB, file-rss:%lukB, swapents:%lukB\n",
+			task_pid_nr(p), p->comm,
+			K(p->mm->total_vm),
+			K(get_mm_counter(p->mm, MM_ANONPAGES)),
+			K(get_mm_counter(p->mm, MM_FILEPAGES)),
+			K(get_mm_counter(p->mm, MM_SWAPENTS)));
+
+
+
+/*
+		printk(KERN_INFO "[ pid ]	uid  tgid total_vm		rss cpu oom_adj "
+			   "name\n");
+
+		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d	  %3d %s\n",
+			p->pid, __task_cred(p)->uid, p->tgid, p->mm->total_vm,
+			get_mm_rss(p->mm), (int)task_cpu(p), p->signal->oom_adj,
+			p->comm);
+*/
+
+#endif
+		
 		/* skip the init task */
 		if (is_global_init(p))
 			continue;
@@ -372,8 +400,6 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
 	if (sysctl_oom_dump_tasks)
 		dump_tasks(mem);
 }
-
-#define K(x) ((x) << (PAGE_SHIFT-10))
 
 /*
  * Send SIGKILL to the selected  process irrespective of  CAP_SYS_RAW_IO

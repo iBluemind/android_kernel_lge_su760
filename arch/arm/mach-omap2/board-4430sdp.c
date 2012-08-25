@@ -52,7 +52,6 @@
 #include <plat/omap-serial.h>
 #include <plat/serial.h>
 #endif
-#include <linux/wakelock.h>
 #include <plat/opp_twl_tps.h>
 #include <plat/mmc.h>
 #include <plat/syntm12xx.h>
@@ -62,7 +61,9 @@
 #include "mux.h"
 #include "hsmmc.h"
 #include "smartreflex-class3.h"
-#include "board-4430sdp-wifi.h"
+
+/* Added for FlexST */
+#include "board-connectivity.h"
 
 #define ETH_KS8851_IRQ			34
 #define ETH_KS8851_POWER_ON		48
@@ -82,9 +83,6 @@
 #define LED_PWM2OFF		0x04
 #define LED_TOGGLE3		0x92
 
-#define TWL6030_RTC_GPIO 6
-
-static struct wake_lock uart_lock;
 static struct platform_device sdp4430_hdmi_audio_device = {
 	.name		= "hdmi-dai",
 	.id		= -1,
@@ -173,7 +171,6 @@ static struct omap4_keypad_platform_data sdp4430_keypad_data = {
 	.keymap_data		= &sdp4430_keymap_data,
 	.rows			= 8,
 	.cols			= 8,
-	.rep		        = 0,
 };
 
 void keyboard_mux_init(void)
@@ -1176,34 +1173,45 @@ static __initdata struct emif_device_details emif_devices = {
 	.cs1_device = &elpida_2G_S4
 };
 
-static void __init omap_i2c_hwspinlock_init(int bus_id, unsigned int
+static int __init omap_i2c_hwspinlock_init(int bus_id, unsigned int
 			spinlock_id, struct omap_i2c_bus_board_data *pdata)
 {
 	pdata->handle = hwspinlock_request_specific(spinlock_id);
 	if (pdata->handle != NULL) {
 		pdata->hwspinlock_lock = hwspinlock_lock;
 		pdata->hwspinlock_unlock = hwspinlock_unlock;
+		return 0;
 	} else {
-		pr_err("I2C hwspinlock request failed for bus %d\n", bus_id);
+		pr_err("I2C hwspinlock request failed for bus %d, ignore register i2c bus\n", bus_id);
+		return 1;
 	}
 }
 
 static int __init omap4_i2c_init(void)
 {
-	omap_i2c_hwspinlock_init(1, 0, &sdp4430_i2c_bus_pdata);
-	omap_i2c_hwspinlock_init(2, 1, &sdp4430_i2c_2_bus_pdata);
-	omap_i2c_hwspinlock_init(3, 2, &sdp4430_i2c_3_bus_pdata);
-	omap_i2c_hwspinlock_init(4, 3, &sdp4430_i2c_4_bus_pdata);
+	int ret;
+	
 	/*
 	 * Phoenix Audio IC needs I2C1 to
 	 * start with 400 KHz or less
 	 */
+	ret = omap_i2c_hwspinlock_init(1, 0, &sdp4430_i2c_bus_pdata);
+	if (!ret)
 	omap_register_i2c_bus(1, 400, &sdp4430_i2c_bus_pdata,
 		sdp4430_i2c_boardinfo, ARRAY_SIZE(sdp4430_i2c_boardinfo));
+	
+	ret = omap_i2c_hwspinlock_init(2, 1, &sdp4430_i2c_2_bus_pdata);
+	if (!ret)
 	omap_register_i2c_bus(2, 400, &sdp4430_i2c_2_bus_pdata,
 		sdp4430_i2c_2_boardinfo, ARRAY_SIZE(sdp4430_i2c_2_boardinfo));
+	
+	ret = omap_i2c_hwspinlock_init(3, 2, &sdp4430_i2c_3_bus_pdata);
+	if (!ret)
 	omap_register_i2c_bus(3, 400, &sdp4430_i2c_3_bus_pdata,
 		sdp4430_i2c_3_boardinfo, ARRAY_SIZE(sdp4430_i2c_3_boardinfo));
+	
+	ret = omap_i2c_hwspinlock_init(4, 3, &sdp4430_i2c_4_bus_pdata);
+	if (!ret)
 	omap_register_i2c_bus(4, 400, &sdp4430_i2c_4_bus_pdata,
 		sdp4430_i2c_4_boardinfo, ARRAY_SIZE(sdp4430_i2c_4_boardinfo));
 	return 0;
@@ -1349,48 +1357,58 @@ static struct omap_volt_vc_data vc_config = {
 	.vdd2_off = 0,		/* 0 v */
 };
 
-void plat_hold_wakelock(void)
-{
-	wake_lock_timeout(&uart_lock, 2*HZ);
-	return;
-}
-
 static struct omap_uart_port_info omap_serial_platform_data[] = {
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART1_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART1_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART1_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART1_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART1_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
-		.plat_hold_wakelock = NULL,
 	},
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART2_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART2_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART2_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART2_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART2_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
-		.plat_hold_wakelock = plat_hold_wakelock,
 	},
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART3_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART3_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART3_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART3_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART3_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
-		.plat_hold_wakelock = plat_hold_wakelock,
 	},
 	{
+#if defined(CONFIG_SERIAL_OMAP_UART4_DMA)
+		.use_dma	= CONFIG_SERIAL_OMAP_UART4_DMA,
+		.dma_rx_buf_size = CONFIG_SERIAL_OMAP_UART4_RXDMA_BUFSIZE,
+		.dma_rx_timeout	= CONFIG_SERIAL_OMAP_UART4_RXDMA_TIMEOUT,
+#else
 		.use_dma	= 0,
-		.dma_rx_buf_size = DEFAULT_RXDMA_BUFSIZE,
-		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
-		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
-		.idle_timeout	= DEFAULT_IDLE_TIMEOUT,
+		.dma_rx_buf_size = 0,
+		.dma_rx_timeout	= 0,
+#endif /* CONFIG_SERIAL_OMAP_UART3_DMA */
+		.idle_timeout	= CONFIG_SERIAL_OMAP_IDLE_TIMEOUT,
 		.flags		= 1,
-		.plat_hold_wakelock = NULL,
 	},
 	{
 		.flags		= 0
@@ -1477,33 +1495,6 @@ static void omap_4430hsi_pad_conf(void)
 		OMAP_PIN_OFF_NONE);
 }
 
-static void enable_rtc_gpio(void){
-	/* To access twl registers we enable gpio6
-	 * we need this so the RTC driver can work.
-	 */
-	gpio_request(TWL6030_RTC_GPIO, "h_SYS_DRM_MSEC");
-	gpio_direction_output(TWL6030_RTC_GPIO, 1);
-
-	omap_mux_init_signal("fref_clk0_out.gpio_wk6", \
-		OMAP_PIN_OUTPUT | OMAP_PIN_OFF_NONE);
-	return;
-}
-
-/* Disable default configuration of VREF_EN to minimize DDR leakage */
-static void omap4_lpddr2_config(void) {
-	int control_io1_3;
-	int control_io2_3;
-
-	control_io1_3 =
-		omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_3);
-	control_io2_3 =
-		omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_3);
-	omap4_ctrl_pad_writel(control_io1_3 & 0xFFFFFFF0,
-		OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_3);
-	omap4_ctrl_pad_writel(control_io2_3 & 0xFFFFFFF0,
-		OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_3);
-}
-
 static void __init omap_4430sdp_init(void)
 {
 	int status;
@@ -1514,16 +1505,11 @@ static void __init omap_4430sdp_init(void)
 	omap4_mux_init(board_mux, package);
 
 	omap_emif_setup_device_details(&emif_devices, &emif_devices);
-	omap4_lpddr2_config();
 	omap_init_emif_timings();
-
-	enable_rtc_gpio();
 	omap4_i2c_init();
 	omap4_display_init();
 	omap_disp_led_init();
 	platform_add_devices(sdp4430_devices, ARRAY_SIZE(sdp4430_devices));
-
-	wake_lock_init(&uart_lock, WAKE_LOCK_SUSPEND, "uart_wake_lock");
 	omap_serial_init(omap_serial_platform_data);
 	omap4_twl6030_hsmmc_init(mmc);
 

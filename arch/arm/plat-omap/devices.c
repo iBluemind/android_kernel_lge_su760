@@ -38,6 +38,8 @@
 #include <plat/omap-pm.h>
 #include <sound/omap-abe-dsp.h>
 
+#include <mach/omap4-common.h>
+
 #if	defined(CONFIG_OMAP_DSP) || defined(CONFIG_OMAP_DSP_MODULE)
 
 static struct dsp_platform_data dsp_pdata = {
@@ -399,6 +401,9 @@ static void omap_init_aess(void)
 				sizeof(struct omap4_abe_dsp_pdata),
 				omap_aess_latency,
 				ARRAY_SIZE(omap_aess_latency), 0);
+
+	// boot problem.
+	dpll_cascading_blocker_hold(&od->pdev.dev);
 
 	kfree(pdata);
 

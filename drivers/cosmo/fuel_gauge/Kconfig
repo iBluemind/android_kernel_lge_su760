@@ -1,0 +1,24 @@
+config LG_FW_MAX17043_FUEL_GAUGE
+	bool "MAX17043_FUEL_GAUGE"
+	default n
+	help
+	  Support for MAX17043_FUEL_GAUGE driver.
+
+choice
+	prompt "Choose the LG_FW_MAX17043_FUEL_GAUGE BUS"
+	depends on LG_FW_MAX17043_FUEL_GAUGE
+	default LG_FW_MAX17043_FUEL_GAUGE_GPIO
+
+config LG_FW_MAX17043_FUEL_GAUGE_I2C
+	bool "MAX17043_FUEL_GAUGE_I2C"
+	depends on LG_FW_MAX17043_FUEL_GAUGE
+	help
+	  Support for MAX17043_FUEL_GAUGE I2C  driver.
+
+config LG_FW_MAX17043_FUEL_GAUGE_GPIO
+	bool "MAX17043_FUEL_GAUGE_GPIO"
+	depends on LG_FW_MAX17043_FUEL_GAUGE
+	help
+	  Support for MAX17043_FUEL_GAUGE GPIO driver.
+
+endchoice

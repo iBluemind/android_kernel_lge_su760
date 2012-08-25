@@ -104,6 +104,7 @@
 #include <linux/route.h>
 #include <linux/sockios.h>
 #include <linux/atalk.h>
+#include <linux/uid_stat.h>
 
 static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
 static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
@@ -571,6 +572,10 @@ static inline int __sock_sendmsg(struct kiocb *iocb, struct socket *sock,
 		return err;
 
 	err = sock->ops->sendmsg(iocb, sock, msg, size);
+//sewook test
+	if (err > 0)
+		update_tcp_snd(current_uid(), err);
+//sewook test
 	return err;
 }
 
@@ -698,6 +703,10 @@ static inline int __sock_recvmsg_nosec(struct kiocb *iocb, struct socket *sock,
 	si->flags = flags;
 
 	err = sock->ops->recvmsg(iocb, sock, msg, size, flags);
+//sewook test
+	if (err > 0)
+		update_tcp_rcv(current_uid(), err);
+//sewook test
 	return err;
 }
 

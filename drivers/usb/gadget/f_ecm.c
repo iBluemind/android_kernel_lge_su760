@@ -28,6 +28,10 @@
 
 #include "u_ether.h"
 
+#ifdef CONFIG_USB_PERSONALITY
+#define CONFIG_USB_GADGET_ECM_HAS_IAD 1
+#endif /* def CONFIG_USB_PERSONALITY */
+
 
 /*
  * This function is a "CDC Ethernet Networking Control Model" (CDC ECM)
@@ -185,6 +189,19 @@ static struct usb_interface_descriptor ecm_data_intf = {
 	/* .iInterface = DYNAMIC */
 };
 
+#ifdef CONFIG_USB_GADGET_ECM_HAS_IAD
+static struct usb_interface_assoc_descriptor
+ecm_iad_descriptor = {
+	.bLength =		sizeof ecm_iad_descriptor,
+	.bDescriptorType =	USB_DT_INTERFACE_ASSOCIATION,
+	.bFirstInterface =	0,
+	.bInterfaceCount = 	2,
+	.bFunctionClass =	USB_CLASS_COMM,
+	.bFunctionSubClass =	USB_CDC_SUBCLASS_ETHERNET,
+	.bFunctionProtocol =	USB_CDC_PROTO_NONE,
+};
+#endif /* def CONFIG_USB_GADGET_ECM_HAS_IAD */
+
 /* full speed support: */
 
 static struct usb_endpoint_descriptor fs_ecm_notify_desc = {
@@ -214,6 +231,9 @@ static struct usb_endpoint_descriptor fs_ecm_out_desc = {
 };
 
 static struct usb_descriptor_header *ecm_fs_function[] = {
+#ifdef CONFIG_USB_GADGET_ECM_HAS_IAD
+	(struct usb_descriptor_header *) &ecm_iad_descriptor,
+#endif /* def CONFIG_USB_GADGET_ECM_HAS_IAD */
 	/* CDC ECM control descriptors */
 	(struct usb_descriptor_header *) &ecm_control_intf,
 	(struct usb_descriptor_header *) &ecm_header_desc,
@@ -224,8 +244,8 @@ static struct usb_descriptor_header *ecm_fs_function[] = {
 	/* data interface, altsettings 0 and 1 */
 	(struct usb_descriptor_header *) &ecm_data_nop_intf,
 	(struct usb_descriptor_header *) &ecm_data_intf,
-	(struct usb_descriptor_header *) &fs_ecm_in_desc,
 	(struct usb_descriptor_header *) &fs_ecm_out_desc,
+	(struct usb_descriptor_header *) &fs_ecm_in_desc,
 	NULL,
 };
 
@@ -259,6 +279,9 @@ static struct usb_endpoint_descriptor hs_ecm_out_desc = {
 };
 
 static struct usb_descriptor_header *ecm_hs_function[] = {
+#ifdef CONFIG_USB_GADGET_ECM_HAS_IAD
+	(struct usb_descriptor_header *) &ecm_iad_descriptor,
+#endif /* def CONFIG_USB_GADGET_ECM_HAS_IAD */
 	/* CDC ECM control descriptors */
 	(struct usb_descriptor_header *) &ecm_control_intf,
 	(struct usb_descriptor_header *) &ecm_header_desc,
@@ -269,8 +292,8 @@ static struct usb_descriptor_header *ecm_hs_function[] = {
 	/* data interface, altsettings 0 and 1 */
 	(struct usb_descriptor_header *) &ecm_data_nop_intf,
 	(struct usb_descriptor_header *) &ecm_data_intf,
-	(struct usb_descriptor_header *) &hs_ecm_in_desc,
 	(struct usb_descriptor_header *) &hs_ecm_out_desc,
+	(struct usb_descriptor_header *) &hs_ecm_in_desc,
 	NULL,
 };
 
@@ -280,6 +303,9 @@ static struct usb_string ecm_string_defs[] = {
 	[0].s = "CDC Ethernet Control Model (ECM)",
 	[1].s = NULL /* DYNAMIC */,
 	[2].s = "CDC Ethernet Data",
+#ifdef CONFIG_USB_GADGET_ECM_HAS_IAD
+	[3].s = "ECM",
+#endif /* def CONFIG_USB_GADGET_ECM_HAS_IAD */
 	{  } /* end of list */
 };
 
@@ -614,6 +640,10 @@ ecm_bind(struct usb_configuration *c, struct usb_function *f)
 	ecm_control_intf.bInterfaceNumber = status;
 	ecm_union_desc.bMasterInterface0 = status;
 
+#ifdef CONFIG_USB_GADGET_ECM_HAS_IAD
+	ecm_iad_descriptor.bFirstInterface = status;
+#endif /* def CONFIG_USB_GADGET_ECM_HAS_IAD */
+
 	status = usb_interface_id(c, f);
 	if (status < 0)
 		goto fail;
@@ -795,6 +825,15 @@ ecm_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN])
 			return status;
 		ecm_string_defs[1].id = status;
 		ecm_desc.iMACAddress = status;
+
+#ifdef CONFIG_USB_GADGET_ECM_HAS_IAD
+		/* IAD iFunction label */
+		status = usb_string_id(c->cdev);
+		if (status < 0)
+			return status;
+		ecm_string_defs[3].id = status;
+		ecm_iad_descriptor.iFunction = status;
+#endif /* def CONFIG_USB_GADGET_ECM_HAS_IAD */
 	}
 
 	/* allocate and initialize one new instance */

@@ -506,15 +506,38 @@ out_put:
  *
  * - Automatically probe for a driver if the bus allows it.
  */
+
+
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH		//FW KIMBYUNGCHUL 20110516 [START]
+
+int bus_probe_device(struct device *dev)
+
+
+#else
+
 void bus_probe_device(struct device *dev)
+
+#endif									//FW KIMBYUNGCHUL 20110516 [END]
 {
+
+
 	struct bus_type *bus = dev->bus;
 	int ret;
+	
+
 
 	if (bus && bus->p->drivers_autoprobe) {
 		ret = device_attach(dev);
 		WARN_ON(ret < 0);
 	}
+
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH		//FW KIMBYUNGCHUL 20110516 [START]
+	if(ret == 0xbcbc)
+		return ret;
+	else return 0;
+#endif									//FW KIMBYUNGCHUL 20110516 [END]
+
+	
 }
 
 /**

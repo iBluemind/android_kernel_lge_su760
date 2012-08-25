@@ -207,6 +207,7 @@ struct omap_mmc_platform_data {
 #define HSMMC_HAS_PBIAS		(1 << 0)
 #define HSMMC_HAS_UPDATED_RESET	(1 << 1)
 #define HSMMC_DVFS_24MHZ_CONST	(1 << 2)
+#define HSMMC_HAS_48MHZ_MASTER_CLK     (1 << 3)
 		unsigned features;
 
 		int switch_pin;			/* gpio (card detect) */
@@ -233,12 +234,19 @@ struct omap_mmc_platform_data {
 		 *   1 - open
 		 */
 		int (*get_cover_state)(struct device *dev, int slot);
-
+#ifdef CONFIG_MACH_LGE_MMC_COVER
+		int sd_cover;
+#endif		
 		const char *name;
 		u32 ocr_mask;
 
 		/* Card detection IRQs */
 		int card_detect_irq;
+#if defined(CONFIG_MACH_LGE_MMC_ENHANCED_COVER) && defined(CONFIG_MACH_LGE_MMC_COVER)	//20110409	KIMBYUNGCHUL SD_CARD_DETECTION_UPDATE_0409	[START]
+		int card_detect_irq_by_data3pin;
+#endif	//20110409	KIMBYUNGCHUL SD_CARD_DETECTION_UPDATE_0409	[END]
+
+		
 		int (*card_detect)(struct device *dev, int slot);
 
 		unsigned int ban_openended:1;

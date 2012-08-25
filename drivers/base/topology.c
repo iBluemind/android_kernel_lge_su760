@@ -134,14 +134,20 @@ static int __cpuinit topology_add_dev(unsigned int cpu)
 {
 	struct sys_device *sys_dev = get_cpu_sysdev(cpu);
 
-	return sysfs_create_group(&sys_dev->kobj, &topology_attr_group);
+	if(sys_dev != NULL)  //[20110315:geayoung.baek] WBT
+	{
+		return sysfs_create_group(&sys_dev->kobj, &topology_attr_group);
+	}
 }
 
 static void __cpuinit topology_remove_dev(unsigned int cpu)
 {
 	struct sys_device *sys_dev = get_cpu_sysdev(cpu);
 
-	sysfs_remove_group(&sys_dev->kobj, &topology_attr_group);
+	if(sys_dev != NULL)  //[20110315:geayoung.baek] WBT
+	{
+		sysfs_remove_group(&sys_dev->kobj, &topology_attr_group);
+	}
 }
 
 static int __cpuinit topology_cpu_callback(struct notifier_block *nfb,

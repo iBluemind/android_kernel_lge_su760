@@ -621,4 +621,39 @@ config TOUCHSCREEN_TPS6507X
 	  To compile this driver as a module, choose M here: the
 	  module will be called tps6507x_ts.
 
+config TOUCHSCREEN_HUB_SYNAPTICS
+	tristate "Synaptics I2C hub touchscreen"
+	depends on I2C
+	help
+	  Say Y here to enable support for Synaptic HUB
+	  series touchscreen controller.
+
+	  If unsure, say N.
+
+	  To compile this driver as module, choose M here: the 
+	  module will be called hub_synaptics
+
+config TOUCHSCREEN_COSMO_SYNAPTICS
+	tristate "Synaptics I2C cosmo touchscreen"
+	depends on I2C
+	help
+	  Say Y here to enable support for Synaptic COSMOPOLITAN
+	  series touchscreen controller.
+
+	  If unsure, say N.
+
+	  To compile this driver as module, choose M here: the 
+	  module will be called cosmo_synaptics
+
+config TOUCHSCREEN_COSMO_TM1709
+       tristate "Synaptics I2C cosmo touchscreen TM1709"
+       depends on I2C
+       help
+       Say Y here to enable support for Synaptic COSMOPOLITAN
+          series touchscreen controller.
+
+         If unsure, say N.
+
+         To compile this driver as module, choose M here: the 
+	module will be called cosmo_synaptics
 endif

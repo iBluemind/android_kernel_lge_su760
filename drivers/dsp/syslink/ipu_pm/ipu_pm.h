@@ -91,12 +91,6 @@
 #include <linux/workqueue.h>
 #include <linux/kfifo.h>
 
-/* Pm notify ducati driver */
-#define A9 3
-#define SYS_M3 2
-#define APP_M3 1
-#define TESLA 0
-
 /* Suspend/resume/other... */
 #define NUMBER_PM_EVENTS 4
 
@@ -105,6 +99,12 @@
 #define SYS_M3 2
 #define APP_M3 1
 #define TESLA 0
+
+/* If sysm3 or appm3 is requested ipu will be automatically requested
+ * this is beacause the cstrs can only be set to ipu and not individually.
+ * SYSM3 + APPM3 + IPU
+ */
+#define MAX_IPU_COUNT 3
 
 #define PM_CSTR_PERF_MASK	0x00000001
 #define PM_CSTR_LAT_MASK	0x00000002
@@ -134,7 +134,7 @@
 #define GP_TIMER_4 4
 #define GP_TIMER_9 9
 #define GP_TIMER_11 11
-#define NUM_IPU_TIMERS 2
+#define NUM_IPU_TIMERS 1
 
 #define I2C_SL_INVAL -1
 #define I2C_1_SL 0
@@ -150,7 +150,7 @@
  * i.e. Ducati is using 0 to 4 (b00000011) rcb's for internal purpose
  * without requestig any resource.
  */
-#define RESERVED_RCBS 0xFFFFFFFC
+#define RESERVED_RCBS 0xFFFFFFFE
 
 #define PM_RESOURCE 2
 #define PM_NOTIFICATION 3
@@ -224,7 +224,9 @@
 /* A9 state flag 0000 | 0000 Ducati internal use*/
 #define SYS_PROC_DOWN		0x00010000
 #define APP_PROC_DOWN		0x00020000
-#define ENABLE_IPU_HIB		0x00000040
+#define ENABLE_SELF_HIB		0x00000040
+#define START_HIB_FLAG		0x1
+
 #define SYS_PROC_HIB		0x00000001
 #define APP_PROC_HIB		0x00000002
 #define HIB_REF_MASK		0x00000F80
@@ -249,7 +251,7 @@
 #define ONLY_APPM3_IDLE		0x2
 #define ONLY_SYSM3_IDLE		0x1
 #define ALL_CORES_IDLE		0x3
-#define WAIT_FOR_IDLE_TIMEOUT	40u
+#define WAIT_FOR_IDLE_TIMEOUT	500u
 
 /* Macro to make a correct module magic number with refCount */
 #define IPU_PM_MAKE_MAGICSTAMP(x) ((IPU_PM_MODULEID << 12u) | (x))
@@ -368,14 +370,15 @@ union message_slicer {
 };
 
 struct ipu_pm_override {
-	unsigned hibernateAllowed:1;
-	unsigned retentionAllowed:1;
-	unsigned inactiveAllowed:1;
-	unsigned cmAutostateAllowed:1;
-	unsigned deepSleepAllowed:1;
-	unsigned wfiAllowed:1;
-	unsigned idleAllowed:1;
-	unsigned reserved:24;
+	unsigned hibernate_allowed:1;
+	unsigned retention_allowed:1;
+	unsigned inactive_allowed:1;
+	unsigned cm_autostate_allowed:1;
+	unsigned deep_sleep_allowed:1;
+	unsigned wfi_allowed:1;
+	unsigned idle_allowed:1;
+	unsigned wdt_allowed:1;
+	unsigned reserved:23;
 	unsigned highbit:1;
 };
 
@@ -401,6 +404,22 @@ struct rcb_block {
 	};
 };
 
+struct ms_agent_block {
+	unsigned addr;
+	unsigned clrmsk;
+	unsigned setmsk;
+	unsigned cpyaddr;
+	unsigned cpyclr;
+	unsigned cpyset;
+	unsigned oldval;
+	unsigned newval;
+};
+
+struct event_int {
+	unsigned mbox_event;
+	unsigned inter_m3_event;
+};
+
 struct sms {
 	unsigned rat;
 	unsigned pm_version;
@@ -409,6 +428,10 @@ struct sms {
 	struct ipu_pm_override pm_flags;
 	unsigned hib_time;
 	struct rcb_block rcb[RCB_MAX];
+	struct ms_agent_block ms_agent[3];
+	struct event_int event_int;
+	unsigned hib_flag_sysm3;
+	unsigned hib_flag_appm3;
 };
 
 struct pm_event {

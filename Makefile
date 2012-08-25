@@ -582,6 +582,10 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 # conserve stack if available
 KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
 
+# for operator/country checking by Hyoungjin.kim@lge.com
+KBUILD_CFLAGS += -DTARGET_CARRIER_$(CARRIER)
+KBUILD_CFLAGS += -DTARGET_COUNTRY_$(COUNTRY)
+
 # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
 # But warn user when we do so
 warn-assign = \

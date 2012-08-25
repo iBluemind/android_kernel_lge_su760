@@ -349,7 +349,16 @@ static inline int part_in_flight(struct hd_struct *part)
 extern void part_round_stats(int cpu, struct hd_struct *part);
 
 /* block/genhd.c */
+
+
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH	  //FW KIMBYUNGCHUL 20110516 [START]
+
+extern int add_disk(struct gendisk *disk);
+#else
 extern void add_disk(struct gendisk *disk);
+#endif								  //FW KIMBYUNGCHUL 20110516 [END]
+
+
 extern void del_gendisk(struct gendisk *gp);
 extern void unlink_gendisk(struct gendisk *gp);
 extern struct gendisk *get_gendisk(dev_t dev, int *partno);

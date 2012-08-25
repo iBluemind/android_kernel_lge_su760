@@ -51,15 +51,48 @@ struct dmm_dev {
 static struct dmm_dev *dmm_device;
 static struct class *dmmdev_class;
 
+static int dmm_suspend(struct platform_device *dev, pm_message_t state);
+static int dmm_resume(struct platform_device *pdev);
+
+static struct platform_device dmm_platdevice = 
+{	
+	.name =     "dmm",	
+	.id =       -1,                     /* means that there is only one device */
+	.dev = 
+    {
+		.platform_data = NULL, 		
+		.release = NULL,    /* a warning is thrown during rmmod if this is absent */
+	},
+};
+
 static struct platform_driver dmm_driver_ldm = {
 	.driver = {
 		.owner = THIS_MODULE,
 		.name = "dmm",
 	},
 	.probe = NULL,
+	.suspend = dmm_suspend,
+	.resume = dmm_resume,
 	.shutdown = NULL,
 	.remove = NULL,
 };
+
+extern void tmm_dmm_free_page_stack(void);
+
+static int dmm_suspend(struct platform_device *dev, pm_message_t state)
+{
+	printk(KERN_NOTICE "%s()\n", __func__); 
+	tmm_dmm_free_page_stack();
+	return 0;
+}
+
+static int dmm_resume(struct platform_device *pdev)
+{
+	printk(KERN_NOTICE "%s()\n", __func__); 
+
+	return 0;
+}
+
 
 s32 dmm_pat_refill(struct dmm *dmm, struct pat *pd, enum pat_mode mode)
 {
@@ -317,6 +350,8 @@ static s32 __init dmm_init(void)
 	if (device == NULL)
 		printk(KERN_ERR "device_create() fail\n");
 
+	r = platform_device_register(&dmm_platdevice);
+
 	r = platform_driver_register(&dmm_driver_ldm);
 
 EXIT:
@@ -326,6 +361,8 @@ EXIT:
 static void __exit dmm_exit(void)
 {
 	platform_driver_unregister(&dmm_driver_ldm);
+	platform_device_unregister(&dmm_platdevice);
+
 	cdev_del(&dmm_device->cdev);
 	kfree(dmm_device);
 	device_destroy(dmmdev_class, MKDEV(dmm_major, dmm_minor));

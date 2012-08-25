@@ -31,7 +31,12 @@ void kref_init(struct kref *kref)
  */
 void kref_get(struct kref *kref)
 {
+	if(!atomic_read(&kref->refcount))
+		printk(KERN_WARNING "%s failed for atomic_read\n",
+			       __func__);
+/* TD 80761 
 	WARN_ON(!atomic_read(&kref->refcount));
+*/
 	atomic_inc(&kref->refcount);
 	smp_mb__after_atomic_inc();
 }

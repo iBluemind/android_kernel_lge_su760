@@ -610,6 +610,12 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
 		struct omapfb_vram_info		vram_info;
 		struct omapfb_tearsync_info	tearsync_info;
 		struct omapfb_display_info	display_info;
+
+		// Modified by prajuna 20110223 for color tuning {
+#ifdef LGE_FW_TDMB
+		struct omapfb_ccs			ccs_info;
+#endif // LGE_FW_TDMB
+		// Modified by prajuna 20110223 for color tuning {
 	} p;
 
 	int r = 0;
@@ -891,6 +897,51 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
 			r = -EFAULT;
 		break;
 	}
+
+	// Modified by prajuna 20110223 for color tuning {
+#ifdef LGE_FW_TDMB
+	case OMAPFB_SET_CCS_MATRIX :
+		//printk("OMAPFB_SET_CCS_MATRIX\n");
+		// Check whether display state is ACTIVE or Not.
+		if (display->state != OMAP_DSS_DISPLAY_ACTIVE)
+		{
+			//DBG("OMAPFB_SET_CCS_MATRIX(For DMB color tuning) called, but do nothing\n");
+			printk("OMAPFB_SET_CCS_MATRIX called, but do nothing\n");
+			r = -EFAULT;
+			break;
+		}
+ 		
+		if (copy_from_user(&p.ccs_info, (void __user *)arg,
+					sizeof(p.ccs_info))) {
+			printk("OMAPFB_SET_CCS_MATRIX cpoy_from_user error\n");		
+			r = -EFAULT;
+			break;
+		}
+
+		if (!display || !display->set_ccs) {
+			printk("display or display->set_ccs error\n");
+			r = -ENODEV;
+			break;
+		}
+
+		{
+			struct omap_ccs_matrix ccs_info;
+
+			ccs_info.ry = p.ccs_info.ccs[0];
+			ccs_info.rcr = p.ccs_info.ccs[1];
+			ccs_info.rcb = p.ccs_info.ccs[2];
+			ccs_info.gy = p.ccs_info.ccs[3];
+			ccs_info.gcr = p.ccs_info.ccs[4];
+			ccs_info.gcb = p.ccs_info.ccs[5];
+			ccs_info.by = p.ccs_info.ccs[6];
+			ccs_info.bcr = p.ccs_info.ccs[7];
+			ccs_info.bcb = p.ccs_info.ccs[8];		
+
+			r = display->set_ccs(display, &ccs_info);
+		}
+		break;
+#endif // LGE_FW_TDMB
+	// Modified by prajuna 20110223 for color tuning }
 
 	default:
 		dev_err(fbdev->dev, "Unknown ioctl 0x%x\n", cmd);

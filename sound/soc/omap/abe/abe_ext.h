@@ -1,12 +1,16 @@
 /*
- * ALSA SoC OMAP ABE driver
  *
- * Author:	Laurent Le Faucheur <l-le-faucheur@ti.com>
- * 	Liam Girdwood <lrg@slimlogic.co.uk>
+ * This file is provided under a dual BSD/GPLv2 license.  When using or
+ * redistributing this file, you may do so under either license.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * version 2 as published by the Free Software Foundation.
+ * GPL LICENSE SUMMARY
+ *
+ * Copyright(c) 2010-2011 Texas Instruments Incorporated,
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,13 +19,44 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA
+ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ * The full GNU General Public License is included in this distribution
+ * in the file called LICENSE.GPL.
+ *
+ * BSD LICENSE
+ *
+ * Copyright(c) 2010-2011 Texas Instruments Incorporated,
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *   distribution.
+ * * Neither the name of Texas Instruments Incorporated nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 #ifndef _ABE_EXT_H_
 #define _ABE_EXT_H_
-/* Tuning is done on PC ? */
-#define PC_SIMULATION 0
 /*
  * OS DEPENDENT MMU CONFIGURATION
  */
@@ -34,23 +69,8 @@
 #define ABE_ATC_BASE_OFFSET_MPU		0xf1000
 /* default base address for io_base */
 #define ABE_DEFAULT_BASE_ADDRESS_L3 0x49000000L
-/* base address used for L3/DMA access */
-#define ABE_ATC_BASE_ADDRESS_L3 0x490F1000L
-/* base address used for L4/MCU access */
-#define ABE_ATC_BASE_ADDRESS_L4 0x401F1000L
-/* 64kB as seen from DMA access */
-#define ABE_DMEM_BASE_ADDRESS_L3 0x49080000L
-/* 64kB as seen from MCU access */
-#define ABE_DMEM_BASE_ADDRESS_L4 0x40180000L
-/* 8kB as seen from MPU access */
-#define ABE_PMEM_BASE_ADDRESS_MPU 0x490E0000L
-/* 8kB */
-#define ABE_CMEM_BASE_ADDRESS_MPU 0x490A0000L
-/* 24kB */
-#define ABE_SMEM_BASE_ADDRESS_MPU 0x490C0000L
-/* 64kB */
-#define ABE_DMEM_BASE_ADDRESS_MPU 0x49080000L
-#define ABE_ATC_BASE_ADDRESS_MPU 0x490F1000L
+#define ABE_DEFAULT_BASE_ADDRESS_L4 0x40100000L
+#define ABE_DEFAULT_BASE_ADDRESS_DEFAULT ABE_DEFAULT_BASE_ADDRESS_L3
 /*
  * HARDWARE AND PERIPHERAL DEFINITIONS
  */
@@ -74,9 +94,9 @@
 #define ABE_DMASTATUS_RAW 0x84
 #define EVENT_GENERATOR_COUNTER 0x68
 /* PLL output/desired sampling rate = (32768 * 6000)/96000 */
-#define EVENT_GENERATOR_COUNTER_DEFAULT 2048
+#define EVENT_GENERATOR_COUNTER_DEFAULT (2048-1)
 /* PLL output/desired sampling rate = (32768 * 6000)/88200 */
-#define EVENT_GENERATOR_COUNTER_44100 2228
+#define EVENT_GENERATOR_COUNTER_44100 (2228-1)
 /* start / stop the EVENT generator */
 #define EVENT_GENERATOR_START 0x6C
 #define EVENT_GENERATOR_ON 1

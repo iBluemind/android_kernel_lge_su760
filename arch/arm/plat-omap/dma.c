@@ -443,7 +443,9 @@ int omap_request_dma(int dev_id, const char *dev_name,
 	unsigned long flags;
 	struct omap_dma_lch *chan;
 
+#if 0//TI HSYoon 20110927 for fixing schedule while atomic bug
 	pm_runtime_get_sync(&pd->dev);
+#endif
 
 	spin_lock_irqsave(&dma_chan_lock, flags);
 	for (ch = 0; ch < dma_chan_count; ch++) {
@@ -455,7 +457,9 @@ int omap_request_dma(int dev_id, const char *dev_name,
 	}
 	if (free_ch == -1) {
 		spin_unlock_irqrestore(&dma_chan_lock, flags);
+#if 0//TI HSYoon 20110927 for fixing schedule while atomic bug
 		pm_runtime_put(&pd->dev);
+#endif
 		return -EBUSY;
 	}
 	chan = dma_chan + free_ch;
@@ -550,8 +554,9 @@ void omap_free_dma(int lch)
 		omap_clear_dma(lch);
 		omap_clear_dma_sglist_mode(lch);
 	}
+#if 0//TI HSYoon 20110927 for fixing schedule while atomic bug
 	pm_runtime_put(&pd->dev);
-
+#endif
 	spin_lock_irqsave(&dma_chan_lock, flags);
 	dma_chan[lch].dev_id = -1;
 	dma_chan[lch].next_lch = -1;
@@ -923,8 +928,10 @@ static int __devinit omap_system_dma_probe(struct platform_device *pdev)
 	dma_chan_count		= d->dma_chan_count;
 	dma_chan		= d->dma_chan;
 
+#if 0//TI HSYoon 20110927 for fixing schedule while atomic bug
 	pm_runtime_enable(&pd->dev);
 	pm_runtime_get_sync(&pd->dev);
+#endif
 
 	enable_1510_mode = d->dma_dev_attr & ENABLE_1510_MODE;
 
@@ -984,8 +991,11 @@ static int __devinit omap_system_dma_probe(struct platform_device *pdev)
 	 * Note: If dma channels are reserved through boot paramters,
 	 * then dma device is always enabled.
 	 */
+
+#if 0//TI HSYoon 20110927 for fixing schedule while atomic bug
 	if (!omap_dma_reserve_channels)
 		pm_runtime_put(&pd->dev);
+#endif
 
 	dev_info(&pdev->dev, "System DMA registered\n");
 	return 0;
@@ -993,8 +1003,9 @@ static int __devinit omap_system_dma_probe(struct platform_device *pdev)
 
 static int omap_dma_suspend(struct device *dev)
 {
+#if 0//TI HSYoon 20110927 for fixing schedule while atomic bug
 	pm_runtime_put(&pd->dev);
-
+#endif
 	if (p->dma_context_save)
 		p->dma_context_save();
 
@@ -1010,8 +1021,9 @@ static int omap_dma_resume(struct device *dev)
 	 * Work around: restroing sysconfig manually in machine specific dma
 	 * driver.
 	 */
+#if 0//TI HSYoon 20110927 for fixing schedule while atomic bug
 	pm_runtime_get_sync(&pd->dev);
-
+#endif
 	if (p->dma_context_restore)
 		p->dma_context_restore();
 

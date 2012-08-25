@@ -169,7 +169,7 @@ __acquires(ep->musb->lock)
 		WARN_ON(1);
 		return;
 	}
-	list_del(&request->list);
+	list_del(&req->list);
 	if (req->request.status == -EINPROGRESS)
 		req->request.status = status;
 	musb = req->musb;
@@ -236,9 +236,8 @@ static void nuke(struct musb_ep *ep, const int status)
 		ep->dma = NULL;
 	}
 
-	while (!list_empty(&(ep->req_list))) {
-		req = container_of(ep->req_list.next, struct musb_request,
-				request.list);
+	while (!list_empty(&ep->req_list)) {
+		req = list_first_entry(&ep->req_list, struct musb_request, list);
 		musb_g_giveback(ep, &req->request, status);
 	}
 }
@@ -483,6 +482,7 @@ static void txstate(struct musb *musb, struct musb_request *req)
 void musb_g_tx(struct musb *musb, u8 epnum)
 {
 	u16			csr;
+	struct musb_request	*req;
 	struct usb_request	*request;
 	u8 __iomem		*mbase = musb->mregs;
 	struct musb_ep		*musb_ep = &musb->endpoints[epnum].ep_in;
@@ -490,7 +490,8 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 	struct dma_channel	*dma;
 
 	musb_ep_select(mbase, epnum);
-	request = next_request(musb_ep);
+	req = next_request(musb_ep);
+	request = &req->request;
 
 	csr = musb_readw(epio, MUSB_TXCSR);
 	DBG(4, "<== %s, txcsr %04x\n", musb_ep->end_point.name, csr);
@@ -582,15 +583,15 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 			if (csr & MUSB_TXCSR_FIFONOTEMPTY)
 				return;
 
-			request = musb_ep->desc ? next_request(musb_ep) : NULL;
-			if (!request) {
+			req = musb_ep->desc ? next_request(musb_ep) : NULL;
+			if (!req) {
 				DBG(4, "%s idle now\n",
 					musb_ep->end_point.name);
 				return;
 			}
 		}
 
-		txstate(musb, to_musb_request(request));
+		txstate(musb, req);
 	}
 }
 
@@ -847,6 +848,7 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 void musb_g_rx(struct musb *musb, u8 epnum)
 {
 	u16			csr;
+	struct musb_request	*req;
 	struct usb_request	*request;
 	void __iomem		*mbase = musb->mregs;
 	struct musb_ep		*musb_ep = &musb->endpoints[epnum].ep_out;
@@ -855,9 +857,11 @@ void musb_g_rx(struct musb *musb, u8 epnum)
 
 	musb_ep_select(mbase, epnum);
 
-	request = next_request(musb_ep);
-	if (!request)
+	req = next_request(musb_ep);
+	if (!req)
 		return;
+
+	request = &req->request;
 
 	csr = musb_readw(epio, MUSB_RXCSR);
 	dma = is_dma_capable() ? musb_ep->dma : NULL;
@@ -926,19 +930,13 @@ void musb_g_rx(struct musb *musb, u8 epnum)
 #endif
 		musb_g_giveback(musb_ep, request, 0);
 
-		request = next_request(musb_ep);
-		if (!request)
+		req = next_request(musb_ep);
+		if (!req)
 			return;
 	}
 
 	/* analyze request if the ep is hot */
-	if (request)
-		rxstate(musb, to_musb_request(request));
-	else
-		DBG(3, "packet waiting for %s%s request\n",
-				musb_ep->desc ? "" : "inactive ",
-				musb_ep->end_point.name);
-	return;
+  rxstate(musb, req);
 }
 
 /* ------------------------------------------------------------ */
@@ -1152,7 +1150,6 @@ struct usb_request *musb_alloc_request(struct usb_ep *ep, gfp_t gfp_flags)
 
 	request = kzalloc(sizeof *request, gfp_flags);
 	if (request) {
-		INIT_LIST_HEAD(&request->request.list);
 		request->request.dma = DMA_ADDR_INVALID;
 		request->epnum = musb_ep->current_epnum;
 		request->ep = musb_ep;
@@ -1239,10 +1236,10 @@ static int musb_gadget_queue(struct usb_ep *ep, struct usb_request *req,
 	}
 
 	/* add request to the list */
-	list_add_tail(&(request->request.list), &(musb_ep->req_list));
+	list_add_tail(&request->list, &musb_ep->req_list);
 
 	/* it this is the head of the queue, start i/o ... */
-	if (!musb_ep->busy && &request->request.list == musb_ep->req_list.next)
+	if (!musb_ep->busy && &request->list == musb_ep->req_list.next)
 		musb_ep_restart(musb, request);
 
 cleanup:
@@ -1253,7 +1250,8 @@ cleanup:
 static int musb_gadget_dequeue(struct usb_ep *ep, struct usb_request *request)
 {
 	struct musb_ep		*musb_ep = to_musb_ep(ep);
-	struct usb_request	*r;
+	struct musb_request	*req = to_musb_request(request);
+	struct musb_request	*r;
 	unsigned long		flags;
 	int			status = 0;
 	struct musb		*musb = musb_ep->musb;
@@ -1264,17 +1262,17 @@ static int musb_gadget_dequeue(struct usb_ep *ep, struct usb_request *request)
 	spin_lock_irqsave(&musb->lock, flags);
 
 	list_for_each_entry(r, &musb_ep->req_list, list) {
-		if (r == request)
+		if (r == req)
 			break;
 	}
-	if (r != request) {
+	if (r != req) {
 		DBG(3, "request %p not queued to %s\n", request, ep->name);
 		status = -EINVAL;
 		goto done;
 	}
 
 	/* if the hardware doesn't have the request, easy ... */
-	if (musb_ep->req_list.next != &request->list || musb_ep->busy)
+	if (musb_ep->req_list.next != &req->list || musb_ep->busy)
 		musb_g_giveback(musb_ep, request, -ECONNRESET);
 
 	/* ... else abort the dma transfer ... */
@@ -1331,7 +1329,7 @@ static int musb_gadget_set_halt(struct usb_ep *ep, int value)
 
 	musb_ep_select(mbase, epnum);
 
-	request = to_musb_request(next_request(musb_ep));
+	request = next_request(musb_ep);
 	if (value) {
 		if (request) {
 			DBG(3, "request in progress, cannot halt %s\n",
@@ -1582,17 +1580,20 @@ static void musb_pullup(struct musb *musb, int is_on)
 	musb_writeb(musb->mregs, MUSB_POWER, power);
 }
 
-#if 0
+#if defined(CONFIG_ARCH_OMAP)
 static int musb_gadget_vbus_session(struct usb_gadget *gadget, int is_active)
 {
+	gadget_to_musb(gadget)->is_attached = (0 != is_active);
+	return 0;
+#if 0
 	DBG(2, "<= %s =>\n", __func__);
-
 	/*
 	 * FIXME iff driver's softconnect flag is set (as it is during probe,
 	 * though that can clear it), just musb_pullup().
 	 */
 
 	return -EINVAL;
+#endif
 }
 #endif
 
@@ -1633,7 +1634,9 @@ static const struct usb_gadget_ops musb_gadget_operations = {
 	.get_frame		= musb_gadget_get_frame,
 	.wakeup			= musb_gadget_wakeup,
 	.set_selfpowered	= musb_gadget_set_self_powered,
-	/* .vbus_session		= musb_gadget_vbus_session, */
+#if defined(CONFIG_ARCH_OMAP)
+	.vbus_session		= musb_gadget_vbus_session,
+#endif
 	.vbus_draw		= musb_gadget_vbus_draw,
 	.pullup			= musb_gadget_pullup,
 };
@@ -1803,6 +1806,12 @@ int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 	DBG(3, "registering driver %s\n", driver->function);
 	spin_lock_irqsave(&musb->lock, flags);
 
+//LGECHANGE_S [kibum.lee] 2010-12-16, common : adb still ok with comment
+//	if (cpu_is_omap44xx())
+//		/* put the phy in normal operation mode*/
+//		omap_writel(0x0, 0x4A002300);
+//LGECHANGE_E [kibum.lee] 2010-12-16, common : adb still ok with comment
+
 	if (musb->gadget_driver) {
 		DBG(1, "%s is already bound to %s\n",
 				musb_driver_name,
@@ -1825,6 +1834,9 @@ int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 					driver->driver.name, retval);
 			musb->gadget_driver = NULL;
 			musb->g.dev.driver = NULL;
+		} else if (musb_platform_get_vbus_status(musb)) {
+			musb_notifier_call(&musb->nb, USB_EVENT_VBUS, 0);
+			usb_gadget_vbus_connect(&musb->g);
 		}
 
 		spin_lock_irqsave(&musb->lock, flags);
@@ -1922,6 +1934,8 @@ static void stop_activity(struct musb *musb, struct usb_gadget_driver *driver)
  *
  * @param driver the gadget driver to unregister
  */
+extern int  twl6030_set_prevbus(struct otg_transceiver *x,int on);
+
 int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
 {
 	unsigned long	flags;
@@ -1972,6 +1986,7 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
 		 * that currently misbehaves.
 		 */
 	}
+	twl6030_set_prevbus(musb->xceiv,0);
 
 	return retval;
 }

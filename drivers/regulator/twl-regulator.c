@@ -171,6 +171,153 @@ static int twlreg_disable(struct regulator_dev *rdev)
 	return twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, grp);
 }
 
+//FW KIMBYUNGCHUL 20110414 [START]	just for vmmc plz~
+#ifdef CONFIG_MACH_LGE_MMC_REFRESH	
+
+
+
+#if 1
+int twlreg_refresh(struct regulator_dev *rdev)
+{
+	struct twlreg_info	*info = rdev_get_drvdata(rdev);
+	u16			delay=1000;
+	int			stat;	
+	int			grp;
+	int			backup_stat;	
+	int			backup_grp;
+	int 		ret=0;
+
+	
+	grp = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_GRP);
+	if (grp < 0)
+		return grp;
+	backup_grp = grp;
+	grp |= 0x07;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, grp);	
+	if (ret < 0)
+		return ret;
+	stat = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_STATE);
+	if (stat < 0)
+		return stat;	
+	backup_stat = stat;
+	stat = 0xE0;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, stat);	
+	if (ret < 0)
+	{		
+		twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, backup_grp);	
+		return ret;
+	}
+			
+
+	udelay(delay);
+
+	
+
+
+	grp = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_GRP);
+	grp |= 0x07;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, grp);	
+	stat = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_STATE);
+	stat = 0xE1;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, stat);	
+	
+	udelay(delay/2);
+
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, backup_grp);	
+	if (ret < 0)
+	{
+		twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, backup_stat);	
+		return ret;
+	}
+    ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, backup_stat);	
+	if (ret < 0)
+		return ret;
+    return ret;
+
+	
+}
+
+
+#else
+
+
+
+int twlreg_refresh(struct regulator_dev *rdev)
+{
+	struct twlreg_info	*info = rdev_get_drvdata(rdev);
+	u16			delay=1000;
+	int			stat;	
+	int			grp;
+	int			backup_stat;	
+	int			backup_grp;
+	int 		ret=0;
+
+	
+	grp = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_GRP);
+	if (grp < 0)
+		return grp;
+	backup_grp = grp;
+	grp |= 0x07;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, grp);	
+	if (ret < 0)
+		return ret;
+	stat = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_STATE);
+	if (stat < 0)
+		return stat;	
+	backup_stat = stat;
+	stat = 0xE0;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, stat);	
+	if (ret < 0)
+	{		
+		twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, backup_grp);	
+		return ret;
+	}
+			
+
+	udelay(delay);
+
+	
+
+
+	grp = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_GRP);
+	if (grp < 0)
+		return grp;
+	backup_grp = grp;
+	grp |= 0x07;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, grp);	
+	if (ret < 0)
+		return ret;
+	stat = twlreg_read(info, TWL_MODULE_PM_RECEIVER, VREG_STATE);
+	if (stat < 0)
+		return stat;	
+	backup_stat = stat;
+	stat = 0xE1;
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, stat);	
+	if (ret < 0)
+	{		
+		twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, backup_grp);	
+		return ret;
+	}
+
+#if 0	
+	ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_GRP, backup_grp);	
+	if (ret < 0)
+	{
+		twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, backup_stat);	
+		return ret;
+	}
+    ret=twlreg_write(info, TWL_MODULE_PM_RECEIVER, VREG_STATE, backup_stat);	
+	if (ret < 0)
+		return ret;
+#endif	
+    return ret;
+
+	
+}
+#endif
+
+#endif	//CONFIG_MACH_LGE_MMC_REFRESH
+//FW KIMBYUNGCHUL 20110414 [END]
 static int twlreg_get_status(struct regulator_dev *rdev)
 {
 	int	state = twlreg_grp(rdev);
