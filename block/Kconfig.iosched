@@ -54,6 +54,14 @@ config IOSCHED_SIO
 	  mainly for aleatory access devices (eg: flash devices).
 
 
+config IOSCHED_VR
+	tristate "V(R) I/O scheduler"
+	default y
+	---help---
+	  Requests are chosen according to SSTF with a penalty of rev_penalty
+	  for switching head direction.
+
+
 choice
 	prompt "Default I/O scheduler"
 	default DEFAULT_CFQ
