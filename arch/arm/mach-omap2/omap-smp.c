@@ -20,6 +20,7 @@
 #include <linux/smp.h>
 #include <linux/io.h>
 
+#include <asm/topology.h>
 #include <asm/cacheflush.h>
 #include <asm/localtimer.h>
 #include <asm/smp_scu.h>
@@ -166,6 +167,9 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 		       ncores, NR_CPUS);
 		ncores = NR_CPUS;
 	}
+
+	init_cpu_topology();
+
 	smp_store_cpu_info(cpu);
 
 	/*
