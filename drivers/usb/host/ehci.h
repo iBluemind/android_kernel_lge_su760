@@ -722,6 +722,17 @@ static inline u32 hc32_to_cpup (const struct ehci_hcd *ehci, const __hc32 *x)
 
 #endif
 
+#ifdef  CONFIG_ARM_DMA_MEM_BUFFERABLE
+static inline void ehci_sync_mem()
+{
+        mb();
+}
+#else
+static inline void ehci_sync_mem()
+{
+}
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 #ifndef DEBUG
