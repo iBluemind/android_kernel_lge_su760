@@ -197,24 +197,6 @@ source "kernel/Kconfig.freezer"
 
 menu "System Type"
 
-config SCHED_MC
-	bool "Multi-core scheduler support"
-	depends on SMP && ARM_CPU_TOPOLOGY
-	default n
-	help
-	  Multi-core scheduler support improves the CPU scheduler's decision
-	  making when dealing with multi-core CPU chips at a cost of slightly
-	  increased overhead in some places. If unsure say N here.
-
-config SCHED_SMT
-	bool "SMT scheduler support"
-	depends on SMP && ARM_CPU_TOPOLOGY
-	default n
-	help
-	  Improves the CPU scheduler's decision making when dealing with
-	  MultiThreading at a cost of slightly increased overhead in some
-	  places. If unsure say N here.
-
 config MMU
 	bool "MMU-based Paged Memory Management Support"
 	default y
@@ -986,14 +968,6 @@ if !MMU
 source "arch/arm/Kconfig-nommu"
 endif
 
-config ARM_CPU_TOPOLOGY
-	bool "Support cpu topology definition"
-	depends on SMP && CPU_V7
-	help
-	  Support Arm cpu topology definition. The MPIDR register defines
-	  affinity between processors which is used to set the cpu
-	  topology of an Arm System.
-
 config ARM_ERRATA_411920
 	bool "ARM errata: Invalidation of the Instruction Cache operation can fail"
 	depends on CPU_V6 && !SMP
@@ -1162,6 +1136,32 @@ config SMP
 	  <http://www.linuxdoc.org/docs.html#howto>.
 
 	  If you don't know what to do here, say N.
+
+config ARM_CPU_TOPOLOGY
+	bool "Support cpu topology definition"
+	depends on SMP && CPU_V7
+	help
+	  Support Arm cpu topology definition. The MPIDR register defines
+	  affinity between processors which is used to set the cpu
+	  topology of an Arm System.
+
+config SCHED_MC
+	bool "Multi-core scheduler support"
+	depends on SMP && ARM_CPU_TOPOLOGY
+	default n
+	help
+	  Multi-core scheduler support improves the CPU scheduler's decision
+	  making when dealing with multi-core CPU chips at a cost of slightly
+	  increased overhead in some places. If unsure say N here.
+
+config SCHED_SMT
+	bool "SMT scheduler support"
+	depends on SMP && ARM_CPU_TOPOLOGY
+	default n
+	help
+	  Improves the CPU scheduler's decision making when dealing with
+	  MultiThreading at a cost of slightly increased overhead in some
+	  places. If unsure say N here.
 
 config HAVE_ARM_SCU
 	bool
