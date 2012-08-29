@@ -29,7 +29,10 @@ obj-$(CONFIG_HOTPLUG_CPU)		+= omap-hotplug.o
 obj-$(CONFIG_ARCH_OMAP4)		+= omap44xx-smc.o omap4-common.o \
 					   omap4-wakeupgen.o
 
-AFLAGS_omap44xx-smc.o			:=-Wa,-march=armv7-a
+plus_sec := $(call as-instr,.arch_extension sec,+sec)
+
+AFLAGS_omap-headsmp.o 			:=-Wa,-march=armv7-a$(plus_sec)
+AFLAGS_omap44xx-smc.o			:=-Wa,-march=armv7-a$(plus_sec)
 
 # Functions loaded to SRAM
 obj-$(CONFIG_ARCH_OMAP2420)		+= sram242x.o
@@ -60,6 +63,8 @@ obj-$(CONFIG_ARCH_OMAP4)		+= pm44xx.o pm_bus.o cpuidle44xx.o \
 					   omap4-mpuss-lowpower.o sleep44xx.o \
 					   voltage.o opp44xx_data.o \
 					   dpll-44xx.o omap4-sar.o
+
+AFLAGS_sleep44xx.o			:=-Wa,-march=armv7-a$(plus_sec)
 
 obj-$(CONFIG_PM_DEBUG)			+= pm-debug.o
 obj-$(CONFIG_OMAP_SMARTREFLEX)          += sr_device.o smartreflex.o

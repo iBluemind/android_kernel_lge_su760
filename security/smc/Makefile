@@ -22,6 +22,9 @@ ifdef S_VERSION_BUILD
 EXTRA_CFLAGS += -DS_VERSION_BUILD=$(S_VERSION_BUILD)
 endif
 
+plus_sec := $(call as-instr,.arch_extension sec,+sec)
+AFLAGS_bridge_pub2sec.o :=-Wa,-march=armv7-a$(plus_sec)
+
 tf_driver-objs += scxlnx_util.o
 tf_driver-objs += scxlnx_conn.o
 tf_driver-objs += scxlnx_device.o
