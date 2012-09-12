@@ -628,6 +628,14 @@ skip_ovl_set:
 	if (!d->win.h && !d->win.y)
 		d->win.h = dssdev->panel.timings.y_res - d->win.y;
 
+	/* Report m2m_only mode to a manager. A manager will apply a new
+	 * composition and will free a previous composition immediately. */
+	mgr->m2m_only = comp->m2m_only;
+
+	/* turn on clock if m2m_only mode is enabled (LCD is OFF) */
+	/* turn off clock if LCD goes ON and prev comp was m2m_only */
+	dss_m2m_clock_handling(mgr);
+
 	mutex_lock(&mtx);
 	if (mgrq[comp->ix].blanking) {
 		pr_info_ratelimited("ignoring apply mgr(%s) while blanking\n",
