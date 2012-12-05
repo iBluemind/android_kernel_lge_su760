@@ -2638,9 +2638,9 @@ static int touch_probe(struct i2c_client *client, const struct i2c_device_id *id
 		ts->accuracy_filter.ignore_pressure_gap = 5;
 		ts->accuracy_filter.delta_max = 30;
 		ts->accuracy_filter.max_pressure = 255;
-		ts->accuracy_filter.time_to_max_pressure = one_sec / 20;
-		ts->accuracy_filter.direction_count = one_sec / 6;
-		ts->accuracy_filter.touch_max_count = one_sec / 2;
+		ts->accuracy_filter.time_to_max_pressure = one_sec / 25;
+		ts->accuracy_filter.direction_count = one_sec / 8;
+		ts->accuracy_filter.touch_max_count = one_sec / 3;
 	}
 
 #if defined(CONFIG_HAS_EARLYSUSPEND)
