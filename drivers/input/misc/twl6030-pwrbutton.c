@@ -34,6 +34,9 @@
 #include <linux/slab.h>
 #include <linux/i2c/twl.h>
 #include <linux/delay.h>
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+#include <linux/input/sweep2wake.h>
+#endif
 
 #define PWR_PWRON_IRQ (1 << 0)
 #define STS_HW_CONDITIONS 0x21
@@ -150,6 +153,11 @@ static int __devinit twl6030_pwrbutton_probe(struct platform_device *pdev)
 	pwr_button->input_dev->name = "twl6030_pwrbutton";
 	pwr_button->input_dev->phys = "twl6030_pwrbutton/input0";
 	pwr_button->input_dev->dev.parent = &pdev->dev;
+
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+	sweep2wake_setdev(pwr_button->input_dev);
+	printk(KERN_INFO "[sweep2wake]: set device %s\n", pwr_button->input_dev->name);
+#endif
 
 	err = request_threaded_irq(irq, NULL, powerbutton_irq,
 			IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,

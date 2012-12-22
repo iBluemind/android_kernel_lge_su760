@@ -839,4 +839,8 @@ config TS_INFO_CLASS
 	  To compile this driver as a module, choose M here: the
 	  module will be called ts info class.
 
+config TOUCHSCREEN_SWEEP2WAKE
+        tristate "Sweep2Wake for touchscreens"
+        default n
+
 endif
