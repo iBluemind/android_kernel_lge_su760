@@ -51,6 +51,7 @@ obj-$(CONFIG_WL127X_RFKILL)	+= wl127x-rfkill.o
 obj-$(CONFIG_APANIC)		+= apanic.o
 obj-$(CONFIG_SENSORS_AK8975)	+= akm8975.o
 obj-$(CONFIG_OMAP_DIE_TEMP_SENSOR)	+= omap_temp_sensor.o
+<<<<<<< HEAD
 #LGE_SJIT 09/28/2011 [mohamed.khadri@lge.com] BT control path 
 obj-$(CONFIG_LBEE9QMB_RFKILL)	+= lbee9qmb-rfkill.o
 obj-$(CONFIG_BD_ADDRESS)       += bd_address.o
@@ -77,3 +78,7 @@ obj-$(CONFIG_LGE_MODEM_WATCHER)	+= modem_watcher.o
 obj-$(CONFIG_TS0710_MUX)	+= ts0710mux/
 
 obj-$(CONFIG_FSYNC_CONTROL)	+= fsync_control.o
+=======
+obj-$(CONFIG_LEDS_AN30259A)	+= leds-an30259a.o
+obj-$(CONFIG_CUSTOM_VOLTAGE)	+= custom_voltage.o
+>>>>>>> 87b8ac0... Added Custom Voltage version 1.

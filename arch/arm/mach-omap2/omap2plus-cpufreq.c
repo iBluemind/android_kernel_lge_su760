@@ -67,6 +67,12 @@ static unsigned int current_cooling_level;
 static bool omap_cpufreq_ready;
 static bool omap_cpufreq_suspended;
 
+#ifdef CONFIG_CUSTOM_VOLTAGE
+extern void customvoltage_register_freqtable(struct cpufreq_frequency_table * freq_table);
+extern void customvoltage_register_freqmutex(struct mutex * freq_mutex);
+extern void customvoltage_init(void);
+#endif
+
 static unsigned int omap_getspeed(unsigned int cpu)
 {
 	unsigned long rate;
@@ -449,6 +455,12 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
 
 	policy->cpuinfo.transition_latency = 40 * 1000;
 
+#ifdef CONFIG_CUSTOM_VOLTAGE
+	customvoltage_register_freqtable(freq_table);
+	customvoltage_register_freqmutex(&omap_cpufreq_lock);
+	customvoltage_init();
+#endif
+
 	return 0;
 
 fail_table:
@@ -465,8 +477,83 @@ static int omap_cpu_exit(struct cpufreq_policy *policy)
 	return 0;
 }
 
+<<<<<<< HEAD
 static struct freq_attr *omap_cpufreq_attr[] = {
 	&cpufreq_freq_attr_scaling_available_freqs,
+=======
+static ssize_t show_screen_off_freq(struct cpufreq_policy *policy, char *buf)
+{
+	return sprintf(buf, "%u\n", screen_off_max_freq);
+}
+
+static ssize_t store_screen_off_freq(struct cpufreq_policy *policy,
+	const char *buf, size_t count)
+{
+	unsigned int freq = 0;
+	int ret;
+	int index;
+
+	if (!freq_table)
+		return -EINVAL;
+
+	ret = sscanf(buf, "%u", &freq);
+	if (ret != 1)
+		return -EINVAL;
+
+	mutex_lock(&omap_cpufreq_lock);
+
+	ret = cpufreq_frequency_table_target(policy, freq_table, freq,
+		CPUFREQ_RELATION_H, &index);
+	if (ret)
+		goto out;
+
+	screen_off_max_freq = freq_table[index].frequency;
+
+	ret = count;
+
+out:
+	mutex_unlock(&omap_cpufreq_lock);
+	return ret;
+}
+
+struct freq_attr omap_cpufreq_attr_screen_off_freq = {
+	.attr = { .name = "screen_off_max_freq",
+		  .mode = 0644,
+		},
+	.show = show_screen_off_freq,
+	.store = store_screen_off_freq,
+};
+
+#ifdef CONFIG_CUSTOM_VOLTAGE
+extern ssize_t customvoltage_voltages_read(struct device * dev, struct device_attribute * attr, char * buf);
+extern ssize_t customvoltage_voltages_write(struct device * dev, struct device_attribute * attr, const char * buf, size_t size);
+
+static ssize_t show_UV_mV_table(struct cpufreq_policy * policy, char * buf)
+{
+    return customvoltage_voltages_read(NULL, NULL, buf);
+}
+
+static ssize_t store_UV_mV_table(struct cpufreq_policy * policy, const char * buf, size_t count)
+{
+    return customvoltage_voltages_write(NULL, NULL, buf, count);
+}
+
+static struct freq_attr omap_UV_mV_table = {
+    .attr = {.name = "UV_mV_table",
+	     .mode=0644,
+    },
+    .show = show_UV_mV_table,
+    .store = store_UV_mV_table,
+};
+#endif
+
+static struct freq_attr *omap_cpufreq_attr[] = {
+	&cpufreq_freq_attr_scaling_available_freqs,
+	&omap_cpufreq_attr_screen_off_freq,
+#ifdef CONFIG_CUSTOM_VOLTAGE
+	&omap_UV_mV_table,
+#endif
+>>>>>>> 87b8ac0... Added Custom Voltage version 1.
 	NULL,
 };
 
