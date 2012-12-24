@@ -1055,7 +1055,7 @@ static int pga_event(struct snd_soc_dapm_widget *w,
 
 		/* don't use volume ramp for power-up */
 #ifdef CONFIG_SOUND_CONTROL
-		if (w->shift == 2 || w->shift == 3) {
+		if (w->shift == 2 || w->shift ==3) {
 		    out->left_step = out->left_vol + volume_boost;
 		    out->right_step = out->right_vol + volume_boost;
 		} else {
@@ -1081,10 +1081,7 @@ static int pga_event(struct snd_soc_dapm_widget *w,
 		if (!delayed_work_pending(work)) {
 			/* use volume ramp for power-down */
 #ifdef CONFIG_SOUND_CONTROL
-			if (w->shift == 2 || w->shift == 3)
-			    out->ramp = TWL6040_RAMP_ZERO;
-			else
-			    out->ramp = TWL6040_RAMP_DOWN; 
+			out->ramp = TWL6040_RAMP_ZERO;
 #else
 			out->ramp = TWL6040_RAMP_DOWN;
 #endif
