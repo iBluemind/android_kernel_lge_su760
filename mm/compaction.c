@@ -715,7 +715,7 @@ static int compact_node(int nid)
 }
 
 /* Compact all nodes in the system */
-int compact_nodes(void)
+static int compact_nodes(void)
 {
 	int nid;
 
