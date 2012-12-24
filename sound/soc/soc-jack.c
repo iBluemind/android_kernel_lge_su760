@@ -19,6 +19,10 @@
 #include <linux/delay.h>
 #include <trace/events/asoc.h>
 
+#ifdef CONFIG_SOUND_CONTROL
+#include <linux/sound_control.h>
+#endif
+
 /**
  * snd_soc_jack_new - Create a new jack
  * @card:  ASoC card
@@ -347,6 +351,10 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 		snd_soc_jack_gpio_detect(&gpios[i]);
 	}
 
+#ifdef CONFIG_SOUND_CONTROL
+	soundcontrol_reportjack(1);
+#endif
+
 	return 0;
 
 err:
@@ -381,6 +389,11 @@ void snd_soc_jack_free_gpios(struct snd_soc_jack *jack, int count,
 		gpio_free(gpios[i].gpio);
 		gpios[i].jack = NULL;
 	}
+
+#ifdef CONFIG_SOUND_CONTROL
+	soundcontrol_reportjack(0);
+#endif
+
 }
 EXPORT_SYMBOL_GPL(snd_soc_jack_free_gpios);
 #endif	/* CONFIG_GPIOLIB */
