@@ -698,10 +698,8 @@ static void __exit omap_cpufreq_exit(void)
 	cpufreq_unregister_driver(&omap_driver);
 
 	unregister_early_suspend(&omap_cpu_early_suspend_handler);
-
 	platform_driver_unregister(&omap_cpufreq_platform_driver);
 	platform_device_unregister(&omap_cpufreq_device);
-
 }
 
 MODULE_DESCRIPTION("cpufreq driver for OMAP2PLUS SOCs");
