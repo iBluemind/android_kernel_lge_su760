@@ -1505,15 +1505,11 @@ void xhci_free_command(struct xhci_hcd *xhci,
 void xhci_mem_cleanup(struct xhci_hcd *xhci)
 {
 	struct pci_dev	*pdev = to_pci_dev(xhci_to_hcd(xhci)->self.controller);
+	struct xhci_cd  *cur_cd, *next_cd;
 	int size;
 	int i;
 
 	/* Free the Event Ring Segment Table and the actual Event Ring */
-	if (xhci->ir_set) {
-		xhci_writel(xhci, 0, &xhci->ir_set->erst_size);
-		xhci_write_64(xhci, 0, &xhci->ir_set->erst_base);
-		xhci_write_64(xhci, 0, &xhci->ir_set->erst_dequeue);
-	}
 	size = sizeof(struct xhci_erst_entry)*(xhci->erst.num_entries);
 	if (xhci->erst.entries)
 		pci_free_consistent(pdev, size,
@@ -1525,11 +1521,16 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
 	xhci->event_ring = NULL;
 	xhci_dbg(xhci, "Freed event ring\n");
 
-	xhci_write_64(xhci, 0, &xhci->op_regs->cmd_ring);
+	xhci->cmd_ring_reserved_trbs = 0;
 	if (xhci->cmd_ring)
 		xhci_ring_free(xhci, xhci->cmd_ring);
 	xhci->cmd_ring = NULL;
 	xhci_dbg(xhci, "Freed command ring\n");
+	list_for_each_entry_safe(cur_cd, next_cd,
+			&xhci->cancel_cmd_list, cancel_cmd_list) {
+		list_del(&cur_cd->cancel_cmd_list);
+		kfree(cur_cd);
+	}
 
 	for (i = 1; i < MAX_HC_SLOTS; ++i)
 		xhci_free_virt_device(xhci, i);
@@ -1554,7 +1555,6 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
 	xhci->medium_streams_pool = NULL;
 	xhci_dbg(xhci, "Freed medium stream array pool\n");
 
-	xhci_write_64(xhci, 0, &xhci->op_regs->dcbaa_ptr);
 	if (xhci->dcbaa)
 		pci_free_consistent(pdev, sizeof(*xhci->dcbaa),
 				xhci->dcbaa, xhci->dcbaa->dma);
@@ -2020,6 +2020,7 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
 	xhci->cmd_ring = xhci_ring_alloc(xhci, 1, true, false, flags);
 	if (!xhci->cmd_ring)
 		goto fail;
+	INIT_LIST_HEAD(&xhci->cancel_cmd_list);
 	xhci_dbg(xhci, "Allocated command ring at %p\n", xhci->cmd_ring);
 	xhci_dbg(xhci, "First segment DMA is 0x%llx\n",
 			(unsigned long long)xhci->cmd_ring->first_seg->dma);
@@ -2123,6 +2124,8 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
 
 fail:
 	xhci_warn(xhci, "Couldn't initialize memory\n");
+	xhci_halt(xhci);
+	xhci_reset(xhci);
 	xhci_mem_cleanup(xhci);
 	return -ENOMEM;
 }
