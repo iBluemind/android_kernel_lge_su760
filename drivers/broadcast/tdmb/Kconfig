@@ -32,5 +32,12 @@ config LGE_BROADCAST_TDMB_T39FX
 	depends on LGE_BROADCAST_TDMB && MACH_MSM8960_LX_KR
 	default y
 	help
-	  Select this if you want to use broadcast service	  	  
+	  Select this if you want to use broadcast service
+
+config LGE_BROADCAST_TDMB_TCC3170
+	bool "LGE broacast TDMB TCC3170 device"
+	depends on LGE_BROADCAST_TDMB && MACH_LGE_CX2_SU870
+	default y
+	help
+	  Select this if you want to use broadcast service	 	  	  
 #endmenu
