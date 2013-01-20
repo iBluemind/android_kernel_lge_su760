@@ -1086,11 +1086,7 @@ composite_unbind(struct usb_gadget *gadget)
 		c = list_first_entry(&cdev->configs,
 				struct usb_configuration, list);
 		list_del(&c->list);
-<<<<<<< HEAD
-		remove_config(cdev, c);
-=======
 		unbind_config(cdev, c);
->>>>>>> google/android-3.0
 	}
 	if (composite->unbind)
 		composite->unbind(cdev);

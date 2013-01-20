@@ -44,6 +44,7 @@
 #include "config.c"
 #include "epautoconf.c"
 #include "composite.c"
+
 /* LGE_SJIT_S 10/21/2011 [mohamed.khadri@lge.com] 
             LG Gadget driver - nmea and diag funcation extensions  */
 #if defined(CONFIG_LGE_ANDROID_USB)
@@ -51,6 +52,7 @@
 #endif
 /* LGE_SJIT_E 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver - nmea and diag funcation extensions  */
+
 #include "f_audio_source.c"
 #include "f_mass_storage.c"
 #include "u_serial.c"
@@ -133,11 +135,6 @@ struct android_usb_function {
 	
 	/* Optional: cleanup during gadget unbind */
 	void (*cleanup)(struct android_usb_function *);
-	/* Optional: called when the function is added the list of
-	 *		enabled functions */
-	void (*enable)(struct android_usb_function *);
-	/* Optional: called when it is removed */
-	void (*disable)(struct android_usb_function *);
 
 	int (*bind_config)(struct android_usb_function *, struct usb_configuration *);
 
@@ -330,7 +327,6 @@ static void android_work(struct work_struct *data)
 #endif 
 /* LGE_SJIT_E 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver */
-
 static void android_enable(struct android_dev *dev)
 {
 	struct usb_composite_dev *cdev = dev->cdev;
@@ -360,11 +356,6 @@ static void android_disable(struct android_dev *dev)
 }
 
 /*-------------------------------------------------------------------------*/
-struct adb_data {
-	bool opened;
-	bool enabled;
-};
-/*-------------------------------------------------------------------------*/
 /* Supported functions initialization */
 
 struct adb_data {
@@ -391,30 +382,6 @@ static int adb_function_bind_config(struct android_usb_function *f, struct usb_c
 {
 	return adb_bind_config(c);
 }
-static void adb_android_function_enable(struct android_usb_function *f)
-{
-	struct android_dev *dev = _android_dev;
-	struct adb_data *data = f->config;
-
-	data->enabled = true;
-
-	/* Disable the gadget until adbd is ready */
-	if (!data->opened)
-		android_disable(dev);
-}
-
-static void adb_android_function_disable(struct android_usb_function *f)
-{
-	struct android_dev *dev = _android_dev;
-	struct adb_data *data = f->config;
-
-	data->enabled = false;
-
-	/* Balance the disable that was called in closed_callback */
-	if (!data->opened)
-		android_enable(dev);
-}
-
 static void adb_android_function_enable(struct android_usb_function *f)
 {
 	struct android_dev *dev = _android_dev;
@@ -478,43 +445,9 @@ static void adb_closed_callback(void)
 	mutex_unlock(&dev->mutex);
 }
 
-
-#define MAX_ACM_INSTANCES 4
-
 struct acm_function_config {
 	int instances;
 };
-
-void adb_ready_callback(void)
-{
-	struct android_dev *dev = _android_dev;
-	struct adb_data *data = adb_function.config;
-
-	mutex_lock(&dev->mutex);
-
-	data->opened = true;
-
-	if (data->enabled)
-		android_enable(dev);
-
-	mutex_unlock(&dev->mutex);
-}
-
-void adb_closed_callback(void)
-{
-	struct android_dev *dev = _android_dev;
-	struct adb_data *data = adb_function.config;
-
-	mutex_lock(&dev->mutex);
-
-	data->opened = false;
-
-	if (data->enabled)
-		android_disable(dev);
-
-	mutex_unlock(&dev->mutex);
-}
-
 
 static int acm_function_init(struct android_usb_function *f, struct usb_composite_dev *cdev)
 {
@@ -1358,7 +1291,6 @@ static struct android_usb_function *supported_functions[] = {
 #endif
 	&mass_storage_function,
 	&accessory_function,
-<<<<<<< HEAD
 ///////////////////////////////////////
 	&cdrom_storage_function,
 //////////////////////////////////////////////////////////////
@@ -1371,9 +1303,7 @@ static struct android_usb_function *supported_functions[] = {
 #endif
 /* LGE_SJIT_E 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver - nmea and diag funcation extensions  */
-=======
 	&audio_source_function,
->>>>>>> google/android-3.0
 	NULL
 };
 
@@ -1589,43 +1519,18 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 		cdev->desc.bDeviceClass = device_desc.bDeviceClass;
 		cdev->desc.bDeviceSubClass = device_desc.bDeviceSubClass;
 		cdev->desc.bDeviceProtocol = device_desc.bDeviceProtocol;
-<<<<<<< HEAD
-#if 0
-		usb_add_config(cdev, &android_config_driver,
-					android_bind_config);
-		usb_gadget_connect(cdev->gadget);
-	
-#else
-=======
->>>>>>> google/android-3.0
 		list_for_each_entry(f, &dev->enabled_functions, enabled_list) {
 			if (f->enable)
 				f->enable(f);
 		}
 		android_enable(dev);
-<<<<<<< HEAD
-#endif
 		dev->enabled = true;
 	} else if (!enabled && dev->enabled) {
-#if 0
-		usb_gadget_disconnect(cdev->gadget);
-		/* Cancel pending control requests */
-		usb_ep_dequeue(cdev->gadget->ep0, cdev->req);
-		usb_remove_config(cdev, &android_config_driver);
-#else
-=======
-		dev->enabled = true;
-	} else if (!enabled && dev->enabled) {
->>>>>>> google/android-3.0
 		android_disable(dev);
 		list_for_each_entry(f, &dev->enabled_functions, enabled_list) {
 			if (f->disable)
 				f->disable(f);
 		}
-<<<<<<< HEAD
-#endif
-=======
->>>>>>> google/android-3.0
 		dev->enabled = false;
 	} else {
 /* LGE_SJIT_S 10/21/2011 [mohamed.khadri@lge.com]
