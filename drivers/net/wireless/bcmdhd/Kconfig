@@ -89,9 +89,3 @@ config BCMDHD_USE_STATIC_BUF
 	---help---
 	  Use static buffer in os_malloc
 
-config BRCM_CCX
-         depends on BCMDHD
-         bool "Enables CCX support"
-         default n
-         ---help---
-           Enables CCX support

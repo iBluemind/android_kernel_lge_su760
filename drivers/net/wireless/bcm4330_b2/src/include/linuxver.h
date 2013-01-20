@@ -22,7 +22,11 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/linuxver.h
  * $Id: linuxver.h,v 13.53.2.2 2010-12-22 23:47:26 Exp $
+=======
+ * $Id: linuxver.h 312264 2012-02-02 00:49:43Z $
+>>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/linuxver.h
  */
 
 
@@ -512,6 +516,11 @@ typedef struct {
 }
 
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0))
+#define BLOCKABLE()	(!in_atomic())
+#else
+#define BLOCKABLE()	(!in_interrupt())
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 31))
 #define KILL_PROC(nr, sig) \

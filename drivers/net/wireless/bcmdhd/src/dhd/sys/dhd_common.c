@@ -69,8 +69,7 @@
 #ifdef WLMEDIA_HTSF
 extern void htsf_update(struct dhd_info *dhd, void *data);
 #endif
-int dhd_msg_level = DHD_ERROR_VAL | DHD_EVENT_VAL;
-//int dhd_msg_level = 0x0007;
+int dhd_msg_level = DHD_ERROR_VAL;
 
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 bool g_ifup = FALSE;	/* LGE_patch : wifi direct GO moed interface up */
@@ -953,7 +952,7 @@ wl_show_host_event(wl_event_msg_t *event, void *event_data)
 		       (int)auth_type));
 		break;
 	}
-#if 0  // 0808, add for Fast-roam with CCKM
+
 	/* show any appended data */
 	if (datalen) {
 		buf = (uchar *) event_data;
@@ -962,7 +961,6 @@ wl_show_host_event(wl_event_msg_t *event, void *event_data)
 			DHD_EVENT((" 0x%02x ", *buf++));
 		DHD_EVENT(("\n"));
 	}
-#endif // 0808, add for Fast-roam with CCKM
 }
 #endif /* SHOW_EVENTS */
 

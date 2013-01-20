@@ -33,6 +33,7 @@
 
 #define	EPI_RC_NUMBER		125
 
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/epivers.h
 #define	EPI_INCREMENTAL_NUMBER	69
 
 #define	EPI_BUILD_NUMBER	0
@@ -40,10 +41,23 @@
 #define	EPI_VERSION		5, 90, 125, 69
 
 #define	EPI_VERSION_NUM		0x055a7d45
+=======
+#define	EPI_INCREMENTAL_NUMBER	104
+
+#define	EPI_BUILD_NUMBER	0
+
+#define	EPI_VERSION		5, 90, 195, 104
+
+#define	EPI_VERSION_NUM		0x055ac368
+>>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/epivers.h
 
 #define EPI_VERSION_DEV		5.90.125
 
 
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/epivers.h
 #define	EPI_VERSION_STR		"5.90.125.69"
+=======
+#define	EPI_VERSION_STR		"5.90.195.104"
+>>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/epivers.h
 
 #endif 

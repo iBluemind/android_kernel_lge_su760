@@ -25,7 +25,11 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/dhdioctl.h
  * $Id: dhdioctl.h,v 13.11.10.1 2010-12-22 23:47:26 Exp $
+=======
+ * $Id: dhdioctl.h 323572 2012-03-26 06:28:14Z $
+>>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/dhdioctl.h
  */
 
 #ifndef _dhdioctl_h_
@@ -87,6 +91,11 @@ enum {
 #define DHD_BTA_VAL	0x1000
 #define DHD_ISCAN_VAL	0x2000
 #define DHD_ARPOE_VAL	0x4000
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/dhdioctl.h
+=======
+#define DHD_REORDER_VAL 0x8000
+#define DHD_WL_VAL	0x10000
+>>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/dhdioctl.h
 
 #ifdef SDTEST
 /* For pktgen iovar */

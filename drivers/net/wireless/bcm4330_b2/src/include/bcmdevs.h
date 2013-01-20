@@ -21,7 +21,11 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/bcmdevs.h
  * $Id: bcmdevs.h,v 13.285.2.39 2011-02-04 05:03:16 Exp $
+=======
+ * $Id: bcmdevs.h 332966 2012-05-11 22:40:21Z $
+>>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/bcmdevs.h
  */
 
 
@@ -63,6 +67,7 @@
 #define BCM_DNGL_BL_PID_43239   0xbd1b
 #define BCM_DNGL_BDC_PID	0x0bdc
 #define BCM_DNGL_JTAG_PID	0x4a44
+#define BCM_DNGL_BL_PID_4324   0xbd1c
 
 
 #define BCM_HWUSB_PID_43239     43239
@@ -356,6 +361,7 @@
 #define BFL2_EXTLNA_TX		0x08000000  
 						
 #define BFL2_4313_RADIOREG	0x10000000
+#define BFL2_SECI_LOPWR_DIS	0x20000000  
 									   
 
 

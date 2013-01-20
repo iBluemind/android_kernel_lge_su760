@@ -22,7 +22,11 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/sdioh.h
  * $Id: sdioh.h,v 13.17.2.3 2011-01-08 05:28:21 Exp $
+=======
+ * $Id: sdioh.h 345478 2012-07-18 06:45:15Z $
+>>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/sdioh.h
  */
 
 #ifndef	_SDIOH_H
@@ -86,6 +90,10 @@
 #define SD3_PresetVal_SDR50		0x06a
 #define SD3_PresetVal_SDR104	0x06c
 #define SD3_PresetVal_DDR50		0x06e
+/* SDIO3.0 Revx specific Registers */
+#define SD3_Tuning_Info_Register 0x0EC
+#define SD3_WL_BT_reset_register 0x0F0
+
 
 /* preset value indices */
 #define SD3_PRESETVAL_INITIAL_IX	0
