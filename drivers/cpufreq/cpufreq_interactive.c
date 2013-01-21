@@ -497,7 +497,6 @@ static void cpufreq_interactive_boost(void)
 	unsigned long flags;
 	struct cpufreq_interactive_cpuinfo *pcpu;
 
-	trace_cpufreq_interactive_boost(hispeed_freq);
 	spin_lock_irqsave(&up_cpumask_lock, flags);
 
 	for_each_online_cpu(i) {
