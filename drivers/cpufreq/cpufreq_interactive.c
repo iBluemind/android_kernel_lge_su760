@@ -206,9 +206,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 			    cputime64_sub(pcpu->timer_run_time,
 					  pcpu->target_set_time)
 			    < above_hispeed_delay_val) {
-				trace_cpufreq_interactive_notyet(data, cpu_load,
-								 pcpu->target_freq,
-								 new_freq);
 				goto rearm;
 			}
 		}
@@ -234,8 +231,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 		if (cputime64_sub(pcpu->timer_run_time,
 				  pcpu->target_validate_time)
 		    < min_sample_time) {
-			trace_cpufreq_interactive_notyet(data, cpu_load,
-					 pcpu->target_freq, new_freq);
 			goto rearm;
 		}
 	}
@@ -243,8 +238,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 	pcpu->target_validate_time = pcpu->timer_run_time;
 
 	if (pcpu->target_freq == new_freq) {
-		trace_cpufreq_interactive_already(data, cpu_load,
-						  pcpu->target_freq, new_freq);
 		goto rearm_if_notmax;
 	}
 
@@ -435,9 +428,6 @@ static int cpufreq_interactive_up_task(void *data)
 							CPUFREQ_RELATION_H);
 			mutex_unlock(&set_speed_lock);
 
-			pcpu->freq_change_time_in_idle =
-				get_cpu_idle_time_us(cpu,
-						     &pcpu->freq_change_time);
 		}
 	}
 
@@ -482,9 +472,6 @@ static void cpufreq_interactive_freq_down(struct work_struct *work)
 
 		mutex_unlock(&set_speed_lock);
 
-		pcpu->freq_change_time_in_idle =
-			get_cpu_idle_time_us(cpu,
-					     &pcpu->freq_change_time);
 	}
 }
 
