@@ -1174,7 +1174,7 @@ static void wb_done_isr(void *arg, u32 irqstatus)
 	struct completion *wb_done = (struct completion*)arg;
 	if ( irqstatus & DISPC_IRQ_FRAMEDONE_WB )
 	{
-		omap_dispc_unregister_isr_nosync(wb_done_isr, arg, WB_ISR_IRQ_MASK);
+		omap_dispc_unregister_isr(wb_done_isr, arg, WB_ISR_IRQ_MASK);
 		if ( wb_done!=NULL )
 			complete(wb_done);
 	}
@@ -1208,7 +1208,7 @@ static int dsscomp_adapt_m2m_wb(struct omap_overlay *ovl, struct omap_writeback 
 		r = omap_dss_m2m_wb_apply(ovl, wb, row_inc);
 		if ( r )
 		{
-			omap_dispc_unregister_isr_nosync(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
+			omap_dispc_unregister_isr(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
 			pr_warning("WB apply failed\n");
 			goto Done;
 		}
@@ -1216,7 +1216,7 @@ static int dsscomp_adapt_m2m_wb(struct omap_overlay *ovl, struct omap_writeback 
 //		wait_for_completion(&wb_done);
 		if ( !wait_for_completion_interruptible_timeout(&wb_done,  msecs_to_jiffies(1000/30)) )
 		{
-			omap_dispc_unregister_isr_nosync(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
+			omap_dispc_unregister_isr(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
 			pr_warning("Waiting WB failed\n");
 		}
 		else

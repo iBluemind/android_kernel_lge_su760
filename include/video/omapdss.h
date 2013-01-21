@@ -298,11 +298,11 @@ struct omap_dss_board_info {
 	void (*dsi_mux_pads)(bool enable);
 };
 
-//#if defined(CONFIG_PANEL_LH430WV2_SD01) //##hw2002.cho@lge.com
+#if defined(CONFIG_PANEL_LH430WV2_SD01) //##hw2002.cho@lge.com
 #define PWM2ON		0x03
 #define PWM2OFF		0x04
 #define TOGGLE3		0x92
-//#endif //##
+#endif //##
 
 #if defined(CONFIG_OMAP2_DSS_MODULE) || defined(CONFIG_OMAP2_DSS)
 /* Init with the board info */
@@ -871,8 +871,7 @@ int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
 
 typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
 int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
-int omap_dispc_unregister_isr_sync(omap_dispc_isr_t isr, void *arg, u32 mask);
-int omap_dispc_unregister_isr_nosync(omap_dispc_isr_t isr, void *arg, u32 mask);
+int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
 
 int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
 int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,

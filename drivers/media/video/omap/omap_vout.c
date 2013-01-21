@@ -1308,7 +1308,7 @@ static int omap_vout_release(struct file *file)
 
 		mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_EVEN |
 			DISPC_IRQ_EVSYNC_ODD;
-		omap_dispc_unregister_isr_sync(omap_vout_isr, vout, mask);
+		omap_dispc_unregister_isr(omap_vout_isr, vout, mask);
 		vout->streaming = 0;
 
 		videobuf_streamoff(q);
