@@ -575,9 +575,7 @@ static int dsscomp_probe(struct platform_device *pdev)
 
 	pr_info("dsscomp: initializing.\n");
 
-#ifndef CONFIG_MACH_LGE_U2
        LGE_boot_compleate(1);
-#endif
 
 	fill_cache(cdev);
 
