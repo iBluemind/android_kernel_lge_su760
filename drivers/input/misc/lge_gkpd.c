@@ -34,11 +34,6 @@ static int gkpd_last_index = 0;
 static unsigned char gkpd_value[21];
 static struct wake_lock gkpd_wake_lock;
 
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28, add AT%KEYLOCK
-static unsigned int is_key_lock = 0;
-static struct wake_lock keylock_wake_lock;
-// LGE_CHANGE_E [younglae.kim@lge.com] 2012-06-28
-
 struct gkpd_device {
 	struct key_table *keys;
 	int size;
@@ -145,46 +140,6 @@ static ssize_t keypad_test_mode_store(struct device *dev,
 
 static DEVICE_ATTR(key_test_mode, 0660, keypad_test_mode_show, keypad_test_mode_store);
 
-
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28, add function & sysfs path for AT%KEYLOCK
-int get_key_lock_status(void)
-{
-	return is_key_lock;
-}
-EXPORT_SYMBOL(get_key_lock_status);
-
-static ssize_t key_lock_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", is_key_lock);
-}
-
-static ssize_t key_lock_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	int ret;
-
-	ret = sscanf(buf, "%d", &is_key_lock);
-
-	printk("KEY_LOCK: %s: is_key_lock %d\n", __func__, is_key_lock);
-
-	if (is_key_lock == 1) {
-		if (wake_lock_active(&keylock_wake_lock))
-			dev_warn(dev, "already locked wakelock\n");
-		else
-			wake_lock(&keylock_wake_lock);
-	}
-	else if (is_key_lock == 0) {
-		wake_unlock(&keylock_wake_lock);
-	}
-
-	return count;
-}
-
-static DEVICE_ATTR(key_lock, 0660, key_lock_show, key_lock_store);
-
-// LGE_CHANGE_E [younglae.kim@lge.com] 2012-06-28
-
 static int __devinit gkpd_probe(struct platform_device *pdev)
 {
 	struct gkpd_platform_data *pdata = pdev->dev.platform_data;
@@ -206,25 +161,15 @@ static int __devinit gkpd_probe(struct platform_device *pdev)
 
 	ret = device_create_file(&pdev->dev, &dev_attr_key_test_mode);
 	if (ret < 0)
-		goto err_device_create_file_gkpd;
-
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28, create sysfs path for AT%KEYLOCK
-	ret = device_create_file(&pdev->dev, &dev_attr_key_lock);
-	if (ret < 0)
-		goto err_device_create_file_keylock;
-// LGE_CHANGE_E [younglae.kim@lge.com] 2012-06-28
+		goto err_device_create_file;
 
 	wake_lock_init(&gkpd_wake_lock, WAKE_LOCK_SUSPEND, "lge-gpkd");
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28, add wake_lock for AT%KEYLOCK
-	wake_lock_init(&keylock_wake_lock, WAKE_LOCK_SUSPEND, "lge-keylock");
-// LGE_CHANGE_E [younglae.kim@lge.com] 2012-06-28
 
 	dev_info(&pdev->dev, "GKPD: gkpd probed\n");
 
 	return 0;
-err_device_create_file_keylock:
-	device_remove_file(&pdev->dev, &dev_attr_key_test_mode);
-err_device_create_file_gkpd:
+
+err_device_create_file:
 	kfree(gkpd_dev);
 	gkpd_dev = NULL;
 	return ret;

@@ -193,58 +193,12 @@ struct max8971_platform_data {
 
 #else
 
-#define RECHARGING_BAT_VOLT_LOW        		4270
+#define RECHARGING_BAT_VOLT_LOW        		4300
 #define RECHARGING_BAT_VOLT_HIGH                4350
 
 #endif
 
 #define GPIO_CHG_STATUS_INT     51
-
-
-#if defined(CONFIG_MACH_LGE_U2_P760)
-
-#define CURRENT_HEAT_SCENE       400
-
-#define TA_CHARING_CURRENT      850
-#define TA_CHARING_CURRENT_3800      800
-
-#define TA_RECHARING_CURRENT      500
-
-#define USB_CHARING_CURRENT     500
-#define USB_CHARING_CURRENT_MST     450
-
-#endif
-
-#if defined(CONFIG_MACH_LGE_U2_P769)
-
-#define CURRENT_HEAT_SCENE       400
-
-#define TA_CHARING_CURRENT      850
-#define TA_CHARING_CURRENT_3800      800
-
-
-#define TA_RECHARING_CURRENT      500
-
-#define USB_CHARING_CURRENT     500
-#define USB_CHARING_CURRENT_MST     450
-
-#endif
-
-#if defined(CONFIG_MACH_LGE_U2_P768)
-
-#define CURRENT_HEAT_SCENE      400
-
-#define TA_CHARING_CURRENT      850
-#define TA_CHARING_CURRENT_3800      800
-
-#define TA_RECHARING_CURRENT      500
-
-#define USB_CHARING_CURRENT     500
-#define USB_CHARING_CURRENT_MST     450
-
-#endif
-
-
 
 int max8971_stop_charging(void);
 int max8971_stop_factory_charging(void);
@@ -253,9 +207,5 @@ void charger_fsm_max8971(charger_fsm_cause fsm_cause);
 /// max17043 fuel gauge..
 void set_boot_charging_mode(int charging_mode);
 int max8971_start_Factory_charging(void);
-
-extern int charging_done_flag ;
-
-int get_unlimited_temp(void);
 #endif
 

@@ -1,0 +1,14 @@
+--- include/linux/lge_touch_core.h	2012-12-31 06:33:44.000000000 +0900
++++ include/linux/lge_touch_core.h	2012-11-23 18:12:45.000000000 +0900
+@@ -294,9 +294,9 @@
+ #define LGE_TOUCH_NAME		"lge_touch"
+ 
+ /* Debug Mask setting */
+-//#define TOUCH_DEBUG_PRINT   (0)
++#define TOUCH_DEBUG_PRINT   (1)
+ #define TOUCH_ERROR_PRINT   (1)
+-//#define TOUCH_INFO_PRINT   	(0)
++#define TOUCH_INFO_PRINT   	(1)
+ 
+ #if defined(TOUCH_INFO_PRINT)
+ #define TOUCH_INFO_MSG(fmt, args...) \

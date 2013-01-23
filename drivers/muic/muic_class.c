@@ -236,51 +236,6 @@ int muic_set_mode(TYPE_MUIC_MODE mode)
 	return 0;
 }
 EXPORT_SYMBOL(muic_set_mode);
-
-#if defined(CONFIG_MAX8971_CHARGER)
-TYPE_MUIC_MODE muic_detect_cable(void)
-{
-	if(_mdev == NULL) {
-		printk(KERN_ERR "%s: muic device not installed!\n", __func__);
-		return MUIC_UNINITED;
-	}
-
-	if((_mdev->mode_in_retain == MUIC_NONE)||(_mdev->mode_in_retain == MUIC_UNKNOWN))
-		return _mdev->mode;
-	else
-		return _mdev->mode_in_retain;
-}
-EXPORT_SYMBOL(muic_detect_cable);
-
-TYPE_MUIC_MODE muic_get_mode_in_retain(void)
-{
-	if(_mdev == NULL) {
-		printk(KERN_ERR "%s: muic device not installed!\n", __func__);
-		return MUIC_UNINITED;
-	}
-
-	return _mdev->mode_in_retain;
-}
-EXPORT_SYMBOL(muic_get_mode_in_retain);
-
-
-int muic_set_mode_in_retain(TYPE_MUIC_MODE mode)
-{
-	if(_mdev == NULL) {
-		printk(KERN_ERR "muic device not installed!\n");
-		return -ENODEV;
-	}
-
-	printk(KERN_INFO "muic: %s, mode_in_retain:%s\n",
-			__func__, state[mode]);
-
-	_mdev->mode_in_retain = mode;
-
-	return 0;
-}
-EXPORT_SYMBOL(muic_set_mode_in_retain);
-
-#endif
 #if 0
 //LGE_Changes_S chulhwhee.shim@lge.com, 2010.12.7  FOTA update 
 int fota_ebl_download(void)

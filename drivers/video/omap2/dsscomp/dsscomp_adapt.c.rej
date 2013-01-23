@@ -1,0 +1,29 @@
+--- drivers/video/omap2/dsscomp/dsscomp_adapt.c	2012-12-31 06:33:44.000000000 +0900
++++ drivers/video/omap2/dsscomp/dsscomp_adapt.c	2012-11-23 18:12:42.000000000 +0900
+@@ -1155,7 +1136,7 @@
+ 	struct completion *wb_done = (struct completion*)arg;
+ 	if ( irqstatus & DISPC_IRQ_FRAMEDONE_WB )
+ 	{
+-		omap_dispc_unregister_isr_nosync(wb_done_isr, arg, WB_ISR_IRQ_MASK);
++		omap_dispc_unregister_isr(wb_done_isr, arg, WB_ISR_IRQ_MASK);
+ 		if ( wb_done!=NULL )
+ 			complete(wb_done);
+ 	}
+@@ -1189,7 +1170,7 @@
+ 		r = omap_dss_m2m_wb_apply(ovl, wb, row_inc);
+ 		if ( r )
+ 		{
+-			omap_dispc_unregister_isr_nosync(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
++			omap_dispc_unregister_isr(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
+ 			pr_warning("WB apply failed\n");
+ 			goto Done;
+ 		}
+@@ -1197,7 +1178,7 @@
+ //		wait_for_completion(&wb_done);
+ 		if ( !wait_for_completion_interruptible_timeout(&wb_done,  msecs_to_jiffies(1000/30)) )
+ 		{
+-			omap_dispc_unregister_isr_nosync(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
++			omap_dispc_unregister_isr(wb_done_isr,  &wb_done, WB_ISR_IRQ_MASK);
+ 			pr_warning("Waiting WB failed\n");
+ 		}
+ 		else

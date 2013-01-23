@@ -28,11 +28,6 @@
 #include <linux/rcupdate.h>
 #include "input-compat.h"
 
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28, export input handle
-#include <linux/lge/lge_input.h>
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28
-
-
 MODULE_AUTHOR("Vojtech Pavlik <vojtech@suse.cz>");
 MODULE_DESCRIPTION("Input core");
 MODULE_LICENSE("GPL");
@@ -151,11 +146,6 @@ static void input_start_autorepeat(struct input_dev *dev, int code)
 {
 	if (test_bit(EV_REP, dev->evbit) &&
 	    dev->rep[REP_PERIOD] && dev->rep[REP_DELAY] &&
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-14 , Don't report HOME_KEY repeatedly
-#ifdef CONFIG_MACH_LGE_U2
-        (code != KEY_HOMEPAGE) &&
-#endif
-// LGE_CHANGE_E [younglae.kim@lge.com] 2012-06-14
 	    dev->timer.data) {
 		dev->repeat_key = code;
 		mod_timer(&dev->timer,
@@ -226,22 +216,6 @@ static int input_handle_abs_event(struct input_dev *dev,
 static void input_handle_event(struct input_dev *dev,
 			       unsigned int type, unsigned int code, int value)
 {
-#ifdef CONFIG_MACH_LGE_U2
-	/* LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28, add for AT command
-	 */
-	if(unlikely(get_key_lock_status())) {
-		if(code != KEY_POWER)
-			return;
-		else {
-			input_pass_event(dev, EV_KEY, KEY_POWER, value);
-			if(!dev->sync)
-				dev->sync = true;
-			input_pass_event(dev, EV_SYN, SYN_REPORT, value);
-			return;
-		}
-	}
-	// LGE_CHANGE_E [younglae.kim@lge.com] 2012-06-28
-#endif
 	int disposition = INPUT_IGNORE_EVENT;
 
 	switch (type) {

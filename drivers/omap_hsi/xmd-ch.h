@@ -37,10 +37,6 @@
 
 #define XMD_RIL_RECOVERY_CHANNEL 1
 
-#ifndef PRIVATE_INFO_LENGTH
-#define PRIVATE_INFO_LENGTH 5
-#endif
-
 typedef enum _HSI_CH_USER_
 {
 	XMD_TTY,

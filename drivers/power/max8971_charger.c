@@ -9,7 +9,6 @@
  *
  */
 
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -24,7 +23,6 @@
 #include <linux/power_supply.h>
 #include <linux/max8971.h>
 
-#include <linux/delay.h>
 /* LGE_CHANGE_S [seungho1.park@lge.com] 2011-11-21 */
 #if defined(CONFIG_MUIC)
 #include <linux/muic/muic.h>
@@ -42,9 +40,6 @@
 
 // define register map
 
-//int charging_done_flag = 0;
-
-int charger_source=0;
 // there is no this part in max8971 patch file
 
 #define MAX8971_REG_CHGINT      0x0F
@@ -158,9 +153,6 @@ int charger_source=0;
 
 //dukwung.kim [start]
 
-
-#define UNLIMITED_TEMP_VAL      0xA4
-
 #define CHG_EN_SET_N_OMAP               83
 
 #define CHR_IC_DEALY                            200     /* 200 us */
@@ -196,26 +188,13 @@ struct max8971_chip {
 };
 
 static struct max8971_chip *max8971_chg;
-/*
-int get_charging_done_flag(void)
-{
 
-	return charging_done_flag ;
-}
-*/
 static int max8971_write_reg(struct i2c_client *client, u8 reg, u8 value)
 {
-	int i=3;
-	int ret;
-
-	while (i--) {
-        ret= i2c_smbus_write_byte_data(client, reg, value);
+        int ret = i2c_smbus_write_byte_data(client, reg, value);
 
         if (ret < 0)
                 dev_err(&client->dev, "%s: err %d\n", __func__, ret);
-	else 
-		break;
-	}
 
         return ret;
 
@@ -243,18 +222,11 @@ EXPORT_SYMBOL(set_boot_charging_mode);
 
 static int max8971_read_reg(struct i2c_client *client, u8 reg)
 {
-	int i=3;
-	int ret;
-	
-	while(i--){
-		ret=i2c_smbus_read_byte_data(client, reg);
+	int ret = i2c_smbus_read_byte_data(client, reg);
 
 	if (ret < 0)
 		dev_err(&client->dev, "%s: err %d\n", __func__, ret);
-	else
-		break;
-	
-	}
+
 	return ret;
 }
 
@@ -321,141 +293,6 @@ static int __set_charger(struct max8971_chip *chip, int enable)
 	dev_info(&chip->client->dev, "%s\n", (enable) ? "Enable charger" : "Disable charger");
 	return 0;
 }
-int max8971_start_charging(unsigned mA)
-{
-    u8 reg_val=0;
-    int i;
-
-//    reg_val = ((FCHG_CURRENT(250)<<MAX8971_CHGCC_SHIFT) |
-//               (max8971_chg->pdata->fchgtime<<MAX8971_FCHGTIME_SHIFT));
-//    max8971_write_reg(max8971_chg->client, MAX8971_REG_FCHGCRNT, reg_val);
-    reg_val = ((max8971_chg->pdata->chgrstrt<<MAX8971_CHGRSTRT_SHIFT) |
-               (0x09<<MAX8971_DCILMT_SHIFT));				// 100mA
-    max8971_write_reg(max8971_chg->client, MAX8971_REG_DCCRNT, reg_val);
-
-    if(mA==900)
-    {
-	charging_ic_status = POWER_SUPPLY_TYPE_MAINS;
-	reg_val = (0<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==850) 
-    {
-	charging_ic_status = POWER_SUPPLY_TYPE_MAINS;
-        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==800) 
-    {
-        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-	charging_ic_status = POWER_SUPPLY_TYPE_MAINS;
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==600) 
-    {
-	// charging_ic_status = POWER_SUPPLY_TYPE_USB;
-        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==500) 
-    {
-	// charging_ic_status = POWER_SUPPLY_TYPE_USB;
-	if(charger_source==2)
-       	    reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	else
-            reg_val = (0<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==450) 
-    {
-	charging_ic_status = POWER_SUPPLY_TYPE_USB;
-        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-
-    else if(mA==1550)
-    {
-	charging_ic_status = POWER_SUPPLY_TYPE_FACTORY ;
-	reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==400)  
-    {
-	charging_ic_status = POWER_SUPPLY_TYPE_USB ;
-	reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==350)  
-    {
-//	charging_ic_status = POWER_SUPPLY_TYPE_USB ;
-	reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==300)  
-    {
-//	charging_ic_status = POWER_SUPPLY_TYPE_USB ;
-	reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==250)  
-    {
-//	charging_ic_status = POWER_SUPPLY_TYPE_USB ;
-	reg_val = (0<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-
-    else
-	printk("[max8971_start_chargin] can not find current\n");
-
-
-   // reg_val = max8971_chg->pdata->int_mask=0xF3 ;
-    reg_val = max8971_chg->pdata->int_mask=0xE3 ;
-    max8971_write_reg(max8971_chg->client,MAX8971_REG_CHGINT_MASK , reg_val);
-    // charger inserted
-    max8971_chg->chg_online = 1;
-    max8971_chg->pdata->chgcc = FCHG_CURRENT(mA);
-    printk("[max8971] max8971_chg->pdata->chgcc: 0x%x \n", max8971_chg->pdata->chgcc);
-
-    reg_val = ((FCHG_CURRENT(mA)<<MAX8971_CHGCC_SHIFT) |
-               (max8971_chg->pdata->fchgtime<<MAX8971_FCHGTIME_SHIFT));
-    max8971_write_reg(max8971_chg->client, MAX8971_REG_FCHGCRNT, reg_val);
-    for (i=0x09; i<=0x1F; i++)
-    {
-        reg_val = ((max8971_chg->pdata->chgrstrt<<MAX8971_CHGRSTRT_SHIFT) |
-                   (i<<MAX8971_DCILMT_SHIFT));
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_DCCRNT, reg_val);
- //       reg_val = ((FCHG_CURRENT(i)<<MAX8971_CHGCC_SHIFT) |
-      //  reg_val = ((FCHG_CURRENT(450)<<MAX8971_CHGCC_SHIFT) |
-//                   (max8971_chg->pdata->fchgtime<<MAX8971_FCHGTIME_SHIFT));
-  //      max8971_write_reg(max8971_chg->client, MAX8971_REG_FCHGCRNT, reg_val);
-    	printk("[max8971] max8971_chg->pdata->dcilmt: %d \n",i);
-        udelay(200);
-    }
-    reg_val = ((max8971_chg->pdata->chgrstrt<<MAX8971_CHGRSTRT_SHIFT) |
-               (max8971_chg->pdata->dcilmt<<MAX8971_DCILMT_SHIFT));
-    max8971_write_reg(max8971_chg->client, MAX8971_REG_DCCRNT, reg_val);
-    
-    __set_charger(max8971_chg, 1);
-
-
-
-    return 0;
-}
-EXPORT_SYMBOL(max8971_start_charging);
 
 static int max8971_charger_detail_irq(int irq, void *data, u8 *val)
 {
@@ -472,7 +309,7 @@ static int max8971_charger_detail_irq(int irq, void *data, u8 *val)
             max8971_write_reg(chip->client, MAX8971_REG_CHGINT_MASK, chip->pdata->int_mask);            
             // DC_V valid and start charging
             chip->chg_online = 1;
-        //   __set_charger(chip, 1);
+         //   __set_charger(chip, 1);
         }
         break;
 
@@ -523,7 +360,6 @@ static int max8971_charger_detail_irq(int irq, void *data, u8 *val)
         case MAX8971_CHG_DTLS_DONE:
             // insert event if a customer need to do something //
 	    dev_info(&chip->client->dev, "MAX8971_CHG_DTLS_DONE\n");
-	    charging_done_flag = 1;
             // Charging done and charge off automatically
             break;
         case MAX8971_CHG_DTLS_TIMER_FAULT:
@@ -590,21 +426,11 @@ static irqreturn_t max8971_charger_handler(int irq, void *data)
     u8 val[3];
 //    D("  max8971_charger_handler\n");
     irq_val = max8971_read_reg(chip->client, MAX8971_REG_CHGINT);
-    if(irq_val < 0)
-	return 0;   
     irq_mask = max8971_read_reg(chip->client, MAX8971_REG_CHGINT_MASK);
-    if(irq_mask < 0)
-	return 0;   
 
     val[0] = max8971_read_reg(chip->client, MAX8971_REG_CHG_STAT);
-    if( val[0] < 0)
-	return 0;   
     val[1] = max8971_read_reg(chip->client, MAX8971_REG_DETAILS1);
-    if( val[1] < 0)
-	return 0;   
     val[2] = max8971_read_reg(chip->client, MAX8971_REG_DETAILS2);
-    if( val[2] < 0)
-	return 0;   
 
         dev_info(&chip->client->dev, "MAX8971_REG_CHG_STAT- 0x%x\n", val[0]);
         dev_info(&chip->client->dev, "MAX8971_REG_DETAILS1- 0x%x\n", val[1]);
@@ -660,16 +486,10 @@ int max8971_stop_factory_charging(void)
 }
 EXPORT_SYMBOL(max8971_stop_factory_charging);
 
-/*
+
 int max8971_start_charging(unsigned mA)
 {
     u8 reg_val=0;
-    int i;
-
-    reg_val = ((FCHG_CURRENT(250)<<MAX8971_CHGCC_SHIFT) |
-               (max8971_chg->pdata->fchgtime<<MAX8971_FCHGTIME_SHIFT));
-    max8971_write_reg(max8971_chg->client, MAX8971_REG_FCHGCRNT, reg_val);
-
     if(mA==900)
     {
 	charging_ic_status = POWER_SUPPLY_TYPE_MAINS;
@@ -680,23 +500,12 @@ int max8971_start_charging(unsigned mA)
     else if(mA==850) 
     {
 	charging_ic_status = POWER_SUPPLY_TYPE_MAINS;
-        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==800) 
-    {
-        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-	charging_ic_status = POWER_SUPPLY_TYPE_MAINS;
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==600) 
-    {
-	// charging_ic_status = POWER_SUPPLY_TYPE_USB;
+#if defined(CONFIG_MACH_LGE_U2_P760)
         reg_val = (0<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
+#else 
+        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
+
+#endif
         max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
         dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
     }
@@ -710,7 +519,7 @@ int max8971_start_charging(unsigned mA)
     else if(mA==450) 
     {
 	charging_ic_status = POWER_SUPPLY_TYPE_USB;
-        reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
+        reg_val = (0<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
         max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
         dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
     }
@@ -718,7 +527,7 @@ int max8971_start_charging(unsigned mA)
     else if(mA==1550)
     {
 	charging_ic_status = POWER_SUPPLY_TYPE_FACTORY ;
-	reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
+	reg_val = (0<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
         max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
         dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
     }
@@ -729,49 +538,15 @@ int max8971_start_charging(unsigned mA)
 	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
         dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
     }
-    else if(mA==350)  
-    {
-//	charging_ic_status = POWER_SUPPLY_TYPE_USB ;
-	reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==300)  
-    {
-//	charging_ic_status = POWER_SUPPLY_TYPE_USB ;
-	reg_val = (1<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-    else if(mA==250)  
-    {
-//	charging_ic_status = POWER_SUPPLY_TYPE_USB ;
-	reg_val = (0<<MAX8971_DCMON_DIS_SHIFT) | (0<<MAX8971_USB_SUS_SHIFT);
-	max8971_write_reg(max8971_chg->client, MAX8971_REG_CHGCNTL1, reg_val);
-        dev_info(&max8971_chg->client->dev, "[LGE_MAX8971] MAX8971_REG_CHGCNTL1 = 0x%x", reg_val);
-    }
-
     else
 	printk("[max8971_start_chargin] can not find current\n");
 
-
-    //reg_val = max8971_chg->pdata->int_mask=0xF3 ;
-    reg_val = max8971_chg->pdata->int_mask=0xE3 ;
+    reg_val = max8971_chg->pdata->int_mask=0xF3 ;
     max8971_write_reg(max8971_chg->client,MAX8971_REG_CHGINT_MASK , reg_val);
     // charger inserted
     max8971_chg->chg_online = 1;
     max8971_chg->pdata->chgcc = FCHG_CURRENT(mA);
     printk("[max8971] max8971_chg->pdata->chgcc: 0x%x \n", max8971_chg->pdata->chgcc);
-
-    for (i=250; i<=450; i+=50)
-    {
-        //reg_val = ((FCHG_CURRENT(i)<<MAX8971_CHGCC_SHIFT) |
-        reg_val = ((FCHG_CURRENT(450)<<MAX8971_CHGCC_SHIFT) |
-                   (max8971_chg->pdata->fchgtime<<MAX8971_FCHGTIME_SHIFT));
-        max8971_write_reg(max8971_chg->client, MAX8971_REG_FCHGCRNT, reg_val);
-    	printk("[max8971] max8971_chg->pdata->chgcc: %d \n",i);
-        udelay(200);
-    }
     
     __set_charger(max8971_chg, 1);
 
@@ -780,8 +555,6 @@ int max8971_start_charging(unsigned mA)
     return 0;
 }
 EXPORT_SYMBOL(max8971_start_charging);
-
-*/
 
 int max8971_start_Factory_charging(void)
 {
@@ -912,80 +685,6 @@ DEVICE_ATTR(charging_state, 0660, charging_ic_show_status, charging_ic_store_sta
 */
 /* LGE_CHANGE_E [wonhui.lee@lge.com] 2011-07-29, Add for AT%CHARGE*/
 
-// LGE_CHANGE_S [MUIC] jaesung.woo@lge.com 20120613
-#if defined(CONFIG_MUIC)
-static int muic_control_max8971_charger(struct muic_client_device *mcdev)
-{
-//	TYPE_MUIC_MODE muic_mode = muic_get_mode();
-	TYPE_MUIC_MODE muic_mode = muic_detect_cable();
-
-	switch (muic_mode)
-	{
-		case MUIC_NA_TA :
-		case MUIC_LG_TA :
-		case MUIC_TA_1A :
-			pr_info("%s: TA.\n", __func__);
-#if defined(CONFIG_MACH_LGE_U2)
-			charger_source=2;	
-			max8971_start_charging(TA_CHARING_CURRENT);
-#else
-			max8971_start_charging(800);
-#endif
-			break;
-
-		case MUIC_AP_USB :
-			if(get_unlimited_temp() ==  UNLIMITED_TEMP_VAL){
-				pr_info("%s: AP_USB.\n", __func__);
-				max8971_start_charging(USB_CHARING_CURRENT_MST);
-			}
-			else{
-				pr_info("%s: AP_USB.\n", __func__);
-				max8971_start_charging(USB_CHARING_CURRENT);
-			}
-			break;
-
-		case MUIC_CP_USB :
-			pr_info("%s: CP_USB.\n", __func__);
-			max8971_start_Factory_charging();
-			break;
-
-		case MUIC_CP_UART :
-			pr_info("%s: CP_UART.\n", __func__);
-			max8971_start_Factory_charging();
-			break;
-
-		case MUIC_MHL :
-			pr_info("%s: MHL.\n", __func__);
-			max8971_start_charging(400);
-			break;
-
-		case MUIC_NONE :
-			charger_source=0;
-			pr_info("%s: NONE.\n", __func__);
-			max8971_stop_charging();
-			break;
-
-		default :
-			pr_info("%s: No charging.\n", __func__);
-			break;
-	}
-
-	return 0;
-}
-
-static struct muic_client_ops max8971_opt = {
-	.notifier_priority = MUIC_CLIENT_NOTI_POWER_MHL,
-	.on_none = muic_control_max8971_charger,
-	.on_na_ta = muic_control_max8971_charger,
-	.on_lg_ta = muic_control_max8971_charger,
-	.on_1a_ta = muic_control_max8971_charger,
-	.on_cp_uart = muic_control_max8971_charger,
-	.on_ap_usb = muic_control_max8971_charger,
-	.on_cp_usb = muic_control_max8971_charger,
-	.on_mhl = muic_control_max8971_charger,
-};
-#endif //CONFIG_MUIC
-// LGE_CHANGE_E [MUIC] jaesung.woo@lge.com 20120613
 
 static __devinit int max8971_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
@@ -1049,29 +748,20 @@ static __devinit int max8971_probe(struct i2c_client *client,
 
         ret=max8971_read_reg(chip->client, MAX8971_REG_CHGINT);
         printk(" MAX8971_REG_CHGINT : %d\n", ret);
+        printk(" MAX8971_REG_CHGINT : %d\n", ret);
 	chip->chg_online = 0;
 	ret = max8971_read_reg(chip->client, MAX8971_REG_CHG_STAT);
 
 	if (ret >= 0) 
-    	{
+    {
 		chip->chg_online = (ret & MAX8971_DCUVP_MASK) ? 0 : 1;
-        	if (chip->chg_online) 
-        	{
-        	    // Set IRQ MASK register
-            	max8971_write_reg(chip->client, MAX8971_REG_CHGINT_MASK, chip->pdata->int_mask);
-	          //  __set_charger(chip, 1);
-        	}
+        if (chip->chg_online) 
+        {
+            // Set IRQ MASK register
+            max8971_write_reg(chip->client, MAX8971_REG_CHGINT_MASK, chip->pdata->int_mask);
+//            __set_charger(chip, 1);
+        }
 	}
-
-// LGE_CHANGE_S [MUIC] jaesung.woo@lge.com 20120613
-#if defined(CONFIG_MUIC)
-	ret = muic_client_dev_register(client->name, (void*)chip, &max8971_opt);
-	if (ret < 0) {
-		dev_err(&client->dev, "Unable to register max8971_opt\n");
-		goto out;
-	}
-#endif
-// LGE_CHANGE_E [MUIC] jaesung.woo@lge.com 20120613
 
 	return 0;
 out:

@@ -18,7 +18,7 @@
 
 #define PN544_MAGIC	0xE9
 
-#ifdef CONFIG_LGE_NFC_PN544_C2
+#ifdef CONFIG_LGE_NFC_PN544
 /*
 #define PN544_DRV_NAME		CONFIG_LGE_NFC_DEV_NAME
 #define NFC_GPIO_VEN		CONFIG_LGE_NFC_GPIO_VEN
@@ -27,17 +27,11 @@
 #define NFC_I2C_SLAVEADDR	CONFIG_LGE_NFC_GPIO_I2C
 */
 #define PN544_DRV_NAME		"pn544"
-#define NFC_GPIO_VEN		61
+#define NFC_GPIO_VEN		62
 #define NFC_GPIO_IRQ		4
 #define NFC_GPIO_FIRM		42
 #define NFC_I2C_SLAVE_ADDR	0x28
-#elif defined CONFIG_LGE_NFC_PN544_C3
-#define PN544_DRV_NAME          "pn544"
-#define NFC_GPIO_VEN            62
-#define NFC_GPIO_IRQ            4
-#define NFC_GPIO_FIRM           42
-#define NFC_I2C_SLAVE_ADDR      0x28
-#endif /*CONFIG_LGE_NFC_PN544_C2/C3 */
+#endif
 
 /*
  * PN544 power control via ioctl

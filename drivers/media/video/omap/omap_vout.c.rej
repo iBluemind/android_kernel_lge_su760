@@ -1,0 +1,20 @@
+--- drivers/media/video/omap/omap_vout.c	2012-12-31 06:33:44.000000000 +0900
++++ drivers/media/video/omap/omap_vout.c	2012-11-23 18:12:32.000000000 +0900
+@@ -1308,7 +1308,7 @@
+ 
+ 		mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_EVEN |
+ 			DISPC_IRQ_EVSYNC_ODD;
+-		omap_dispc_unregister_isr_sync(omap_vout_isr, vout, mask);
++		omap_dispc_unregister_isr(omap_vout_isr, vout, mask);
+ 		vout->streaming = 0;
+ 
+ 		videobuf_streamoff(q);
+@@ -2017,7 +2017,7 @@
+ 	vout->streaming = 0;
+ 	mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD;
+ 
+-	omap_dispc_unregister_isr_sync(omap_vout_isr, vout, mask);
++	omap_dispc_unregister_isr(omap_vout_isr, vout, mask);
+ 
+ 	for (j = 0; j < ovid->num_overlays; j++) {
+ 		struct omap_overlay *ovl = ovid->overlays[j];

@@ -14,7 +14,3 @@ obj-y += cosmo.o \
 		 cosmo_keypad.o \
 		 cosmo_cmdline.o \
 		 cosmo_misc.o
-
-# ericjs.kim@lge.com GPS added
-obj-$(CONFIG_GPS) += ../../gps_gpio.o
-

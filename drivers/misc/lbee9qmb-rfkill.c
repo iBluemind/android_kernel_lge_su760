@@ -20,7 +20,7 @@
  *
  */
 
-#define DEBUG	0
+#define DEBUG	1
 
 #include <linux/module.h>
 #include <linux/init.h>

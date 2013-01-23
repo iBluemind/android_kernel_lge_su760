@@ -1,0 +1,11 @@
+--- drivers/staging/zram/Kconfig	2012-12-31 06:33:44.000000000 +0900
++++ drivers/staging/zram/Kconfig	2012-11-23 18:12:38.000000000 +0900
+@@ -8,7 +8,7 @@
+ 	select XVMALLOC
+ 	select LZO_COMPRESS
+ 	select LZO_DECOMPRESS
+-	default y
++	default n
+ 	help
+ 	  Creates virtual block devices called /dev/zramX (X = 0, 1, ...).
+ 	  Pages written to these disks are compressed and stored in memory

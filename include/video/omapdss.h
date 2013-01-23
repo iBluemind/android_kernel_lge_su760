@@ -132,14 +132,6 @@ enum omap_panel_config {
 	OMAP_DSS_LCD_TFT		= 1<<20,
 };
 
-/* DSI */
-#ifdef CONFIG_PANEL_LH430WV5_SD01
-enum omap_dsi_index { //##hwcho_20120428
-	DSI1 = 0,
-	DSI2 = 1,
-};
-#endif
-
 enum omap_dss_dsi_type {
 	OMAP_DSS_DSI_TYPE_CMD_MODE = 0,
 	OMAP_DSS_DSI_TYPE_VIDEO_MODE,
@@ -573,7 +565,7 @@ struct omap_writeback {
 			struct omap_writeback_info *info);
 };
 
-#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) || defined(CONFIG_MACH_LGE_CX2_3D_DISPLAY) //##hwcho_20120522
+#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) //##hwcho_20120522
 /* Stereoscopic Panel types
  * row, column, overunder, sidebyside options
  * are with respect to native scan order
@@ -824,7 +816,7 @@ struct omap_dss_driver {
 	/* for wrapping around state changes */
 	void (*disable_orig)(struct omap_dss_device *display);
 	int (*enable_orig)(struct omap_dss_device *display);
-#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) || defined(CONFIG_MACH_LGE_CX2_3D_DISPLAY)
+#if 1 //##defined(3D_LCD_FUNCTION)
 /* S3D specific */
 /* Used for displays that can switch 3D mode on/off
 3D only displays should return non-zero value when trying to disable */

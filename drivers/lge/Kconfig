@@ -13,5 +13,5 @@ source "drivers/lge/subpmic/Kconfig"
 source "drivers/lge/misc/Kconfig"
 source "drivers/lge/mtc_eta/Kconfig"
 source "drivers/lge/mhl/Kconfig"
-source "drivers/lge/gps/Kconfig"
+# source "drivers/lge/gps/Kconfig"
 endif

@@ -50,16 +50,14 @@
 //#define BAT_TEMP_TEST
 
 /* debug options */
-//#define __DEBUG_POWER
-#ifdef  __DEBUG_POWER
+#ifndef  __DEBUG_POWER
+#define __DEBUG_POWER
 
 #define __DEBUG_PMIC
 #define __DEBUG_CHARGER
 #define __DEBUG_FUELGAUGE
 #define __DEBUG_MUIC
 //#define __DEBUG_TEMP
-
-#endif /* __DEBUG_POWER */
 
 #ifdef __DEBUG_PMIC 
 //#define DPWR(fmt, args...) printk(fmt " :: file=%s, func=%s, line=%d\n", ##args, __FILE__, __func__, __LINE__ ) 
@@ -91,6 +89,8 @@
 #else
 #define DMUIC(fmt, args...) 
 #endif
+
+#endif /* __DEBUG_POWER */
 
 
 /* LGE_CHANGE [euiseop.shin@lge.com] 2011-12-12
@@ -202,33 +202,6 @@ int validate_gauge_value(int capacity);
 #if defined(CONFIG_MAX8971_CHARGER)
 //#######################################################
 // LGE_CHANGE_S [dukwung.kim@lge.com] 2011-09-17  Check  deceasing battery
-/*
-#if defined(CONFIG_MACH_LGE_U2_P760)
-
-#define CURRENT_HEAT_SCENE	 400
-
-#define TA_CHARING_CURRENT	800
-#endif
-
-#if defined(CONFIG_MACH_LGE_U2_P769)
-
-#define CURRENT_HEAT_SCENE	 500
-
-#define TA_CHARING_CURRENT	850
-
-#endif
-
-#if defined(CONFIG_MACH_LGE_U2_P768)
-
-#define CURRENT_HEAT_SCENE	 250
-
-#define TA_CHARING_CURRENT	850
-
-#endif
-*/
-
-int charging_done_flag=0;
-
 int decease_cap_count = 0;
 int decease_cap_count_flag=0;
 int current_adc_code=0;
@@ -243,13 +216,7 @@ int temp_charging_change_flag=0;
 
 int poweroff_charging_flag=0;
 
-int overheat_scene_flag=0;
 
-int booting_no_battery_flag =0;
-
-int voltage_3800_threshold=0;
-
-int power_off_recharging_flag =0;
 #define TWL6030_PHONIX_DEV_ON   0x25
 #define APP_DEVOFF      (1<<0)
 #define CON_DEVOFF      (1<<1)
@@ -596,14 +563,6 @@ battery_graph_prop dcm_temp_sensor_graph[] =
 #endif
 
 /*  ksmin for temp average */
-
-int get_unlimited_temp(void)
-{
-	printk("[twl6030] get_unlimited_temp  UNLIMITED_TEMP_VAL : %d\n",p_di->temp_control);
-	return p_di->temp_control; 
-
-}
-EXPORT_SYMBOL(get_unlimited_temp);
 
 static int average_temp(int temp)
 {
@@ -985,7 +944,7 @@ int is_tbat_good(int temp)
 	    p_di->temp_control == UNLIMITED_TEMP_VAL ) {
 		if (recharging_wait_temperature_state &&
 		   !is_recharging_temperature(temp)) {
-		//	DCHG("Wait for appropriate recharging temperature");
+			DCHG("Wait for appropriate recharging temperature");
 			return false;
 		}
 		/* LGE_CHANGE_S [wonhui.lee@lge.com] 2011-11-24,
@@ -997,7 +956,7 @@ int is_tbat_good(int temp)
 			 p_di->temp_control != UNLIMITED_TEMP_VAL) {
 			recharging_wait_temperature_state =
 				RECHARGING_WAIT_SET; // set flag
-		//	DCHG("Set recharging wait temperature flag : temp_C[%d], fg_v[%d]", temp, p_di->fg_voltage_mV);			
+			DCHG("Set recharging wait temperature flag : temp_C[%d], fg_v[%d]", temp, p_di->fg_voltage_mV);			
 			return false;
 		}
 #endif
@@ -1063,20 +1022,20 @@ bool dcm_temp_sensor_status(int temp_h, int temp_l)
 	{
 		if(recharging_wait_temperature_state == RECHARGING_WAIT_SET){
 			if(recharging_wait_temperature_state && !is_recharging_temperature( temp ) ) {
-                       //		printk("\nWait for appropriate recharging temperature \n");
+                       		printk("\nWait for appropriate recharging temperature \n");
                        		return false;
 			}
 		}
-            //   printk("\n appropriate recharging temperature \n");
+               printk("\n appropriate recharging temperature \n");
 	       temp_charging_stop_flag = 0;
 	       return true;
 		
 	}
 	if( !( temp <= TEMP_LOW_NO_BAT) && !(p_di->temp_control == UNLIMITED_TEMP_VAL ) ) {
                 recharging_wait_temperature_state = RECHARGING_WAIT_SET; // set flag
-            //    printk("\nSet recharging wait temperature flag\n");
+                printk("\nSet recharging wait temperature flag\n");
         }
-//	DCHG("dcm_temp_sensor_status() is false\n");
+	DCHG("dcm_temp_sensor_status() is false\n");
 	return false;
 }
 #endif
@@ -1099,7 +1058,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 	int err;
 	int i=0;
 #endif
-//	DCHG("##### CHARGING FSM ##########");
+	DCHG("##### CHARGING FSM ##########");
 	
 	if (fsm_cause == CHARG_FSM_CAUSE_CHARGING_TIMER_EXPIRED) {
 		DCHG("charging timer expired!!!");
@@ -1156,19 +1115,17 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		//muic_get_charger_detected();
 	}
 #endif
-	//charging_mode = muic_get_mode();
-	charging_mode = muic_detect_cable();
+	charging_mode = muic_get_mode();
 
-//	DCHG("charging_mode : %d", charging_mode);
+	DCHG("charging_mode : %d", charging_mode);
 
 
 	if (charging_mode == MUIC_NA_TA ||
 	    charging_mode == MUIC_LG_TA ||
 	    charging_mode == MUIC_TA_1A) {
 
-		booting_no_battery_flag=1;
 		 p_di->charger_source = POWER_SUPPLY_TYPE_MAINS;
-	
+
 		/* LGE_CHANGE_S [wonhui.lee@lge.com] 2011-11-23,
 		 * To change the charging mode according battery temperature
 		 */
@@ -1177,7 +1134,6 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		/* LGE_CHANGE_S [byoungcheol.lee@lge.com] 2011-12-06,
 		 * To change the charging mode according battery SOC
 		 */
-//		printk(" recharging_wait_soc_state : %d\n  p_di->capacity :%d\n" , recharging_wait_soc_state , p_di->capacity);
 #if defined(CHANGE_CHG_MODE_ON_OVERHEAT_SCENE)	
 		if (p_di->lock_on_overheat_scene == 1) {
 			DCHG("Check SOC = %d", p_di->capacity  );
@@ -1186,24 +1142,21 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 			    (!recharging_wait_soc_state ||
 			     is_recharging_soc(p_di->capacity)) &&
 			    p_di->temp_control != UNLIMITED_TEMP_VAL) {
-//				DCHG("Change charging mode to USB");
+				DCHG("Change charging mode to USB");
 #if defined(CONFIG_MAX8971_CHARGER)
-				DCHG("start charing in video mode 350mA 1");
-				overheat_scene_flag=1;
+				DCHG("start charing in video mode 250mA 1");
 
-				//max8971_start_charging(350);
-				max8971_start_charging(CURRENT_HEAT_SCENE);
+				max8971_start_charging(250);
 #endif
 				p_di->charger_source = POWER_SUPPLY_TYPE_USB;
 				recharging_wait_soc_state = RECHARGING_WAIT_UNSET; // clear flag
 			}
 			else if (p_di->capacity >= HIGH_SOC_CHANGE_CHG_MODE &&
 				 p_di->temp_control != UNLIMITED_TEMP_VAL) {
-//				DCHG("Change charging mode to BATTERY");
+				DCHG("Change charging mode to BATTERY");
 #if defined(CONFIG_MAX8971_CHARGER)
-				printk("stop charing in video mode ");
+				DCHG("stop charing in video mode ");
 
-				overheat_scene_flag=1;
 				max8971_stop_charging();
 #endif
 				p_di->charger_source = POWER_SUPPLY_TYPE_BATTERY;
@@ -1211,12 +1164,11 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 			}
 			else if (p_di->temp_C > TEMP_CHANGE_CHARGING_MODE &&
 				 p_di->temp_control != UNLIMITED_TEMP_VAL ) {
-//				DCHG("Change charging mode to USB cause of high temp.(over 45 degree)");
+				DCHG("Change charging mode to USB cause of high temp.(over 45 degree)");
 #if defined(CONFIG_MAX8971_CHARGER)
-				DCHG("start charing in video mode 350mA 2");
+				DCHG("start charing in video mode 250mA 2");
 
-				overheat_scene_flag=1;
-				max8971_start_charging(CURRENT_HEAT_SCENE);
+				max8971_start_charging(250);
 #endif
 				p_di->charger_source = POWER_SUPPLY_TYPE_USB;
 				recharging_wait_soc_state = RECHARGING_WAIT_UNSET; // clear flag
@@ -1224,7 +1176,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 			else {
 				DCHG("Change charging mode to TA");
 #if defined(CONFIG_MAX8971_CHARGER)
-				max8971_start_charging(TA_CHARING_CURRENT);
+				max8971_start_charging(850);
 #endif
 				p_di->charger_source = POWER_SUPPLY_TYPE_MAINS;
 				recharging_wait_soc_state = RECHARGING_WAIT_UNSET; // clear flag
@@ -1238,6 +1190,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		/* LGE_CHANGE_E [byoungcheol.lee@lge.com] 2011-12-07,
 		 * To change the charging mode according battery SOC
 		 */
+			
 			if (p_di->temp_C > TEMP_CHANGE_CHARGING_MODE &&
 			    p_di->temp_control != UNLIMITED_TEMP_VAL )
 				p_di->charger_source = POWER_SUPPLY_TYPE_USB;
@@ -1272,7 +1225,6 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 	else if (charging_mode == MUIC_AP_USB)
 #endif
 	{
-		booting_no_battery_flag=1;
 		p_di->charger_source = POWER_SUPPLY_TYPE_USB;
 #if defined(CHARGING_WAKE_LOCK)
 		if (!p_di->wake_lock_count) {
@@ -1315,7 +1267,6 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 	else {
 #else
 	else if( charging_mode == MUIC_CP_USB || charging_mode == MUIC_CP_UART) {
-		booting_no_battery_flag=1;
 #endif
 		p_di->charger_source = POWER_SUPPLY_TYPE_FACTORY;
 #if defined(CHARGING_WAKE_LOCK)
@@ -1335,7 +1286,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		DCHG("charger deactive check point 1 \n"); 
 		charging_ic_deactive();
 #else
-	printk("[twl6030] max8971_stop_charging 1 \n");
+	DCHG("[twl6030] max8971_stop_charging 1 \n");
 		max8971_stop_charging();
 #endif
 		recharging_status = RECHARGING_WAIT_UNSET;
@@ -1357,7 +1308,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		DCHG("charger deactive check point 1-1  \n");		
 		charging_ic_deactive();
 #else
-	printk("[twl6030] max8971_stop_charging 2\n");
+	DCHG("[twl6030] max8971_stop_charging 2\n");
 		max8971_stop_charging();
 #endif
 		recharging_status = RECHARGING_WAIT_UNSET;
@@ -1367,7 +1318,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 	}
 #endif
 
-	if (!p_di->battery_present && booting_no_battery_flag == 1) {
+	if (!p_di->battery_present) {
 		recharging_status = RECHARGING_WAIT_UNSET;
 		D("[charger_rt9524]:: NO BATTERY charger_logo_status=%d, charger_source=%d !! \n", p_di->charger_logo_status, p_di->charger_source);
 		if (p_di->charger_source != POWER_SUPPLY_TYPE_FACTORY) {
@@ -1455,7 +1406,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 	    !is_tbat_good(p_di->temp_C))  &&
 	    p_di->charger_source != POWER_SUPPLY_TYPE_FACTORY) {
 #else 
-//	printk(" charger_source :%d\n", p_di->charger_source);
+	printk(" charger_source :%d\n", p_di->charger_source);
  	if(  ((p_di->charger_source == POWER_SUPPLY_TYPE_BATTERY) || (!dcm_temp_sensor_status(p_di->temp_high_C, p_di->temp_low_C)))  && (p_di->charger_source != POWER_SUPPLY_TYPE_FACTORY) ){ /* charging deactive condition */
 #endif
 		/* charging deactive condition */
@@ -1470,7 +1421,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		DCHG("charger deactive check point 5 \n");
 		charging_ic_deactive();
 #else
-		printk("[twl6030]  max8971_stop_charging due to temp \n");
+		DCHG("[twl6030]  max8971_stop_charging due to temp \n");
 	        max8971_stop_charging();
 		temp_charging_stop_flag = 1;
 	//	DCHG("[twl6030] temp_charging_stop_flag:%d\n",temp_charging_stop_flag);
@@ -1480,11 +1431,11 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		goto UPDATE_UI;
 	}
 	// recharging status check!!
-//	DCHG("charge_status=%d capacity=%d, charger_source=%d p_di->fg_voltage_mV=%d p_di->ui_capacity=%d valid_charging_source=%d\n",p_di->charge_status, p_di->capacity, p_di->charger_source, p_di->fg_voltage_mV,p_di->ui_capacity,p_di->valid_charging_source);
+	DCHG("charge_status=%d capacity=%d, charger_source=%d p_di->fg_voltage_mV=%d p_di->ui_capacity=%d valid_charging_source=%d\n",p_di->charge_status, p_di->capacity, p_di->charger_source, p_di->fg_voltage_mV,p_di->ui_capacity,p_di->valid_charging_source);
 
 	if (p_di->capacity > 99 &&
 	   p_di->charger_source != POWER_SUPPLY_TYPE_FACTORY) {
-		if (p_di->fg_voltage_mV > RECHARGING_BAT_VOLT_HIGH && poweroff_charging_flag !=1 ) {
+		if (p_di->fg_voltage_mV > RECHARGING_BAT_VOLT_HIGH) {
 			/* LGE_CHANGE [byoungcheol.lee@lge.com]  2011-07-07,
 			 * From cosmo. cause discharging
 			 * while Not complete charging process.
@@ -1494,7 +1445,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 			DCHG("charger deactive check point 4 \n");
 			charging_ic_deactive();
 #else
-	printk("[twl6030] max8971_stop_charging 5: battery is FULL \n");
+	DCHG("[twl6030] max8971_stop_charging 5: battery is FULL \n");
 	               max8971_stop_charging();
 #endif
 			if (p_di->valid_charging_source) {
@@ -1511,28 +1462,11 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 			 */
 #if defined(CONFIG_MACH_LGE_U2)
 
-			if(battery_full_status == 1 && p_di->charger_source != POWER_SUPPLY_TYPE_FACTORY)
+			if(battery_full_status == 1)
 			{
-				
-				printk(" Recharging for U2 1 , voltage: %d\n", p_di->fg_voltage_mV);
-				if(p_di->charger_source == POWER_SUPPLY_TYPE_MAINS )
-				{
-					 max8971_start_charging(TA_RECHARING_CURRENT);
-				}
-				else if(p_di->charger_source == POWER_SUPPLY_TYPE_USB)
-				{
-					if(get_unlimited_temp() ==  UNLIMITED_TEMP_VAL){
-						max8971_start_charging(USB_CHARING_CURRENT_MST);
-					}
-					else{
-				
-						max8971_start_charging(USB_CHARING_CURRENT);
-					}
-				}
-				else
-					printk(" charging cable : %d\n",p_di->charger_source);
-
-				//battery_full_status = 0;
+				printk(" Recharging for U2 , voltage: %d\n", p_di->fg_voltage_mV);
+				max8971_start_charging(850);
+				battery_full_status = 0;
 			}
 #endif
 			goto START_RECHARGING;
@@ -1622,7 +1556,7 @@ void charger_fsm(charger_fsm_cause fsm_cause)
 		DCHG("charger deactive check point 6 \n");
 		charging_ic_deactive();
 #else
-		printk("[twl6030] max8971_stop_charging 7 \n");
+		DCHG("[twl6030] max8971_stop_charging 7 \n");
 	        max8971_stop_charging();
 #endif		
 		recharging_status = RECHARGING_WAIT_UNSET;
@@ -2295,41 +2229,41 @@ static int get_pmic_soc(void)
 #if defined(CONFIG_MAX8971_CHARGER)
 static void twl6030_max8971_recharging_work(struct work_struct *work)
 {
-//        TYPE_MUIC_MODE charging_mode = MUIC_UNKNOWN;
-//	charging_mode = muic_get_mode();
-//	charging_mode = muic_detect_cable();
-	
-//	DCHG("[twl6030] charging_mode: %d \n, charging_mode");
+//        TYPE_CHARGING_MODE charging_mode;
+        TYPE_MUIC_MODE charging_mode = MUIC_UNKNOWN;
+	//charging_mode = get_muic_detected_cable();
+	charging_mode = muic_get_mode();
+//	charging_mode = get_muic_mode();
+	DCHG("[twl6030] charging_mode: %d \n, charging_mode");
         struct twl6030_bci_device_info *di = container_of(work,
 		        struct twl6030_bci_device_info, twl6030_recharging_work.work);
 
-	//if(charging_mode == MUIC_NA_TA || charging_mode == MUIC_LG_TA || charging_mode == MUIC_TA_1A)
-	if(p_di->charger_source == POWER_SUPPLY_TYPE_MAINS)
+	if(charging_mode == MUIC_NA_TA || charging_mode == MUIC_LG_TA || charging_mode == MUIC_TA_1A)
 	{
 		DCHG("[twl6030] max8971_Restart_charging TA \n");
-		if(p_di->lock_on_overheat_scene == 1 && di->temp_control != UNLIMITED_TEMP_VAL)
+		if(p_di->lock_on_overheat_scene == 1)
 		{
 		DCHG("[twl6030] max8971_Restart_charging TA 250mA in recording mode\n");
-			max8971_start_charging(CURRENT_HEAT_SCENE);
+			max8971_start_charging(250);
 		}
 		else	
-		// max8971_start_charging(850);
-		max8971_start_charging(TA_CHARING_CURRENT);
+		 max8971_start_charging(850);
 	
 		decease_cap_count_flag=0;
 	}
-	else if(p_di->charger_source == POWER_SUPPLY_TYPE_USB)
+	else if(charging_mode == MUIC_AP_USB )
 	{
 		 D("[twl6030] max8971_Restart_charging USB \n");
-		if(get_unlimited_temp() ==  UNLIMITED_TEMP_VAL){
-			max8971_start_charging(USB_CHARING_CURRENT_MST);
-		}
-		else{
-		    	max8971_start_charging(USB_CHARING_CURRENT);
-		}
+	    	max8971_start_charging(500);
 		 decease_cap_count_flag=0;
 	}
-	else if(p_di->charger_source == POWER_SUPPLY_TYPE_FACTORY )
+	else if(charging_mode == MUIC_MHL )
+	{
+		 D("[twl6030] max8971_Restart_charging MHL \n");
+	    	max8971_start_charging(400);
+		 decease_cap_count_flag=0;
+	}
+	else if((charging_mode == MUIC_CP_USB) && (charging_mode == MUIC_CP_UART))
 	{
 		 D("[twl6030] do noting MUIC_CP_USB MUIC_CP_UART\n");
 		decease_cap_count_flag=0;
@@ -2372,8 +2306,6 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 #if !defined(GET_BET_TEMP)
 	int ret;
 #endif
-	
-//	int charging_done_flag=0;
 	/* LGE_CHANGE [euiseop.shin@lge.com] 2011-07-06,
 	 * [P940] Imported from Cosmopolitan
 	 */
@@ -2381,9 +2313,8 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 #if defined(CONFIG_MAX8971_CHARGER)
       //  TYPE_CHARGING_MODE charging_mode = CHARGING_UNKNOWN;
         TYPE_MUIC_MODE charging_mode = MUIC_UNKNOWN;
-	//charging_mode = muic_get_mode();
-	charging_mode = muic_detect_cable();
-//	charging_done_flag = get_charging_done_flag();
+	//charging_mode = get_muic_detected_cable();
+	charging_mode = muic_get_mode();
 #endif
 	D("check if CONFIG_LG_FW_MAX17048_FUEL_GAUGE_I2C");
 #if defined(CONFIG_LG_FW_MAX17048_FUEL_GAUGE_I2C)
@@ -2450,7 +2381,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 		//	if ((p_di->charger_source != POWER_SUPPLY_TYPE_BATTERY)&&(decease_cap_count_flag==0))	
 			if ((charging_mode == MUIC_NA_TA || charging_mode == MUIC_LG_TA || charging_mode == MUIC_TA_1A ||  charging_mode == MUIC_AP_USB || charging_mode == MUIC_MHL) && (decease_cap_count_flag==0)&& (temp_charging_stop_flag==0))
 			{
-				printk("[twl6030] max8971_stop_charging for recharging  \n");
+				DCHG("[twl6030] max8971_stop_charging for recharging  \n");
 				max8971_stop_charging();
 				decease_cap_count_flag=1;
 				decease_cap_count=0;
@@ -2459,21 +2390,6 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 
 		}
 
-		if((charging_done_flag == 1) && (poweroff_charging_flag == 1))
-		{
-
-			charging_done_flag = 0;
-			printk("twl6030, charging_done_flag 1 : %d\n",charging_done_flag);
-			max8971_stop_charging();
-			schedule_delayed_work(&di->twl6030_recharging_work,MAX8971_RECHARGING__DELAY);
-		}			
-		if( p_di->charger_source == POWER_SUPPLY_TYPE_MAINS &&  p_di->fg_voltage_mV > 3800 && voltage_3800_threshold ==0)
-		{
-			max8971_start_charging(TA_CHARING_CURRENT_3800);	
-			voltage_3800_threshold = 1;
-		}	
-		else if( p_di->charger_source == POWER_SUPPLY_TYPE_MAINS &&  p_di->fg_voltage_mV < 3800 &&  voltage_3800_threshold == 1 || p_di->charger_source == POWER_SUPPLY_TYPE_BATTERY && voltage_3800_threshold == 1)
-			voltage_3800_threshold = 0;
               
 		// LGE__CHANGE_E [dukwung.kim@lge.com] 2011.07.28 recharging , when max8971 (DCM charger IC) recharging mode  is not working
 
@@ -2515,17 +2431,10 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 			di->ui_capacity = 100;
 		}
 		if (di->fg_voltage_mV <= BATT_VOLT_SHUTDOWN) {
-      //printk("[TWL6030]cap:%d, ui_cap:%d, volt:%dmv<=%dmv(shutdown voltage)\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, BATT_VOLT_SHUTDOWN);
-      if (di->ui_capacity > 0) {
-        printk("[TWL6030]cap:%d, ui_cap:%d, volt:%dmv<=%dmv, but don't shutdown!!\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, BATT_VOLT_SHUTDOWN);
-      }
-      /* pj.park request implementations
-       * keep the capacity as 1 percent if voltage is higher than 3.35v
-       */
-      if (di->fg_voltage_mV >= 3350 && di->temp_C>=100) {
-            di->ui_capacity = 1;
-            printk("[JUYA] 3350volt <= 3400 and over 10 degree \n");
-      }
+			//printk("[TWL6030]cap:%d, ui_cap:%d, volt:%dmv<=%dmv(shutdown voltage)\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, BATT_VOLT_SHUTDOWN);
+			if (di->ui_capacity > 0) {
+				printk("[TWL6030]cap:%d, ui_cap:%d, volt:%dmv<=%dmv, but don't shutdown!!\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, BATT_VOLT_SHUTDOWN);
+			}
 		}
 		else {
 			if (di->ui_capacity == 0) {
@@ -2533,24 +2442,14 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 				di->ui_capacity = 1;
 			}
 		}
-    /* pj.park request implementations
-     * At low battery ui_capacity is lower than capacity, reverse ui_cap & cap to balance up a loss of capacity.
-     */
-    if(di->ui_capacity < 3 && (di->capacity > di->ui_capacity)) {
-      di->ui_capacity = di->capacity;
-      //printk("[JUYA] Show UI cap as cap by fuelgauge :: di->ui_capacity ->[ %d ]\n",di->ui_capacity);
-    }
-
 #if defined(CONFIG_MAX8971_CHARGER)
-		DCHG("\n cap:%d, ui_cap:%d%, fg_v:%dmv current_adc:%d,charging_current: %d,  charger_source:%d decease_cap_count:%d  temp: %d\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, current_adc_code,di->batt_current_adc, p_di->charger_source, decease_cap_count,di->temp_C);
+		printk("\n cap:%d, ui_cap:%d%, fg_v:%dmv current_adc:%d,charging_current: %d,  charger_source:%d decease_cap_count:%d \n", di->capacity, di->ui_capacity, di->fg_voltage_mV, current_adc_code,di->batt_current_adc, p_di->charger_source, decease_cap_count);
 
-		if( battery_full_status == 1 && poweroff_charging_flag == 1 && di->batt_current_adc < 300 && di->batt_current_adc > 200 )
+		if( poweroff_charging_flag == 1 && di->batt_current_adc < 300)
 		{
 		   	 printk("stop charging due to topoff section in power off charging mode\n");
 			 max8971_stop_charging();
 		} 
-
-
 
 
 #endif
@@ -2713,7 +2612,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 		
 		if(diff_temp_adc > 300 || diff_temp_adc < -300 || di->batt_temp_adc < 80 || di->batt_temp_adc > 1800 )
 		{
-//			 printk("[twl6030] diff_temp_adc :%d\n",diff_temp_adc);
+			 printk("[twl6030] diff_temp_adc :%d\n",diff_temp_adc);
 			di->batt_temp_adc = batt_temp_adc_old[2];
 		}
 			
@@ -2722,7 +2621,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 
 		/* LGE_CHANGE_E [dukwung.kim@lge.com] 2011-12-08 For filtering .*/
 
-//		printk("[twl6030] batt_temp_adc:%d\n",di->batt_temp_adc);
+		printk("[twl6030] batt_temp_adc:%d\n",di->batt_temp_adc);
 #if defined(GET_TEMP_SENSOR_DOCOMO)
 	if(system_rev>5){
 		charger_adc_code = req.rbuf[CHARGER_TEMP_CHANNEL];
@@ -2737,7 +2636,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
               temp_parm_C = average_temp_therm_ic(reference_graph((s64)parm_adc_code, dcm_temp_sensor_graph, ARRAY_SIZE(dcm_temp_sensor_graph)) / (TEMP_TIMES / 10), 
 			  									THERM_SENSOR_PARM_INDEX);
 
-//             printk("Convert to Celsius temperature : Charger = %d, PARM = %d\n", temp_charger_C ,temp_parm_C);
+              printk("Convert to Celsius temperature : Charger = %d, PARM = %d\n", temp_charger_C ,temp_parm_C);
 		}
 	else
 	{
@@ -2759,7 +2658,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 #else
 		temp_C = 10;
 #endif
-//		D(" ####### CALCULATED TEMP = %d ##########", temp_C );
+		D(" ####### CALCULATED TEMP = %d ##########", temp_C );
 
 		/* LGE_CHANGE [euiseop.shin@lge.com] 2011-11-09
 		 * [P2] Low temperature popup error fix
@@ -2785,7 +2684,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 			di->temp_C = temp_C;
 			ui_update_needed = 1;
 		}
-//		DTEMP("Battery adc = %d, temp_C=%d", adc_code, temp_C);
+		DTEMP("Battery adc = %d, temp_C=%d", adc_code, temp_C);
 #else
 	if((get_charging_ic_status() != POWER_SUPPLY_TYPE_FACTORY) && (charging_mode != MUIC_CP_UART) && (charging_mode != MUIC_CP_USB)){
 		if( (temp_C/10) != ((di->temp_C)/10)  )
@@ -2849,67 +2748,58 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 	di->temp_high_C = temp_high_C;
 	di->temp_low_C = temp_low_C;
 #endif
-//	printk("TEMP is %d, %d, %d\n", di->temp_charger_C,di->temp_parm_C,di->temp_C);
-//	DTEMP("Battery adc = %d, temp_C=%d", adc_code, temp_C);
-//	DTEMP("Battery current adc = %d ,charging current= %d ", current_adc_code,di->batt_current_adc);
+	printk("TEMP is %d, %d, %d\n", di->temp_charger_C,di->temp_parm_C,di->temp_C);
+	DTEMP("Battery adc = %d, temp_C=%d", adc_code, temp_C);
+	DTEMP("Battery current adc = %d ,charging current= %d ", current_adc_code,di->batt_current_adc);
 //	printk("Battery current adc = %d\n", current_adc_code);
-//	DTEMP("\nParm temp adc = %d\n", req.rbuf[PARM_TEMP_CHANNEL]);
-//	DTEMP("\ncharger temp adc = %d\n", req.rbuf[CHARGER_TEMP_CHANNEL]);
-//	DTEMP("\nparm temp = %dC\n",temp_parm_C);
-//	DTEMP("\ncharger temp = %dC\n",temp_charger_C);
+	DTEMP("\nParm temp adc = %d\n", req.rbuf[PARM_TEMP_CHANNEL]);
+	DTEMP("\ncharger temp adc = %d\n", req.rbuf[CHARGER_TEMP_CHANNEL]);
+	DTEMP("\nparm temp = %dC\n",temp_parm_C);
+	DTEMP("\ncharger temp = %dC\n",temp_charger_C);
 	//charging_mode = get_muic_detected_cable();
 		 if (p_di->fg_voltage_mV < RECHARGING_BAT_VOLT_LOW) {
-//			printk(" check 4-1\n");
-			if(battery_full_status == 1 && p_di->charger_source != POWER_SUPPLY_TYPE_FACTORY )
+			printk(" check 4-1\n");
+			if(battery_full_status == 1)
 			{
-				printk(" Recharging for U2 2 , voltage: %d\n", p_di->fg_voltage_mV);
-				if(p_di->charger_source == POWER_SUPPLY_TYPE_MAINS)
-				{
-					 max8971_start_charging(TA_RECHARING_CURRENT);
-				}
-				else if(p_di->charger_source == POWER_SUPPLY_TYPE_USB)
-				{
-					if(get_unlimited_temp() ==  UNLIMITED_TEMP_VAL){
-						max8971_start_charging(USB_CHARING_CURRENT_MST);
-					}
-					else{
-		    				max8971_start_charging(USB_CHARING_CURRENT);
-					}
-				}
-				//battery_full_status = 0;
+			printk(" Recharging for U2 , voltage: %d\n", p_di->fg_voltage_mV);
+			max8971_start_charging(850);
+			battery_full_status = 0;
 			}
 	         }
-				
+	
 	// For charging senario convert charging current TA to USB in over 45 temperature with voltage(over 4.0V)
-	 if( (di->temp_C > 450) && (di->temp_C < 500) && di->temp_control != UNLIMITED_TEMP_VAL )
+	 if( (di->temp_C > 450) && (di->temp_C < 500))
 	{
 		printk("convert charging current TA to USB in over 45 temperature \n");
-		max8971_start_charging(USB_CHARING_CURRENT);
+		max8971_start_charging(500);
 		temp_charging_change_flag=1;
 	}
-	if( (di->temp_C < 450) && (di->temp_C > 430)  && temp_charging_change_flag == 1 && di->temp_control != UNLIMITED_TEMP_VAL )
+	if( (di->temp_C < 450) && (di->temp_C > 430)  && temp_charging_change_flag == 1)
 	{
 		 printk("Re-convert charging current USB to TA since temp or voltage ls lower than thershold )\n");
-		max8971_start_charging(TA_CHARING_CURRENT);
+		 max8971_start_charging(850);
 		temp_charging_change_flag = 0;
  	}
 
-	//charging_mode = muic_get_mode();
-	charging_mode = muic_detect_cable();
+	charging_mode = muic_get_mode();
 	if((charging_mode == MUIC_CP_USB) && (di->batt_temp_adc < 1500)&&(charging_test_on != 1))
 	{
+		//printk("[twl6030] start max8971 charging due to cp usb with battery 500mA\n");
+		//max8971_start_charging(500);
 		printk("[twl6030] stop  max8971 factory charging due to cp usb with battery \n");
+		//max8971_stop_charging();
 		 max8971_stop_factory_charging();
 		 p_di->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
 	}
 	if((charging_mode == MUIC_CP_UART) && (di->batt_temp_adc < 1500)&&(charging_test_on != 1))
 	{
 		printk("[twl6030] stop  max8971 factory  charging due to cp uart with battery \n");
+		//max8971_stop_charging();
 		 max8971_stop_factory_charging();
 		p_di->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
 	}
 #endif
-//		DTEMP("Battery adc = %d, temp_C=%d", adc_code, temp_C);
+		DTEMP("Battery adc = %d, temp_C=%d", adc_code, temp_C);
 #endif
 
 	}
@@ -2941,11 +2831,6 @@ static void twl6030_bci_battery_work(struct work_struct *work)
  */
 	twl_i2c_read_u8(TWL6030_MODULE_CHARGER,
 			&controller_status_1, CONTROLLER_STAT1);
-
-	if (p_di->lock_on_overheat_scene == 1) {
-		fsm_work_needed = 1;
-	}
-	
 
 	if ((controller_status_1 & CONTROLLER_STAT1_VBUS_DET) !=
 			p_di->valid_charging_source ) {
@@ -2994,7 +2879,6 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 	/* LGE_CHANGE [jongho3.lee@lge.com] monitor changes of bat soc. */
 	if (di->capacity != old_capacity) {
 #if defined(CONFIG_MAX8971_CHARGER)
-//		printk("\n cap:%d, ui_cap:%d%, fg_v:%dmv current_adc:%d,charging_current: %d,  charger_source:%d decease_cap_count:%d  temp: %d\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, current_adc_code,di->batt_current_adc, p_di->charger_source, decease_cap_count,di->temp_C);
 //		printk("[twl6030] fsm_work_needed capacity update!! old:%d new:%d\n", old_capacity, di->capacity);
 		if(old_capacity > di->capacity) 
 		{
@@ -3032,7 +2916,6 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 	 * [P940] cut-off voltage is fixed to 3.3v and ui update error fix
 	 */
 	if (di->ui_capacity != old_ui_capacity) {
-//		printk("\n cap:%d, ui_cap:%d%, fg_v:%dmv current_adc:%d,charging_current: %d,  charger_source:%d decease_cap_count:%d  temp: %d\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, current_adc_code,di->batt_current_adc, p_di->charger_source, decease_cap_count,di->temp_C);
 		old_ui_capacity = di->ui_capacity;
 		ui_update_needed = 1;
 	}
@@ -3131,7 +3014,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 	 */
 	D("[bclee][TWL6030] di->valid_charging_source=%d, charging_ic_status=%d", di->valid_charging_source, charging_ic_status);
   /* log added to check fuel gauge stability */
-//  DGAU("cap:%d - ui_cap:%d - volt:%d - chg_src:%d \n",di->capacity,di->ui_capacity,di->fg_voltage_mV,di->charger_source);
+  DGAU("cap:%d - ui_cap:%d - volt:%d - chg_src:%d \n",di->capacity,di->ui_capacity,di->fg_voltage_mV,di->charger_source);
 	if (max17043_get_ui_capacity()==100 &&
 	   di->charger_source != POWER_SUPPLY_TYPE_BATTERY)
 		/* LGE_CHANGE [wonhui.lee@lge.com] 2011-09-03,
@@ -3147,7 +3030,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 	 * do charging fsm if battery is present..
 	 */
 	if (fsm_work_needed) {
-//		DCHG("chg_src:%d, chg_s:%d, rchg_s:%d, batt_p:%d, ui_cap:%d, pmic_v:%d, fg_v:%d, adc:%d, temp_C:%d", di->charger_source, di->charge_status, recharging_status, di->battery_present, di->ui_capacity, di->voltage_uV, di->fg_voltage_mV, adc_code, temp_C);
+		DCHG("chg_src:%d, chg_s:%d, rchg_s:%d, batt_p:%d, ui_cap:%d, pmic_v:%d, fg_v:%d, adc:%d, temp_C:%d", di->charger_source, di->charge_status, recharging_status, di->battery_present, di->ui_capacity, di->voltage_uV, di->fg_voltage_mV, adc_code, temp_C);
 		charger_schedule_delayed_work(&di->charger_work, 0);
 		return;
 	}
@@ -3155,7 +3038,6 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 	if (ui_update_needed) {
 		//printk("[TWL6030] cap:%d, ui_cap:%d%%, pmic_v:%d, avg_v:%d, fg_v:%d, adc:%d, temp_C:%d, bk_v:%d ovht: %d \n", di->capacity, di->ui_capacity, di->voltage_uV, di->avg_voltage_mV, di->fg_voltage_mV, adc_code, temp_C, di->bk_voltage_uV, di->lock_on_overheat_scene);
 
-	//	printk("\n cap:%d, ui_cap:%d%, fg_v:%dmv current_adc:%d,charging_current: %d,  charger_source:%d decease_cap_count:%d  temp: %d\n", di->capacity, di->ui_capacity, di->fg_voltage_mV, current_adc_code,di->batt_current_adc, p_di->charger_source, decease_cap_count,di->temp_C);
 		/* LGE_CHANGE [wonhui.lee@lge.com] 2011-11-15,
 		 * To prevent sending uevent in charging test
 		 */
@@ -3326,7 +3208,7 @@ static void battery_gauge_reset_work(struct work_struct *work)
 	DCHG("charger deactive check point 8 \n");
                 charging_ic_deactive();
 #else
-	printk("[twl6030] max8971_stop_charging 9 \n");
+	DCHG("[twl6030] max8971_stop_charging 9 \n");
                 max8971_stop_charging();
 
 #endif	
@@ -3574,10 +3456,6 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 				di->charger_logo_status = CHARGER_LOGO_STATUS_STARTED;
 				wake_lock(&(p_di->off_mode_charger_wake_lock));
 				printk("power off charging mode\n");
-				/*for fast uevent update juya.kim@lge.com*/
-				cancel_delayed_work(&di->twl6030_bci_monitor_work);
-				charger_schedule_delayed_work(&di->twl6030_bci_monitor_work, 0);
-
 				poweroff_charging_flag=1;
 				if (!di->battery_present &&
 				    di->charger_source != POWER_SUPPLY_TYPE_FACTORY) {
@@ -3644,7 +3522,6 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 
 #if defined(CHANGE_CHG_MODE_ON_OVERHEAT_SCENE)
 		if (val->intval == 800000) {
-		     if(p_di->temp_C <= (TEMP_LOW_NO_BAT)){
 			printk("antispoon camera recording START\n");
 			p_di->lock_on_overheat_scene = 1; 
 			
@@ -3659,8 +3536,7 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 #if !defined(CONFIG_MAX8971_CHARGER)
 				charging_ic_active_default();
 #else 
-				max8971_start_charging(CURRENT_HEAT_SCENE);
-				overheat_scene_flag=1;
+				max8971_start_charging(250);
 #endif
 				//p_di->charge_status = POWER_SUPPLY_STATUS_CHARGING;
 			}
@@ -3670,7 +3546,6 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 #if !defined(CONFIG_MAX8971_CHARGER)				
 				charging_ic_deactive();
 #else
-				printk("OVERHEAT_SCENE check 1\n");
 				max8971_stop_charging();
 #endif
 			}
@@ -3679,18 +3554,11 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 			 * To change the charging mode according battery SOC
 			 */
 			break;
-		   }
 		}
 		if (val->intval == 800001) {
-		     if(p_di->temp_C <= (TEMP_LOW_NO_BAT)){
 			printk("antispoon camera recording STOP \n");
 			p_di->lock_on_overheat_scene = 0; 
-			if(overheat_scene_flag==1 && p_di->charger_source == POWER_SUPPLY_TYPE_MAINS)
-			{
-				DCHG("Change charging mode to TA due to recording mode finish");
-				max8971_start_charging(TA_CHARING_CURRENT);
-				overheat_scene_flag=0;
-			}
+			
 			/* LGE_CHANGE_S [byoungcheol.lee@lge.com] 2011-12-07,
 			 * To change the charging mode according battery SOC
 			 */
@@ -3703,7 +3571,6 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 			 * To change the charging mode according battery SOC
 			 */
 			break;
-		  }
 		}
 #endif /* CHANGE_CHG_MODE_ON_OVERHEAT_SCENE */
 		break;
@@ -3719,8 +3586,7 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 			charging_ic_set_ta_mode();
 #else
 	printk("[twl6030] max8971_start_charging due to ATC(TA) \n");
-			//max8971_start_charging(850);
-			max8971_start_charging(TA_CHARING_CURRENT);
+			max8971_start_charging(850);
 #endif
 			p_di->charge_status = POWER_SUPPLY_STATUS_CHARGING;
 			/* LGE_CHANGE [wonhui.lee@lge.com] 2011-11-09,
@@ -3733,7 +3599,7 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 			charging_ic_active_default();
 #else
 	printk("[twl6030] max8971_start_charging due to ATC(TA) \n");
-			max8971_start_charging(USB_CHARING_CURRENT);
+			max8971_start_charging(500);
 #endif
 			p_di->charge_status = POWER_SUPPLY_STATUS_CHARGING;
 		}
@@ -3749,7 +3615,7 @@ int twl6030_bci_battery_set_property(struct power_supply *psy,
 			DCHG("charger deactive check point 10 \n");
 			charging_ic_deactive();
 #else
-			printk("[twl6030] max8971_stop_charging due to ATC \n");
+	D("[twl6030] max8971_stop_charging due to ATC \n");
                         max8971_stop_charging();
 #endif		
 			p_di->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
@@ -3833,9 +3699,6 @@ static int twl6030_bci_battery_get_property(struct power_supply *psy,
 	struct twl6030_bci_device_info *di;
 
 	di = to_twl6030_bci_device_info(psy);
-	/* Prevent null point access causing Kernel panic */
-	if (p_di == NULL) return 0;
-	if (di == NULL) return 0;
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_STATUS:
@@ -4359,7 +4222,7 @@ static ssize_t set_charging(struct device *dev, struct device_attribute *attr,
 			DCHG("charger deactive check point 11 \n");
 			charging_ic_deactive();
 #else
-			printk("[twl6030] max8971_stop_charging 13 \n");
+	DCHG("[twl6030] max8971_stop_charging 13 \n");
 	                 max8971_stop_charging();
 #endif
 		}
@@ -4373,7 +4236,7 @@ static ssize_t set_charging(struct device *dev, struct device_attribute *attr,
 			DCHG("charger deactive check point 12 \n");
 			charging_ic_deactive();
 #else
-		printk("[twl6030] max8971_stop_charging 14 \n");
+	DCHG("[twl6030] max8971_stop_charging 14 \n");
                 	 max8971_stop_charging();
 #endif			
 		}
@@ -4387,7 +4250,7 @@ static ssize_t set_charging(struct device *dev, struct device_attribute *attr,
 			DCHG("charger deactive check point 13 \n");
 			charging_ic_deactive();
 #else
-	printk("[twl6030] max8971_stop_charging 15 \n");
+	DCHG("[twl6030] max8971_stop_charging 15 \n");
               		 max8971_stop_charging();
 #endif			
 		}
@@ -4401,7 +4264,7 @@ static ssize_t set_charging(struct device *dev, struct device_attribute *attr,
 		DCHG("charger deactive check point 14 \n");
 		charging_ic_deactive();
 #else
-	printk("[twl6030] max8971_stop_charging  16 \n");
+	DCHG("[twl6030] max8971_stop_charging  16 \n");
           	       max8971_stop_charging();
 #endif		
 		p_di->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
@@ -4937,11 +4800,9 @@ __setup("chg=", charger_state);
  */
 #if defined(CONFIG_MUIC)
 static struct muic_client_ops twl6030_bci_ops = {
-	.notifier_priority = MUIC_CLIENT_NOTI_POWER_MHL,
 	.on_none = charger_fsm2,
 	.on_na_ta = charger_fsm2,
 	.on_lg_ta = charger_fsm2,
-	.on_1a_ta = charger_fsm2,	
 	.on_cp_uart = charger_fsm2,
 	.on_ap_usb = charger_fsm2,
 	.on_cp_usb = charger_fsm2,
@@ -5430,10 +5291,6 @@ static int __devinit twl6030_bci_battery_probe(struct platform_device *pdev)
 	 * [P940] Imported from Cosmopolitan
 	 */
 #endif
-	u16 delay = 0xC;
-	di->smpl_en = 1;
-
-	twl_i2c_write_u8(TWL_MODULE_PM_MASTER,BB_SEL | delay, PH_CFG_VBATLOW_REG_OFFSET);
 
 	dev_info(&pdev->dev, "twl6030 bci probed\n");
 
@@ -5538,6 +5395,9 @@ static int __devexit twl6030_bci_battery_remove(struct platform_device *pdev)
 static void twl6030_bci_battery_shutdown(struct platform_device *pdev)
 {
 	struct twl6030_bci_device_info *di = platform_get_drvdata(pdev);
+#if defined(CONFIG_MAX8971_CHARGER)
+	int irq;
+#endif
 
 	twl6030_interrupt_mask(TWL6030_CHARGER_CTRL_INT_MASK,
 						REG_INT_MSK_LINE_C);
@@ -5547,7 +5407,11 @@ static void twl6030_bci_battery_shutdown(struct platform_device *pdev)
 						REG_INT_MSK_LINE_C);
 	twl6030_interrupt_mask(TWL6030_CHARGER_FAULT_INT_MASK,
 						REG_INT_MSK_STS_C);
+#if defined(CONFIG_MAX8971_CHARGER)
 
+	irq = platform_get_irq(pdev, 0);
+	free_irq(irq, di);
+#endif
 
 	sysfs_remove_group(&pdev->dev.kobj, &twl6030_bci_attr_group);
 	cancel_delayed_work(&di->twl6030_bci_monitor_work);
@@ -5584,8 +5448,8 @@ static void twl6030_bci_battery_shutdown(struct platform_device *pdev)
 #else
 	if(di->batt_temp_adc < 1500)
 	{ 
-	//	D("[twl6030] max8971_stop_charging 17 \n");
-               //  max8971_stop_charging();
+		D("[twl6030] max8971_stop_charging 17 \n");
+                 max8971_stop_charging();
 	}
 #endif
 	di->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;

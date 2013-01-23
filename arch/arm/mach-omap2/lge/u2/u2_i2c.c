@@ -34,7 +34,7 @@
 #if defined(CONFIG_TOUCHSCREEN_P940_GENERAL)
 #include <linux/lge_touch_synaptics.h>
 #endif
-#if defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS) || defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200)
+#if defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS)
 #include <linux/input/lge_touch_core.h>
 #endif
 #include <linux/lge/apds9190.h>
@@ -49,7 +49,7 @@
 #endif
 #include <linux/lge/lm3559.h>
 #include <linux/muic/muic.h>
-#ifdef CONFIG_LGE_NFC_PN544_C3
+#ifdef CONFIG_LGE_NFC_PN544
 #include "board-lge-nfc.h"
 #endif
 
@@ -531,7 +531,7 @@ static struct p940_synaptics_platform_data u2_ts_data = {
 };
 #endif
 
-#if defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS) || defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200)
+#if defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS)
 static struct touch_device_caps touch_caps = {
 	.button_support = 1,
 #if defined(CONFIG_INPUT_LGE_ANDROID_3KEYS)	// S, K, L
@@ -560,16 +560,14 @@ static struct touch_operation_role touch_role = {
 	.report_mode = 0,
 	.delta_pos_threshold = 0,
 	.orientation = 0,
-	.booting_delay = 200,
+	.booting_delay = 400,
 	.reset_delay = 20,
-	.report_period = 10000000,
+	.report_period = 12500000,
 	.suspend_pwr = POWER_OFF,
 	.resume_pwr = POWER_ON,
 	.irqflags = IRQF_TRIGGER_FALLING,
 	.jitter_filter_enable = 1,
 	.jitter_curr_ratio = 28,
-	.accuracy_filter_enable = 1,
-	.ghost_finger_solution_enable = 1,
 };
 
 static struct touch_power_module touch_pwr = {
@@ -637,6 +635,7 @@ static struct apds9190_platform_data apds9190_pdata = {
 	.wtime = 0xff,		// 27.2ms . minimum Wait time
 	.ptime = 0xff,		// 2.72ms . minimum Prox integration time
 	.pers = 0x33,
+	.ppcount = 0x08,
 	.irq_gpio = GPIO_APDS_IRQ,
 	.ldo_gpio = GPIO_APDS_LDO,
 };
@@ -644,7 +643,7 @@ static struct apds9190_platform_data apds9190_pdata = {
 /* add max17043 platform_data */
 static struct max17043_platform_data max17043_pdata = {
 	.gpio_alert = GPIO_GAUGE_INT,
-	.rcomp = RCOMP_BL53QH_LGC,
+	.rcomp = RCOMP_BL44JN,
 };
 
 #if defined(CONFIG_MHL_TX_SII9244) || defined(CONFIG_MHL_TX_SII9244_LEGACY)
@@ -710,7 +709,7 @@ static struct i2c_board_info i2c_2_info[] __initdata = {
 		.platform_data = &u2_ts_data,
 	},
 #endif
-#if defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS) || defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200)
+#if defined(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS)
 	{
 		I2C_BOARD_INFO(LGE_TOUCH_NAME, 0x20),
 		.irq = OMAP_GPIO_IRQ(52),
@@ -726,6 +725,11 @@ static struct i2c_board_info i2c_2_info[] __initdata = {
 	{
 		I2C_BOARD_INFO(LM3533_I2C_NAME, LM3533_I2C_ADDR),
 		.platform_data = &lm3533_pdata,
+	},
+#endif
+#if defined(CONFIG_LG_FW_MAX17048_FUEL_GAUGE_I2C)
+	{
+		I2C_BOARD_INFO(MAX17043_I2C_NAME, MAX17043_I2C_ADDR),
 	},
 #endif
 
@@ -792,7 +796,7 @@ static struct i2c_board_info i2c_4_info[] __initdata = {
 		I2C_BOARD_INFO("bmm050", 0x10),
 	},
 
-#ifdef CONFIG_LGE_NFC_PN544_C3
+#ifdef CONFIG_LGE_NFC_PN544
 	NFC_I2C_BOARD_INFO,
 #endif
 	/*
@@ -931,7 +935,7 @@ int __init lge_i2c_init(void)
                 touch_caps.x_max = 1080;
                 touch_caps.y_max = 1920;
 	}
-#elif defined(CONFIG_MACH_LGE_U2_P760) || defined(CONFIG_MACH_LGE_U2_P768)
+#else if defined(CONFIG_MACH_LGE_U2_P760) || defined(CONFIG_MACH_LGE_U2_P768)
 	if (system_rev >= LGE_PCB_A) {		/* for Rev.A and over - U2 LCD(540 x 960) & U2 Touch panel (1080 x 1920) */
 		touch_role.key_type = TOUCH_HARD_KEY;
                 touch_caps.number_of_button = 2;

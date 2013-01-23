@@ -238,19 +238,15 @@ static void omap_4460hsi_pad_conf(void)
 					  OMAP_PIN_INPUT_PULLDOWN | \
 					  OMAP_PIN_OFF_NONE | \
 					  OMAP_PIN_OFF_WAKEUPENABLE);
+//mo2hawewoon.you@lge.com <= [END]
 
 //mo2haewoon.you@lge.com [START]
-#if defined(CONFIG_MACH_LGE_COSMO_SU760) || defined(CONFIG_MACH_LGE_CX2_SU870)
+#ifdef CONFIG_MACH_LGE_COSMO
 	/* hsi1_omap_send */
 	omap_mux_init_signal("abe_dmic_din3.gpio_122", \
 		OMAP_PIN_INPUT_PULLDOWN | \
 		OMAP_PIN_OFF_NONE | \
 		OMAP_PIN_OFF_WAKEUPENABLE);
-#elif defined(CONFIG_MACH_LGE_COSMO) || defined(CONFIG_MACH_LGE_CX2)
-		omap_mux_init_signal("abe_dmic_din2.gpio_121", \
-					  OMAP_PIN_INPUT_PULLDOWN | \
-					  OMAP_PIN_OFF_NONE | \
-					  OMAP_PIN_OFF_WAKEUPENABLE);
 #endif
 //mo2haewoon.you@lge.com [END]
 }
@@ -551,7 +547,6 @@ static void __init omap4_ehci_ohci_init(void)
 static void __init omap4_ehci_ohci_init(void){}
 #endif
 
-#ifdef CONFIG_MACH_LGE_COSMO
 static void omap4_sdp4430_wifi_mux_init(void)
 {
 	omap_mux_init_gpio(GPIO_WIFI_IRQ, OMAP_PIN_INPUT | OMAP_PIN_OFF_WAKEUPENABLE);
@@ -600,8 +595,6 @@ void omap4_sdp4430_wifi_init(void)
 		pr_err("Error setting wl12xx data\n");
 	platform_device_register(&omap_vwlan_device);
 }
-#endif
-
 void __init lge_common_init(void)
 {
 	int status;
@@ -648,9 +641,7 @@ void __init lge_common_init(void)
 
 	board_serial_init();
 
-#ifdef CONFIG_MACH_LGE_COSMO
 	omap4_sdp4430_wifi_init();
-#endif
 	if (lge_machine_data.hsmmc_info != NULL)
 		omap4_twl6030_hsmmc_init(lge_machine_data.hsmmc_info);
 
@@ -677,13 +668,11 @@ void __init lge_common_init(void)
 	omap_4460hsi_pad_conf();
 #endif
 
-#ifdef CONFIG_LGE_BROADCAST_TDMB
-#ifdef CONFIG_SPI
+	/* LGE_BROADCAST_TDMB { */
 	if (lge_machine_data.spi_board != NULL)
 		spi_register_board_info(lge_machine_data.spi_board,
 				lge_machine_data.spi_len);
-#endif /* CONFIG_SPI */
-#endif /* CONFIG_LGE_BROADCAST_TDMB */
+	/* LGE_BROADCAST_TDMB } */
 
 	if (cpu_is_omap446x()) {
 		/* Vsel0 = gpio, vsel1 = gnd */

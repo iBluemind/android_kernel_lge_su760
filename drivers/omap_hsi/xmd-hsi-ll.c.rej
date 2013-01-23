@@ -1,0 +1,38 @@
+--- drivers/omap_hsi/xmd-hsi-ll.c	2012-12-31 06:33:44.000000000 +0900
++++ drivers/omap_hsi/xmd-hsi-ll.c	2012-11-23 18:12:32.000000000 +0900
+@@ -448,17 +445,6 @@
+ // LGE_UPDATE_START 20120605 seunghwan.jin@lge.com
+     if(simple_hsi_log_debug_enable == '1')
+         printk("HSI_LL: channel %d CP => AP CMD = 0x%x.\n", channel, hsi_ll_data.rx_cmd);
+-#ifdef CONFIG_MACH_LGE_U2
+-    // start ipc temp.
+-    else
+-    {
+-        ipc_temp = hsi_ll_data.rx_cmd;
+-        ipc_temp = ipc_temp >> 28;
+-        /*if(ipc_temp == 9 && channel < 11)
+-            printk("HSI_LL: CP closed ch[%d] successfully.\n", channel);*/
+-    }
+-    // end ipc start
+-#endif
+ #if defined (HSI_LL_ENABLE_CRITICAL_LOG)
+     if(simple_hsi_log_debug_enable != '1')
+         printk("\nHSI_LL: channel %d CP => AP CMD = 0x%x.\n", channel, hsi_ll_data.rx_cmd);
+@@ -1096,17 +1079,6 @@
+ // LGE_UPDATE_START 20120605 seunghwan.jin@lge.com
+         if (simple_hsi_log_debug_enable == '1')
+             printk("HSI_LL: channel %d : AP => CP CMD = 0x%x \n", channel, command);
+-#ifdef CONFIG_MACH_LGE_U2
+-        // start ipc temp.
+-        else
+-        {
+-            ipc_temp = command;
+-            ipc_temp = ipc_temp >> 28;
+-            /*if(ipc_temp == 9 && channel < 11)
+-                printk("HSI_LL: AP closed ch[%d] successfully.\n", channel);*/
+-        }
+-        // end ipc temp
+-#endif
+ #if defined (HSI_LL_ENABLE_CRITICAL_LOG)
+         if (simple_hsi_log_debug_enable != '1')
+             printk("\nHSI_LL: channel %d : AP => CP CMD = 0x%x \n", channel, command);

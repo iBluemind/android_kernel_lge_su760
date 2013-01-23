@@ -253,7 +253,7 @@ static struct platform_device vib = {
 /* add platform_data for keypad leds */
 static struct leds_keypad_platform_data keypad_led_pdata = {
 	.name          = "button-backlight",
-	.use_hold_key  = 0,
+	.use_hold_key  = 1,
 	.hold_key_gpio   = 81,
 	.keypad_gpio	= 82,
 };
@@ -298,10 +298,9 @@ static struct mdm_watcher_event mdm_watcher_event_data[] __initdata  = {
 		.key_code_srdy = 196,
 		.gpio_irq_mrdy = 120, /* IPC_MRDY for ifx*/
 		.key_code_mrdy = 198,
-		.gpio_irq_modem_send = 122, /* MODEM_SEND , RIP-41061 : AP cahnnel ready in CP */
-		.key_code_modem_send = 200,
 		.irqf_flags = IRQF_TRIGGER_RISING | IRQF_DISABLED,
 #endif
+
 		.msecs_delay = 5,
 		.key_code = 194,
 	},
@@ -388,8 +387,8 @@ static struct platform_device usif_dev = {
 static struct key_table gkpd_keys[] = {
 	{'D', KEY_VOLUMEDOWN},
 	{'U', KEY_VOLUMEUP},
+	{'F', KEY_CAPTURE},
 	{'H', KEY_HOOK},
-	{'F', KEY_HOMEPAGE},
 	{'I', KEY_TESTMODE_UNLOCK},
 	{0, 0}
 };
@@ -440,7 +439,7 @@ int __init u2_pdevs_init(void)
 	/*
 	 * change MHL from I2C to GPIO
 	 */
-#if ! defined(CONFIG_MACH_LGE_U2) //kyungyoon.kim@lge.com don't use I2C-GPIO
+#if defined(CONFIG_MACH_LGE_U2_P760) || defined(CONFIG_MACH_LGE_U2_P769) || defined(CONFIG_MACH_LGE_U2_P768)
 	lge_add_i2c_gpio_device();
 #endif
 

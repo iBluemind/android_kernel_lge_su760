@@ -20,11 +20,7 @@
 
 //#define LGE_TOUCH_TIME_DEBUG
 //mo2haewoon.you@lge.com => [START] 
-#ifdef CONFIG_MACH_LGE_COSMO
 #define COSMO_TOUCHKEY_RANGE_TRIM
-#elif defined(CONFIG_MACH_LGE_CX2)
-#define CX2_TOUCHKEY_RANGE_TRIM^M
-#endif
 //mo2haewoon.you@lge.com <= [END]
 
 #define MAX_FINGER	10
@@ -64,7 +60,6 @@ struct touch_operation_role
 	int		jitter_filter_enable;	// enable = 1, disable = 0
 	int		jitter_curr_ratio;
 	int		accuracy_filter_enable;	// enable = 1, disable = 0
-	int		ghost_finger_solution_enable;
 	unsigned long	irqflags;
 };
 
@@ -84,9 +79,6 @@ struct touch_platform_data
 	u32	int_pin;
 	u32	reset_pin;
 	char	maker[30];
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	char    fw_version[11];
-#endif
 	struct touch_device_caps*		caps;
 	struct touch_operation_role*	role;
 	struct touch_power_module*		pwr;
@@ -101,9 +93,6 @@ struct t_data
 	u16	width_minor;
 	u16	width_orientation;
 	u16	pressure;
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	u8	status;
-#endif
 };
 
 struct b_data
@@ -117,32 +106,12 @@ struct touch_data
 	u8		total_num;
 	u8		prev_total_num;
 	u8		state;
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	u8		palm;
-#endif
 	struct t_data	curr_data[MAX_FINGER];
 	struct t_data	prev_data[MAX_FINGER];
 	struct b_data	curr_button;
 	struct b_data	prev_button;
 };
 
-struct fw_upgrade_info
-{
-	char		fw_path[256];
-	u8			fw_force_upgrade;
-	volatile u8	is_downloading;
-};
-
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-struct touch_fw_info
-{
-	struct fw_upgrade_info  fw_upgrade;
-	u8              ic_fw_identifier[31];   /* String */
-	u8              ic_fw_version[11];              /* String */
-	u8              fw_identifier[11];
-	u8              fw_version[5];
-};
-#else
 struct touch_fw_info
 {
 	u8		fw_rev;
@@ -155,7 +124,13 @@ struct touch_fw_info
 	unsigned char	*fw_start;
 	unsigned long	fw_size;
 };
-#endif
+
+struct fw_upgrade_info
+{
+	char		fw_path[256];
+	u8			fw_force_upgrade;
+	volatile u8	is_downloading;
+};
 
 struct rect
 {
@@ -180,24 +155,13 @@ struct section_info
 
 struct ghost_finger_ctrl {
 	volatile u8	 stage;
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	int probe;
-#endif
 	int count;
 	int min_count;
 	int max_count;
 	int ghost_check_count;
 	int saved_x;
 	int saved_y;
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	int saved_last_x;
-	int saved_last_y;
-#endif
 	int max_moved;
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	int max_pressure;
-#endif
-
 };
 
 struct jitter_history_data{
@@ -241,19 +205,11 @@ struct touch_device_driver {
 	int		(*probe)		(struct i2c_client *client);
 	void	(*remove)		(struct i2c_client *client);
 	int		(*init)			(struct i2c_client *client, struct touch_fw_info* info);
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	int             (*data)                 (struct i2c_client *client, struct touch_data* data);
-#else
 	int		(*data)			(struct i2c_client *client, struct t_data* data, struct b_data* button, u8* total_num);
-#endif
 	int		(*power)		(struct i2c_client *client, int power_ctrl);
 	int		(*ic_ctrl)		(struct i2c_client *client, u8 code, u16 value);
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-	int     (*fw_upgrade)   (struct i2c_client *client, struct touch_fw_info* info);
-#else
 	int 	(*fw_upgrade)	(struct i2c_client *client, const char* fw_path);
 	int 	(*test_report)	(struct i2c_client *client, char* buf, size_t count); //F54
-#endif
 };
 
 enum{
@@ -324,13 +280,6 @@ enum{
 	BUTTON_CANCLED	= 0xff,
 };
 
-#ifdef CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200
-enum{
-	FINGER_RELEASED = 0,
-	FINGER_PRESSED  = 1,
-};
-#endif
-
 enum{
 	KEYGUARD_RESERVED,
 	KEYGUARD_ENABLE,
@@ -341,7 +290,6 @@ enum{
 	GHOST_STAGE_1=1,
 	GHOST_STAGE_2=2,
 	GHOST_STAGE_3=4,
-	GHOST_STAGE_4=8,
 };
 enum{
 	BASELINE_OPEN = 0,

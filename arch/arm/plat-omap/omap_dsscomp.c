@@ -30,7 +30,7 @@
 #include <plat/dsscomp.h>
 
 static struct dsscomp_platform_data dsscomp_config = {
-#if defined(CONFIG_COSMO_ICS_MEM_OPT) || defined (CONFIG_MACH_LGE_CX2)
+#ifdef CONFIG_COSMO_ICS_MEM_OPT
 		.tiler1d_slotsz = (480*800*4*2),
 #else
 		.tiler1d_slotsz = SZ_16M,

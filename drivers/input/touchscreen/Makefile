@@ -73,10 +73,6 @@ obj-$(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS)   += lge_touch_core.o
 obj-$(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS)   += touch_synaptics.o
 obj-$(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS)   += touch_synaptics_fw_upgrade.o
 
-obj-$(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200)   += lge_touch_core_s3200.o
-obj-$(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200)   += touch_synaptics_s7020.o
-obj-$(CONFIG_TOUCHSCREEN_COMMON_SYNAPTICS_S3200)   += touch_synaptics_fw_upgrade_s3200.o
-
 ## LGE_SJIT 2011-11-17 [dojip.kim@lge.com] add atmel touch driver
 ## from [G1-D1L][touch] Add Atmel Touch Driver
 obj-$(CONFIG_TOUCHSCREEN_ATMEL_MAXT224E)     += atmel_ts.o

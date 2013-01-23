@@ -25,32 +25,26 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/lge/leds_keypad.h>
-#ifdef CONFIG_LGE_HANDLE_PANIC
 //mo2haewoon.you@lge.com => [START]  HIDDEN_RESET
 #include <linux/jiffies.h>
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 //mo2haewoon.you@lge.com <= [END]
-#endif
 
 static int keypad_gpio;
 static int use_hold_key = 0;
 static int hold_key_gpio;
 
-#ifdef CONFIG_LGE_HANDLE_PANIC
 //mo2haewoon.you@lge.com => [START]  HIDDEN_RESET	
 extern int lge_hidden_reset_mode;
 int hidden_check=1;
 //mo2haewoon.you@lge.com <= [END]
-#endif
 
 struct keypad_led_data {
 	struct led_classdev keypad_led_class_dev;
-#ifdef CONFIG_LGE_HANDLE_PANIC
 //mo2haewoon.you@lge.com => [START]  HIDDEN_RESET	
 struct delayed_work hidden_reset_led_delayed_work;
 //mo2haewoon.you@lge.com <= [END]	
-#endif
 };
 #if defined(CONFIG_MAX8971_CHARGER)&&  defined(CONFIG_MACH_LGE_P2_DCM)
 /* LGE_CHANGE_S, dukwung.kim, 2012-03-20, TEST CODE LED ON/OFF */
@@ -90,7 +84,6 @@ static void keypad_led_store(struct led_classdev *led_cdev,
 		}
 	/* 20120224 sangjae.han@lge.com Add sysfile to maintain the backlight on[LGE_END]*/
 
-#ifdef CONFIG_LGE_HANDLE_PANIC
 //mo2haewoon.you@lge.com => [START]  HIDDEN_RESET
 	if( (lge_hidden_reset_mode == 1) && ( hidden_check == 1) )
 	{
@@ -123,17 +116,13 @@ static void keypad_led_store(struct led_classdev *led_cdev,
 	         }
          }
 //mo2haewoon.you@lge.com <= [END]
-#endif
 }
-
-#ifdef CONFIG_LGE_HANDLE_PANIC
 //mo2haewoon.you@lge.com => [START]  HIDDEN_RESET
 static void hidden_reset_check_delayed_work(struct work_struct *work)
 {
     hidden_check = 0;
 }
 //mo2haewoon.you@lge.com <= [END]
-#endif
 
 static int __devinit keypad_led_probe(struct platform_device *pdev)
 {
@@ -174,12 +163,10 @@ static int __devinit keypad_led_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-#ifdef CONFIG_LGE_HANDLE_PANIC
 	//mo2haewoon.you@lge.com => [START]  HIDDEN_RESET
 	INIT_DELAYED_WORK(&info->hidden_reset_led_delayed_work, hidden_reset_check_delayed_work);
         schedule_delayed_work(&info->hidden_reset_led_delayed_work, msecs_to_jiffies(45000));	
 	//mo2haewoon.you@lge.com <= [END]
-#endif
 
 	platform_set_drvdata(pdev, info);
 

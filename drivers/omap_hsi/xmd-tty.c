@@ -30,7 +30,6 @@
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
 #include <linux/slab.h>
-#include <linux/gpio.h>
 
 #include "xmd-ch.h"
 
@@ -114,7 +113,6 @@ static void xmd_ch_tty_send_to_user(int chno)
 	buf = (unsigned char *)xmd_ch_read(chno, &len);
 
 // LGE_UPDATE_START 20120605 seunghwan.jin@lge.com
-#if defined(CONFIG_MACH_LGE_COSMO) || defined (CONFIG_MACH_LGE_CX2)
 {
     if (simple_hsi_log_debug_enable == '1')
 	{
@@ -225,14 +223,7 @@ static int xmd_ch_tty_open(struct tty_struct *tty, struct file *f)
 	char init_flag = 0;
 
 	int n = tty->index;
-#ifdef CONFIG_MACH_LGE_U2
-	int gpio_value = gpio_get_value(122);
 
-	printk("xmdtty: gpio 122 value is %d ##########\n", gpio_value);
-
-	if (gpio_value)
-		return -EAGAIN;
-#endif
 	if (n >= tty_channels_len) {
 #if defined (XMD_TTY_ENABLE_DEBUG_MSG)
 		printk("\nxmdtty: Error opening channel %d\n",n);
@@ -362,7 +353,6 @@ static int xmd_ch_tty_write(
 	/* AT command */
 	else 
 		written_len = min(len, XMD_TTY_AT_MAX_WRITE_SIZE);
-#if defined(CONFIG_MACH_LGE_COSMO) || defined (CONFIG_MACH_LGE_CX2)
 // LGE_UPDATE_START 20120605 seunghwan.jin@lge.com
 {
     if(simple_hsi_log_debug_enable == '1')
@@ -505,7 +495,6 @@ static int xmd_ch_tty_write(
 {
 	struct xmd_ch_info *tty_ch = tty->driver_data;
 // LGE_UPDATE_START 20120605 seunghwan.jin@lge.com
-#if defined(CONFIG_MACH_LGE_COSMO) || defined (CONFIG_MACH_LGE_CX2)
 {
     if(simple_hsi_log_debug_enable == '1')
     {

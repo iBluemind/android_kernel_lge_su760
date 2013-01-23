@@ -43,9 +43,6 @@ struct gkpd_platform_data {
 extern int gkpd_get_test_mode(void);
 extern void gkpd_write_value(int value);
 extern void gkpd_report_key(int code, int value);
-// LGE_CHANGE_S [younglae.kim@lge.com] 2012-06-28, EXPORT functions for AT%KEYLOCK
-extern int get_key_lock_status(void);
-// LGE_CHANGE_E [younglae.kim@lge.com] 2012-06-28
 #else
 static inline int gkpd_get_test_mode(void) { return 0; }
 static inline void gkpd_write_value(int value) { }

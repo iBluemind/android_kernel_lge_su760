@@ -1,0 +1,11 @@
+--- drivers/video/omap2/dss/rfbi.c	2012-12-31 06:33:44.000000000 +0900
++++ drivers/video/omap2/dss/rfbi.c	2012-11-23 18:12:42.000000000 +0900
+@@ -925,7 +925,7 @@
+ 
+ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	omap_dispc_unregister_isr_sync(framedone_callback, NULL,
++	omap_dispc_unregister_isr(framedone_callback, NULL,
+ 			DISPC_IRQ_FRAMEDONE);
+ 	omap_dss_stop_device(dssdev);
+ 

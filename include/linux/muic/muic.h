@@ -55,10 +55,6 @@ typedef enum {
 	CHARGING_LG_TA,		// MUIC_LG_TA
 	CHARGING_TA_1A,
 	CHARGING_INVALID_CHG,
-#ifndef CONFIG_LGE_MACH_COSMO
-	CHARGING_UART,                  // MUIC_AP_UART
-	CHARGING_RESERVE1,              // dummy
-#endif
 	CHARGING_USB,		// MUIC_AP_USB
 	CHARGING_FACTORY,
 } TYPE_CHARGING_MODE;
@@ -74,16 +70,13 @@ typedef enum {
 	BOOTUP,		/* 2 - TSU5611 BUG fix */
 } TYPE_RESET;
 
-#if !defined(CONFIG_MUIC_MAX14526) && !defined(CONFIG_MACH_LGE_CX2)
+#if !defined(CONFIG_MUIC_MAX14526)
 typedef enum {
 	NO_RETAIN,
-	BOOT_CP_USB,
+	RETAIN,
 	BOOT_AP_USB,
-	BOOT_RECOVERY,
-#if defined(CONFIG_MHL_TX_SII9244) || defined(CONFIG_MHL_TX_SII9244_LEGACY)    
-	BOOT_MHL,
-#endif 
-	RETAIN_MAX,
+	BOOT_CP_USB,
+	BOOT_FIRST,
 } TYPE_RETAIN_MODE;
 #else
 typedef enum {
@@ -103,9 +96,6 @@ struct muic_device {
 	void (*event_handler)(struct muic_device *);
 	int (*read_int_state)(struct muic_device *, char *); 
 	unsigned int mode;
-#if defined(CONFIG_MAX8971_CHARGER)    
-	unsigned int mode_in_retain;
-#endif
 	int		index;
 };
 
@@ -127,11 +117,6 @@ extern void muic_device_unregister(struct muic_device *mdev);
 
 TYPE_MUIC_MODE muic_get_mode(void);
 int muic_set_mode(TYPE_MUIC_MODE mode);
-#if defined(CONFIG_MAX8971_CHARGER)
-TYPE_MUIC_MODE muic_detect_cable(void);
-TYPE_MUIC_MODE muic_get_mode_in_retain(void);
-int muic_set_mode_in_retain(TYPE_MUIC_MODE mode);
-#endif
 int muic_register_client(struct muic_client_device *);
 s32 muic_i2c_read_byte(struct i2c_client *client, u8 addr, u8 *value);
 s32 muic_i2c_write_byte(struct i2c_client *client, u8 addr, u8 value);

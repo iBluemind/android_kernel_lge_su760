@@ -51,10 +51,6 @@ struct delayed_work	charger_timer_work;
 
 struct timer_list charging_timer;
 
-#ifdef CONFIG_MACH_LGE_CX2 //nthyunjin.yang 120615 cpufreq test
-int cpufreq_temp_ctrl_value;
-#endif
-
 void charging_timer_func(unsigned long try)
 {
 	u32 wait;
@@ -263,10 +259,16 @@ extern int get_bat_present(void);
 
 void charging_ic_deactive()
 {
-#if !defined(CONFIG_MACH_LGE_CX2)
-	printk("[CHG] charging_ic_status = %d\n", charging_ic_status);
-#endif
+	static int temp_deactive_cnt = 1;
 
+	printk("[CHG] charging_ic_status = %d\n", charging_ic_status);
+
+	if(temp_deactive_cnt == 1)
+	{
+		temp_deactive_cnt = 0;
+	}
+	else
+	{
 		if((charging_ic_status == POWER_SUPPLY_TYPE_BATTERY) ||
 		  ((charging_ic_status == POWER_SUPPLY_TYPE_FACTORY)
 		    && !get_bat_present()))
@@ -274,6 +276,7 @@ void charging_ic_deactive()
 			D("[charger_rt9524]:: it's already  %s mode!! \n", __func__);
 			return;
 		}
+	}
 	
 	mutex_lock(&charging_lock);
 

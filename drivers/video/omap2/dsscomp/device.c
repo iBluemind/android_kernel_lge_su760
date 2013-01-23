@@ -41,7 +41,7 @@
 #include <video/dsscomp.h>
 #include <plat/dsscomp.h>
 #include "dsscomp.h"
-#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) || defined(CONFIG_MACH_LGE_CX2_3D_DISPLAY) //##hwcho_20120522
+#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) //##hwcho_20120522
 #ifdef CONFIG_DSSCOMP_ADAPT
 #include "dsscomp_adapt.h"
 #endif
@@ -563,11 +563,6 @@ static int dsscomp_probe(struct platform_device *pdev)
 		debugfs_create_file("adapt_action_history", S_IRUGO,
 			cdev->dbgfs, dsscomp_adapt_dbg_action_history, &dsscomp_debug_fops);
 #endif
-#ifdef CONFIG_DSSCOMP_COPY_FOR_ROT
-		debugfs_create_file("rotbuf", S_IRUGO,
-				cdev->dbgfs, dsscomp_dbg_rotbuf_mgr, &dsscomp_debug_fops);
-#endif
-
 	}
 
 	cdev->pdev = &pdev->dev;
@@ -583,14 +578,11 @@ static int dsscomp_probe(struct platform_device *pdev)
 	dsscomp_queue_init(cdev);
 	dsscomp_gralloc_init(cdev);
 
-#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) || defined(CONFIG_MACH_LGE_CX2_3D_DISPLAY) //##hwcho_20120522
+#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) //##hwcho_20120522
 #ifdef CONFIG_DSSCOMP_ADAPT
 	dsscomp_adapt_init(cdev);
 #endif
 #endif //##
-#ifdef CONFIG_DSSCOMP_COPY_FOR_ROT
-	dsscomp_rotbuf_mgr_init();
-#endif
 	return 0;
 }
 
@@ -598,10 +590,7 @@ static int dsscomp_remove(struct platform_device *pdev)
 {
 	struct dsscomp_dev *cdev = platform_get_drvdata(pdev);
 
-#ifdef CONFIG_DSSCOMP_COPY_FOR_ROT
-	dsscomp_rotbuf_mgr_deinit();
-#endif
-#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) || defined(CONFIG_MACH_LGE_CX2_3D_DISPLAY) //##hwcho_20120522
+#if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) //##hwcho_20120522
 #ifdef CONFIG_DSSCOMP_ADAPT
 	dsscomp_adapt_deinit();
 #endif

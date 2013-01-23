@@ -294,9 +294,7 @@ void machine_halt(void)
 void machine_power_off(void)
 {
 	machine_shutdown();
-	printk(" machine_power_off check\n");
 	mdelay(150);
-
 	if (pm_power_off)
 		pm_power_off();
 }

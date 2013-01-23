@@ -1,0 +1,14 @@
+--- drivers/net/wireless/bcmdhd/src/wl/sys/wl_cfgp2p.c	2012-12-31 06:33:44.000000000 +0900
++++ drivers/net/wireless/bcmdhd/src/wl/sys/wl_cfgp2p.c	2012-11-23 18:12:32.000000000 +0900
+@@ -1226,10 +1226,7 @@
+ 	CFGP2P_DBG((" Enter\n"));
+ 	if (wl_get_p2p_status(wl, LISTEN_EXPIRED) == 0) {
+ 		wl_set_p2p_status(wl, LISTEN_EXPIRED);
+-//LGE_CHANGE_S, moon-wifi@lge.com by wo0ngs 2012-07-20, add wl->p2p null check		
+-		//if (timer_pending(&wl->p2p->listen_timer)) {
+-		if (wl->p2p && timer_pending(&wl->p2p->listen_timer)) {
+-//LGE_CHANGE_E, moon-wifi@lge.com by wo0ngs 2012-07-20, add wl->p2p null check		    
++		if (timer_pending(&wl->p2p->listen_timer)) {
+ 			spin_lock_bh(&wl->p2p->timer_lock);
+ 			del_timer_sync(&wl->p2p->listen_timer);
+ 			spin_unlock_bh(&wl->p2p->timer_lock);

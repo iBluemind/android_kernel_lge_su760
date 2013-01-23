@@ -1,0 +1,15 @@
+--- arch/arm/mach-omap2/lge/cosmo/cosmo_i2c.c	2012-12-31 06:33:44.000000000 +0900
++++ arch/arm/mach-omap2/lge/cosmo/cosmo_i2c.c	2012-11-23 18:12:30.000000000 +0900
+@@ -671,12 +671,10 @@
+ 		I2C_BOARD_INFO("apds9900", 0x39),
+ 		.platform_data = &apds9900_pdata,
+ 	},
+-#ifdef CONFIG_SUBPMIC_LP8720
+ 	{
+ 		I2C_BOARD_INFO(LP8720_I2C_NAME, LP8720_I2C_ADDR),
+ 		.platform_data = &lp8720_pdata,
+ 	},
+-#endif
+ };
+ 
+ /* i2c_4_info */

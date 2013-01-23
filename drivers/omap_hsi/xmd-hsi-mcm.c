@@ -188,11 +188,6 @@ static int hsi_ch_net_write(int chno, void *data, int len)
 	int n = 0;
 	int flag = 1;
 	int ret = 0;
-#ifdef CONFIG_MACH_LGE_U2
-/* [START] Workqueue Flag Check of hsi_write_work 2012-08-24 seunghwan.jin@lge.com */
-        unsigned int wq_flags = 0;
-/* [END] Workqueue Flag Check of hsi_write_work 2012-08-24 seunghwan.jin@lge.com */
-#endif
 #ifdef XMD_TX_MULTI_PACKET
 	if (d && hsi_channels[chno].write_queued == HSI_TRUE) {
 		if (d->being_used == HSI_FALSE && (d->size + len) < HSI_MEM_LARGE_BLOCK_SIZE) {
@@ -241,29 +236,11 @@ static int hsi_ch_net_write(int chno, void *data, int len)
 			hsi_channels[chno].tx_blocked = 1;
 			hsi_mem_free(buf);
 			PREPARE_WORK(&hsi_channels[chno].write_work, hsi_write_work);
-#ifdef CONFIG_MACH_LGE_U2
-			wq_flags = *((unsigned int *)hsi_write_wq);
-			if (wq_flags & WQ_DYING) {
-				printk("mcm: Workqueue Flag Check is done 0x%x.\n", wq_flags);
-			} else {
-				queue_work(hsi_write_wq, &hsi_channels[chno].write_work);
-			}
-#else
 			queue_work(hsi_write_wq, &hsi_channels[chno].write_work);
-#endif
 			ret = -EBUSY;
 		} else if (n == 1) {
 			PREPARE_WORK(&hsi_channels[chno].write_work, hsi_write_work);
-#ifdef CONFIG_MACH_LGE_U2
-			wq_flags = *((unsigned int *)hsi_write_wq);
-			if (wq_flags & WQ_DYING) {
-				printk("mcm: Workqueue Flag Check is done 0x%x.\n", wq_flags);
-			} else {
-				queue_work(hsi_write_wq, &hsi_channels[chno].write_work);
-			}
-#else
 			queue_work(hsi_write_wq, &hsi_channels[chno].write_work);
-#endif
 			ret = 0;
 		}
 	}

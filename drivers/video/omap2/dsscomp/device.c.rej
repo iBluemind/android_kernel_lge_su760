@@ -1,0 +1,12 @@
+--- drivers/video/omap2/dsscomp/device.c	2012-12-31 06:33:44.000000000 +0900
++++ drivers/video/omap2/dsscomp/device.c	2012-11-23 18:12:42.000000000 +0900
+@@ -570,9 +565,7 @@
+ 
+ 	pr_info("dsscomp: initializing.\n");
+ 
+-#ifndef CONFIG_MACH_LGE_U2
+        LGE_boot_compleate(1);
+-#endif
+ 
+ 	fill_cache(cdev);
+ 

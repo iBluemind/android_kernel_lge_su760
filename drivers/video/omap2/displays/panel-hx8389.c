@@ -2,7 +2,7 @@
  * hx8389_panel  DSI Video/Command Mode Panel Driver
  *
  * modified from panel-hx8389.c
- *jeonghoon.cho@lge.com
+ *jeonghoon.cho@lge.com 
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 as published by
@@ -77,7 +77,7 @@
 #define DSI_DT_SET_MAX_RET_PKG_SIZE	0x37
 #define DSI_DT_NULL_PACKET		0x09
 #define DSI_DT_DCS_LONG_WRITE		0x39
-extern int ssc_enable;
+
 static irqreturn_t hx8389_panel_te_isr(int irq, void *data);
 static void hx8389_panel_te_timeout_work_callback(struct work_struct *work);
 static int _hx8389_panel_enable_te(struct omap_dss_device *dssdev, bool enable);
@@ -138,12 +138,12 @@ static struct panel_config panel_configs[] = {
 		.timings	= {
 			.x_res		= 540,
 			.y_res		= 960,
-			.vfp = 12,
-			.vsw = 4,
-			.vbp = 8,
-			.hfp = 20, //20
-			.hsw =10,
-			.hbp = 47, // 47
+			.vfp = 4, 
+			.vsw =2, 
+			.vbp =3, 
+			.hfp = 22,
+			.hsw =10,	 
+			.hbp =57, 
 		},
 		.sleep		= {
 			.sleep_in	= 20,
@@ -209,81 +209,35 @@ struct hx8389_panel_data {
 	struct work_struct display_on_work;
 };
 
-int row_of_init_code = 0;
 #ifdef CONFIG_DSI_CMD_MODE
 u8 hitachi_lcd_command_for_mipi[][30] = {
 	{END_OF_COMMAND,},
 };
 #else //CONFIG_DSI_VIDEO_MODE
-u8 u760_hitachi_lcd_command_for_mipi[20][0x84] = {
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x04,
-		0xB9, 0xFF, 0x83, 0x89,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x13,
-		0xBA, 0x01, 0x92, 0x00, 0x16, 0xC4, 0x00, 0x18, 0xFF, 0x02,
-		0x21, 0x03, 0x21, 0x23, 0x25, 0x20, 0x00, 0x35, 0x40,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x03,
-		0xDE, 0x05, 0x58,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x14,
-		0xB1, 0x00, 0x00, 0x07, 0xE3, 0x91, 0x10, 0x11, 0x6F, 0x0C,
-		0x1D, 0x25, 0x1E, 0x1E, 0x41, 0x01, 0x58, 0xF7, 0x00, 0xC0,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x18,
-		0xB4, 0x80, 0x14, 0x00, 0x32, 0x10, 0x07, 0x32, 0x10, 0x00,
-		0x00, 0x00, 0x00, 0x17, 0x0A, 0x40, 0x0B, 0x13, 0x00, 0x4B,
-		0x14, 0x53, 0x53, 0x0A,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x08,
-		0xB2, 0x00, 0x00, 0x78, 0x09, 0x0A, 0x00, 0x60,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x31,
-		0xD5, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x20,
-		0x00, 0x99, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
-		0x23, 0x88, 0x01, 0x01, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
-		0x88, 0x99, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x10,
-		0x88, 0x32, 0x10, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x23,
-		0xE0, 0x05, 0x11, 0x14, 0x37, 0x3F, 0x3F, 0x20, 0x4F, 0x08,
-		0x0E, 0x0D, 0x12, 0x14, 0x12, 0x14, 0x1D, 0x1C, 0x05, 0x11,
-		0x14, 0x37, 0x3F, 0x3F, 0x20, 0x4F, 0x08, 0x0E, 0x0D, 0x12,
-		0x14, 0x12, 0x14, 0x1D, 0x1C,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x41,
-		0xC1, 0x01, 0x00, 0x04, 0x07, 0x0D, 0x1A, 0x1E, 0x25, 0x2C,
-		0x35, 0x3D, 0x46, 0x4F, 0x58, 0x60, 0x6A, 0x74, 0x7D, 0x85,
-		0x8E, 0x98, 0xA0, 0xAA, 0xB2, 0xBF, 0xC8, 0xCB, 0xD4, 0xE0,
-		0xE5, 0xF1, 0xF5, 0xFB, 0xFF, 0x80, 0x2F, 0x37, 0x2F, 0x35,
-		0x91, 0x24, 0x6A, 0xC0, 0x00, 0x04, 0x07, 0x0D, 0x1A, 0x1E,
-		0x25, 0x2C, 0x35, 0x3D, 0x46, 0x4F, 0x58, 0x60, 0x6A, 0x74,
-		0x7D, 0x85, 0x8E, 0x98, 0xA0,},
-	{LONG_CMD_MIPI, DSI_GEN_LONGWRITE, 0x40,
-		0xc1, 0xAA, 0xB2, 0xBF, 0xC8, 0xCB, 0xD4, 0xE0, 0xE5, 0xF1,
-		0xF5, 0xFB, 0xFF, 0x80, 0x2F, 0x37, 0x2F, 0x35, 0x91, 0x24,
-		0x6A, 0xC0, 0x00, 0x04, 0x07, 0x0D, 0x19, 0x1D, 0x25, 0x2C,
-		0x35, 0x3D, 0x46, 0x4F, 0x58, 0x60, 0x6A, 0x74, 0x7D, 0x85,
-		0x8E, 0x98, 0xA0, 0xAA, 0xB2, 0xBF, 0xC8, 0xCB, 0xD4, 0xE0,
-		0xE5, 0xF1, 0xF5, 0xFB, 0xFF, 0x80, 0x2F, 0x37, 0x2F, 0x35,
-		0x91, 0x24, 0x6A, 0xC0,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x41,
-		0xC1, 0x01, 0x00, 0x04, 0x07, 0x0D, 0x1A, 0x1E, 0x25, 0x2C,
-		0x35, 0x3D, 0x46, 0x4F, 0x58, 0x60, 0x6A, 0x74, 0x7D, 0x85,
-		0x8E, 0x98, 0xA0, 0xAA, 0xB2, 0xBF, 0xC8, 0xCB, 0xD4, 0xE0,
-		0xE5, 0xF1, 0xF5, 0xFB, 0xFF, 0x80, 0x2F, 0x37, 0x2F, 0x35,
-		0x91, 0x24, 0x6A, 0xC0, 0x00, 0x04, 0x07, 0x0D, 0x1A, 0x1E,
-		0x25, 0x2C, 0x35, 0x3D, 0x46, 0x4F, 0x58, 0x60, 0x6A, 0x74,
-		0x7D, 0x85, 0x8E, 0x98, 0xA0,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x05,
-		0xB6, 0x00, 0x86, 0x00, 0x86,},
-	{SHORT_CMD_MIPI, DSI_GEN_SHORTWRITE_2PARAM, 0x02,
-		0xCC, 0x0E,},
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x03,
-		0xCB, 0x07, 0x07,},
+u8 u760_hitachi_lcd_command_for_mipi[][60] = {                                                                                       
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x04, 0xb9, 0xff, 0x83, 0x89,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x03, 0xba, 0x01, 0x92,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x03, 0xde, 0x05, 0x58,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x14, 0xb1, 0x00, 0x00, 0x04, 0xe3, 0x50, 0x10, 0x11, 0xb2, 0x11, 0x2b, 0x33,
+	 0x25, 0x25, 0x41, 0x00, 0x3a, 0xf7, 0x01, 0x00,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x06, 0xb2, 0x00, 0x00, 0x78, 0x03, 0x02,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x18, 0xb4, 0x00, 0x04, 0x00, 0x32, 0x10, 0x00, 0x32, 0x10, 0x00, 0x00, 0x00,
+	 0x00, 0x17, 0x0a, 0x40, 0x01, 0x13, 0x0a, 0x40, 0x14, 0x46, 0x50, 0x0a,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x31, 0xd5, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x20, 0x00, 0x99,
+	 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x01, 0x88, 0x23, 0x01, 0x88,
+	 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x99, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+	 0x88, 0x32, 0x88, 0x10, 0x10, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x23, 0xe0, 0x00, 0x24, 0x25, 0x3f, 0x3c, 0x3e, 0x29, 0x4c, 0x03, 0x0b, 0x0c,
+	 0x11, 0x13, 0x11, 0x13, 0x13, 0x1c, 0x00, 0x24, 0x25, 0x3f, 0x3c, 0x3e, 0x29,
+	 0x4c, 0x03, 0x0b, 0x0c, 0x11, 0x13, 0x11, 0x13, 0x13, 0x1c,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x06, 0xb6, 0x00, 0x00, 0x00, 0x89, 0xe0,},
+	{SHORT_CMD_MIPI, DSI_GEN_SHORTWRITE_2PARAM, 0x02, 0xcc, 0x0e},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x03, 0xcb, 0x07, 0x07,},
+	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x05, 0xbb, 0x00, 0x00, 0xff, 0x80,},
+	//{SHORT_CMD_MIPI, DSI_GEN_SHORTWRITE_2PARAM, 0x02, 0x35, 0x00,},
 	{END_OF_COMMAND,},
 };
 #endif
-
-u8 u760_hitachi_lcd_command_for_mipi_set_power[][100] = {
-	{LONG_CMD_MIPI, DSI_DCS_LONGWRITE, 0x14,
-		0xB1, 0x00, 0x00, 0x07, 0xE3, 0x91, 0x10, 0x11, 0x6F, 0x0C,
-		0x1D, 0x25, 0x1E, 0x1E, 0x41, 0x01, 0x58, 0xF7, 0x00, 0x00,},
-
-};
-
 
 static inline struct lge_dsi_panel_data
 *get_panel_data(const struct omap_dss_device *dssdev)
@@ -343,6 +297,7 @@ static int hx8389_panel_sleep_in(struct hx8389_panel_data *td)
 {
 	int r;
 
+	hw_guard_wait(td);
 
 	r = hx8389_panel_dcs_write_0(td, DCS_SLEEP_IN);
 	if (r)
@@ -353,7 +308,6 @@ static int hx8389_panel_sleep_in(struct hx8389_panel_data *td)
 		return r;
 #endif
 	hw_guard_start(td, 120);
-	hw_guard_wait(td);
 
 	if (td->panel_config->sleep.sleep_in)
 		msleep(td->panel_config->sleep.sleep_in);
@@ -365,14 +319,16 @@ static int hx8389_panel_sleep_out(struct hx8389_panel_data *td)
 {
 	int r;
 
+	hw_guard_wait(td);
+
 	r = hx8389_panel_dcs_write_0(td, DCS_SLEEP_OUT);
 	if (r)
 		return r;
 
-	hw_guard_start(td, 150);
+	hw_guard_start(td, 120);
 
-	//jongho3.lee@lge.com excute sleep for 120ms
-	hw_guard_wait(td);
+	if (td->panel_config->sleep.sleep_out)
+		msleep(td->panel_config->sleep.sleep_out);
 
 	return 0;
 }
@@ -600,7 +556,7 @@ static int hx8389_panel_bl_update_status(struct backlight_device *dev)
 		} else {
 			r = 0;
 		}
-	}
+	} 
 
 	mutex_unlock(&td->lock);
 
@@ -767,89 +723,6 @@ static ssize_t display_gamma_tuning_store(struct device *dev,
 	return size;
 }
 
-static ssize_t display_init_code_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	int i = row_of_init_code;
-	int r;
-
-	for(i=0; i < u760_hitachi_lcd_command_for_mipi[row_of_init_code][2] + 3; i++)
-	{
-		sprintf(buf, "%x,", u760_hitachi_lcd_command_for_mipi[row_of_init_code][i]);
-		buf += 3;
-	}
-	sprintf(buf, "\n");
-
-	return i*3;
-}
-static ssize_t display_init_code_store(struct device *dev,
-		struct device_attribute *attr,
-		const char *buf, size_t size)
-{
-	int cmd, type, len, adr, val;
-	int row,col,num;
-
-
-	num = sscanf(buf, "%x,%x,%x,%x",&cmd,&type,&len,&adr);
-	printk(KERN_ERR "buf_adr=%x, buf=%c%c%c \n",buf,buf[0],buf[1],buf[2]);
-	printk("num=%x",num);
-
-	if(cmd == END_OF_COMMAND)
-	{
-		row_of_init_code = type;
-		return size;
-	}
-
-
-
-#if 0
-	for(row=0; u760_hitachi_lcd_command_for_mipi[row][0] != END_OF_COMMAND; row++)
-	{
-		if(u760_hitachi_lcd_command_for_mipi[row][3] == adr) break;
-	}
-
-	if(u760_hitachi_lcd_command_for_mipi[row][0] == END_OF_COMMAND)
-	{
-		if(row == 19) {
-			printk("Can't add row to init code array \n");
-			return size;
-		}
-		u760_hitachi_lcd_command_for_mipi[row+1][0] = END_OF_COMMAND;
-	}
-#else
-	row = row_of_init_code;
-#endif
-	if(row > 19) {
-		printk("Can't add row to init code array \n");
-		return size;
-	}
-
-	for(col=0; col < len + 3; col++)
-	{
-		while( !( (buf[0]>='0' && buf[0]<='9') || (buf[0]>='a' && buf[0]<='f') \
-			|| (buf[0]>='A' && buf[0]<='F') ) ){
-			buf++;
-		}
-
-		num = sscanf(buf,"%x",&val);
-
-		printk("num=%x",num);
-		printk("buf_adr=%x, buf=%c%c%c, val=%x\n",buf,buf[0],buf[1],buf[2],val);
-
-		while( ( (buf[0]>='0' && buf[0]<='9') || (buf[0]>='a' && buf[0]<='f') \
-			|| (buf[0]>='A' && buf[0]<='F') ) ){
-			buf++;
-		}
-
-
-		u760_hitachi_lcd_command_for_mipi[row][col] = (u8)val;
-	}
-
-
-	return size;
-}
-
-static DEVICE_ATTR(init_code, 0660, display_init_code_show, display_init_code_store);
 
 static DEVICE_ATTR(gamma_tuning, 0660, display_gamma_tuning_show, display_gamma_tuning_store);
 //LGE_CHANGE_E [jeonghoon.cho@lge.com] 2012-0208, P940 : Add sysfile for gamma tuning + at%kcal jeonghoon.cho@lge.com
@@ -866,19 +739,7 @@ static ssize_t display_porch_value_store(struct device *dev, struct device_attri
        dssdev->panel.timings.hfp = hfp;
        return;
 }
-static ssize_t display_porch_value_show(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
-{
-       struct omap_dss_device *dssdev = to_dss_device(dev);
-	 int vbp,vsw,vfp,hbp,hsw,hfp;
-       vbp = dssdev->panel.timings.vbp;
-       vsw = dssdev->panel.timings.vsw;
-       vfp = dssdev->panel.timings.vfp;
-       hbp = dssdev->panel.timings.hbp;
-       hsw = dssdev->panel.timings.hsw;
-       hfp = dssdev->panel.timings.hfp;
-	return snprintf(buf, PAGE_SIZE, "vbp=%d, vsw=%d, vfp=%d, hbp=%d, hsw=%d, hfp=%d\n", vbp,vsw,vfp,hbp,hsw,hfp);
-}
-static DEVICE_ATTR(porch_value, 0660, display_porch_value_show, display_porch_value_store);
+static DEVICE_ATTR(porch_value, 0660, NULL, display_porch_value_store);
 
 static ssize_t display_clock_value_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
 {
@@ -892,26 +753,7 @@ static ssize_t display_clock_value_store(struct device *dev, struct device_attri
        //dssdev->clocks.dsi.lp_clk_div = lp_clk_div;
        return;
 }
-static ssize_t display_clock_value_show(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
-{
-       struct omap_dss_device *dssdev = to_dss_device(dev);
-	   int clock_value;
-	   clock_value = 19200*(dssdev->clocks.dsi.regm)/(1+(dssdev->clocks.dsi.regn));
-	return snprintf(buf, PAGE_SIZE, "regn=%d, regm=%d, clock_value(KHz)= %d\n", dssdev->clocks.dsi.regn,dssdev->clocks.dsi.regm,clock_value);
-}
-static DEVICE_ATTR(clock_value, 0660, display_clock_value_show, display_clock_value_store);
-static ssize_t display_ssc_enable_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
-{
-       struct omap_dss_device *dssdev = to_dss_device(dev);
-       sscanf(buf, "%d",&ssc_enable);
-       printk("[dyotest]ssc_enable=%d\n",ssc_enable);
-       return;
-}
-static ssize_t display_ssc_enable_show(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
-{
-	return snprintf(buf, PAGE_SIZE, "ssc_enable=%d\n",ssc_enable);
-}
-static DEVICE_ATTR(ssc_enable, 0660, display_ssc_enable_show, display_ssc_enable_store);
+static DEVICE_ATTR(clock_value, 0660, NULL, display_clock_value_store);
 
 static ssize_t show_cabc_available_modes(struct device *dev,
 		struct device_attribute *attr,
@@ -1090,9 +932,6 @@ static struct attribute *hx8389_panel_attrs[] = {
 #endif
     &dev_attr_porch_value.attr,
     &dev_attr_clock_value.attr,
-    &dev_attr_ssc_enable.attr,
-    &dev_attr_init_code.attr,
-
 //LGE_CHANGE_E [jeonghoon.cho@lge.com] 2012-0208, P940 : Add sysfile for gamma tuning + at%kcal jeonghoon.cho@lge.com
 	NULL,
 };
@@ -1136,7 +975,7 @@ static int hx8389_panel_probe(struct omap_dss_device *dssdev)
 	int r, i;
 
 	dev_dbg(&dssdev->dev, "probe\n");
-
+	
 	if (!panel_data || !panel_data->name) {
 		r = -EINVAL;
 		goto err;
@@ -1153,14 +992,14 @@ static int hx8389_panel_probe(struct omap_dss_device *dssdev)
 		r = -EINVAL;
 		goto err;
 	}
-
+	
 	dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_ONOFF | OMAP_DSS_LCD_RF ;
 	dssdev->panel.timings = panel_config->timings;
 	dssdev->ctrl.pixel_size = 24;
 
 	/* Since some android application use physical dimension, that information should be set here */
 	dssdev->panel.width_in_um = 57000; /* physical dimension in um */
-	dssdev->panel.height_in_um = 94000; /* physical dimension in um */
+	dssdev->panel.height_in_um = 94000; /* physical dimension in um */ 
 
 	td = kzalloc(sizeof(*td), GFP_KERNEL);
 	if (!td) {
@@ -1194,7 +1033,7 @@ static int hx8389_panel_probe(struct omap_dss_device *dssdev)
 	memset(&props, 0, sizeof(struct backlight_properties));
 
 	/* P940 dose not use dsi blacklight control */
-	td->use_dsi_bl = false;
+	td->use_dsi_bl = false; 
 
 	if (td->use_dsi_bl)
 		props.max_brightness = 255;
@@ -1264,7 +1103,7 @@ static int hx8389_panel_probe(struct omap_dss_device *dssdev)
 		dev_err(&dssdev->dev, "failed to create sysfs files\n");
 		goto err_vc_id;
 	}
-
+	
 #ifdef CONFIG_FB_OMAP_BOOTLOADER_INIT
 	dss_runtime_get ();
 #endif
@@ -1330,15 +1169,16 @@ static int hx8389_panel_power_on(struct omap_dss_device *dssdev)
 	/* At power on the first vsync has not been received yet */
         dssdev->first_vsync = false;
 
-	if (dssdev->platform_enable) {
-		r = dssdev->platform_enable(dssdev);
-		if (r)
-			return r;
-	}
 	r = omapdss_dsi_display_enable(dssdev);
 	if (r) {
 		dev_err(&dssdev->dev, "failed to enable DSI\n");
 		goto err0;
+	}
+
+	if (dssdev->platform_enable) {
+		r = dssdev->platform_enable(dssdev);
+		if (r)
+			return r;
 	}
 
 	if(!dssdev->skip_init)
@@ -1350,22 +1190,13 @@ static int hx8389_panel_power_on(struct omap_dss_device *dssdev)
 		mdelay(5);
 
 		for (i = 0; u760_hitachi_lcd_command_for_mipi[i][0] != END_OF_COMMAND; i++) {
-			if(u760_hitachi_lcd_command_for_mipi[i][1] == DSI_GEN_LONGWRITE) {
-				dsi_vc_gen_write_nosync(dssdev, td->channel, &u760_hitachi_lcd_command_for_mipi[i][3], u760_hitachi_lcd_command_for_mipi[i][2]);
-			}
-			else {
-				dsi_vc_dcs_write_nosync(dssdev, td->channel, &u760_hitachi_lcd_command_for_mipi[i][3], u760_hitachi_lcd_command_for_mipi[i][2]);
-			}
-			mdelay(2);
+			dsi_vc_dcs_write_nosync(dssdev, td->channel, &u760_hitachi_lcd_command_for_mipi[i][3], u760_hitachi_lcd_command_for_mipi[i][2]);
+		mdelay(2);
 		}
 
 		r = hx8389_panel_sleep_out(td);
 		if (r)
 			goto err;
-
-		dsi_vc_dcs_write_nosync(dssdev, td->channel, &u760_hitachi_lcd_command_for_mipi_set_power[0][3], u760_hitachi_lcd_command_for_mipi_set_power[0][2]);
-
-
 
 		if(dssdev->phy.dsi.type == OMAP_DSS_DSI_TYPE_CMD_MODE){
 			r = hx8389_panel_set_addr_mode(td, td->rotate, td->mirror);
@@ -1393,7 +1224,7 @@ static int hx8389_panel_power_on(struct omap_dss_device *dssdev)
 			if (r)
 				goto err;
 		}
-
+		
 		omapdss_dsi_vc_enable_hs(dssdev, td->channel, true);
 
 		/* LGE_SJIT 2012-03-06 [choongryeol.lee@lge.com]
@@ -1415,7 +1246,7 @@ static int hx8389_panel_power_on(struct omap_dss_device *dssdev)
 		dss_runtime_put();
 	#endif
 	}
-
+	
 	td->enabled = 1;
 
 	return 0;
@@ -1440,13 +1271,9 @@ static void hx8389_panel_power_off(struct omap_dss_device *dssdev)
 		dsi_video_mode_disable(dssdev);
 
 	r = hx8389_panel_dcs_write_0(td, DCS_DISPLAY_OFF);
-
-	hw_guard_start(td, 50);
-	hw_guard_wait(td);
-
-	if (!r)
+	if (!r) 
 		r = hx8389_panel_sleep_in(td);
-
+	
 	if (r) {
 		dev_err(&dssdev->dev,
 				"error disabling panel, issuing HW reset\n");
@@ -1586,7 +1413,7 @@ static int hx8389_panel_resume(struct omap_dss_device *dssdev)
 		r = -EINVAL;
 		goto err;
 	}
-
+	
 	dsi_bus_lock(dssdev);
 
 	r = hx8389_panel_power_on(dssdev);
@@ -1622,9 +1449,6 @@ static void hx8389_panel_display_on_work(struct work_struct *work)
 	int r;
 
 	dev_dbg(&dssdev->dev, "display_on_worker\n");
-
-	hw_guard_start(td, 80);
-	hw_guard_wait(td);
 
 	dsi_bus_lock(dssdev);
 	r = hx8389_panel_dcs_write_0(td, DCS_DISPLAY_ON); // display ON
@@ -2097,12 +1921,12 @@ static int hx8389_panel_set_update_mode(struct omap_dss_device *dssdev,
 		enum omap_dss_update_mode mode)
 {
 	int update_mode;
-
+	
 	if(dssdev->phy.dsi.type == OMAP_DSS_DSI_TYPE_CMD_MODE)
 		update_mode = OMAP_DSS_UPDATE_MANUAL;
 	else
 		update_mode = OMAP_DSS_UPDATE_AUTO;
-
+		
 	if (mode != update_mode)
 		return -EINVAL;
 	return 0;

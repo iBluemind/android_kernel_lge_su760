@@ -236,7 +236,7 @@ static int hsi_ll_command_decode(
 		break;
 	case HSI_LL_MSG_OPEN_CONN_OCTET:
 		*channel = ((msg & 0x0F000000) >> 24);
-		*param   = ((msg & 0x00F00000) >> 20) ? (msg & 0x000FFFFF) : (msg & 0x00FFFFFF);
+		*param   = (msg & 0x00FFFFFF);
 #if defined (HSI_LL_ENABLE_CRITICAL_LOG)
 		if (*channel == 0) {
 			printk("\nHSI_LL: Unexpected case. Received CMD = 0x%x. %s %d\n",
@@ -434,9 +434,6 @@ static void hsi_ll_read_complete_cb(struct hsi_device *dev, unsigned int size)
 {
 	int ret;
 	unsigned int channel = 0, param = 0, ll_msg_type = 0;
-#ifdef CONFIG_MACH_LGE_U2
-	unsigned int ipc_temp = 0; // ipc temp.
-#endif
 
 	spin_lock_bh(&hsi_ll_if.rd_cmd_cb_lock);
 
@@ -933,9 +930,6 @@ static int hsi_ll_wr_ctrl_ch_th(void *data)
 	int ret, i;
 	unsigned int command, channel;
 	unsigned int phy_id;
-#ifdef CONFIG_MACH_LGE_U2
-	unsigned int ipc_temp = 0; // ipc temp.
-#endif
 
 	wait_event_interruptible(hsi_ll_if.reg_complete,
 							 hsi_ll_if.reg_complete_flag == 1);

@@ -1716,13 +1716,7 @@ static int android_bind(struct usb_composite_dev *cdev)
             LG Gadget driver   */
 #if defined(CONFIG_LGE_ANDROID_USB)
 	strncpy(manufacturer_string, "LG Electronics", sizeof(manufacturer_string) - 1);
-#if defined(CONFIG_MACH_LGE_U2)
-	strncpy(product_string, "LGE U2 USB Device", sizeof(product_string) - 1);
-#elif defined(CONFIG_MACH_LGE_P2)
-	strncpy(product_string, "LGE P2 USB Device", sizeof(product_string) - 1);
-#else
 	strncpy(product_string, "LGE COSMO USB Device", sizeof(product_string) - 1);
-#endif
 
 #ifdef CONFIG_ARCH_OMAP4
 #define DIE_ID_REG_BASE			(L4_44XX_PHYS + 0x2000)

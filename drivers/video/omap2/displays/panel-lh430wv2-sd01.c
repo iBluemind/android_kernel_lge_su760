@@ -292,13 +292,11 @@ static void lh430wv2_panel_esd_work(struct work_struct *work);
 static void lh430wv2_panel_ulps_work(struct work_struct *work);
 static void lh430wv2_panel_display_on_work(struct work_struct *work);
 
-#ifdef CONFIG_LGE_HANDLE_PANIC
 //mo2haewoon.you@lge.com => [START]  HIDDEN_RESET	
 // Hidden reset skip code
 extern int lge_hidden_reset_mode;
 static int LcdHiddenBootingCount;
 //mo2haewoon.you@lge.com <= [END]
-#endif
 
 static int lh430wv2_panel_enable_s3d(struct omap_dss_device *dssdev, bool enable);
 
@@ -430,7 +428,6 @@ static int lh430wv2_panel_set_addr_mode(struct lh430wv2_panel_data *td, u8 rotat
 	return lh430wv2_panel_dcs_write_1(td, DCS_MEM_ACC_CTRL, mode);
 }
 
-#ifdef CONFIG_LGE_HANDLE_PANIC
 //mo2haewoon.you@lge.com => [START]  HIDDEN_RESET	
 // Hidden reset skip code
 int lh430wv2_panel_HiddenRestStatus( int CheckMode )
@@ -473,7 +470,6 @@ int lh430wv2_panel_HiddenRestStatus( int CheckMode )
 
     return ret;
 }
-#endif
 //mo2haewoon.you@lge.com => [END]
 static int lh430wv2_panel_set_update_window(struct lh430wv2_panel_data *td,
 		u16 x, u16 y, u16 w, u16 h)
@@ -646,7 +642,6 @@ static int lh430wv2_panel_bl_update_status(struct backlight_device *dev)
 
 	if (td->use_dsi_bl) {
 		if (td->enabled) {
-#ifdef CONFIG_LGE_HANDLE_PANIC
 	//mo2haewoon.you@lge.com => [START]  HIDDEN_RESET			
             // Hidden reset skip code
             if( lh430wv2_panel_HiddenRestStatus(1) == 1 )
@@ -658,7 +653,6 @@ static int lh430wv2_panel_bl_update_status(struct backlight_device *dev)
                 }
             }			
 	//mo2haewoon.you@lge.com <= [END]		
-#endif
 			dsi_bus_lock(dssdev);
 
 			r = lh430wv2_panel_wake_up(dssdev);
