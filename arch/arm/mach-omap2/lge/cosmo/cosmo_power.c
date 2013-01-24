@@ -28,7 +28,13 @@ static int cosmo_reboot_notify(struct notifier_block *nb,
 		gpio_set_value(GPIO_LCD_RESET, 0);
 		mdelay(5);
 		gpio_set_value(GPIO_LCD_POWER_EN, 0);
-	}
+
+		/* We still need this with the old bl... */
+		lge_user_reset();
+		twl_i2c_write_u8(0x14, 0x47, 0x06);
+	} else {
+		twl_i2c_write_u8(TWL_MODULE_PM_MASTER, 0x07, 0x06);
+        }
 
 	return NOTIFY_DONE;
 }
