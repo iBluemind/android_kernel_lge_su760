@@ -19,6 +19,9 @@
 #include <linux/delay.h>
 #include <lge/common.h>
 #include <lge/board.h>
+#include <plat/lge_nvdata_handler.h>
+#include <linux/i2c/twl.h>
+extern void lge_user_reset();
 
 static int cosmo_reboot_notify(struct notifier_block *nb,
 		unsigned long code, void *data)
