@@ -82,6 +82,13 @@
 #define OMAP_HDMI_HPD_ADDR	0x4A100098
 #define OMAP_HDMI_PULLTYPE_MASK	0x00000010
 
+#define PHYS_ADDR_SMC_SIZE	(SZ_1M * 3)
+#define PHYS_ADDR_SMC_MEM	(0x80000000 + SZ_1G - PHYS_ADDR_SMC_SIZE)
+#define OMAP_ION_HEAP_SECURE_INPUT_SIZE	(SZ_1M * 90)
+#define PHYS_ADDR_DUCATI_SIZE	(SZ_1M * 105)
+#define PHYS_ADDR_DUCATI_MEM	(PHYS_ADDR_SMC_MEM - PHYS_ADDR_DUCATI_SIZE - \
+				OMAP_ION_HEAP_SECURE_INPUT_SIZE)
+#define HDMI_GPIO_HPD  63 /* Hotplug detect */
 
 static const int sdp4430_keymap[] = {
 	KEY(0, 0, KEY_E),
@@ -851,8 +858,6 @@ static void sdp4430_hdmi_mux_init(void)
 		pr_err("%s:Cannot request HDMI GPIOs %x \n", __func__, status);
 }
 
-
-
 static struct nokia_dsi_panel_data dsi1_panel = {
 		.name		= "taal",
 		.reset_gpio	= 102,
@@ -898,6 +903,10 @@ static struct omap_dss_device sdp4430_lcd_device = {
 	},
 	.channel = OMAP_DSS_CHANNEL_LCD,
 	.skip_init = false,
+};
+
+static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
+	.hpd_gpio = HDMI_GPIO_HPD,
 };
 
 static struct omap_dss_device sdp4430_hdmi_device = {
