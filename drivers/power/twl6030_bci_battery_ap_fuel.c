@@ -1061,8 +1061,8 @@ bool dcm_temp_sensor_status(int temp_h, int temp_l)
 
 /*mo2seongjae.jang@lge.com 20120813*/
 /*issue:
-º¹ÇÕ MST TEST issue: AP_USB retaion ¼³Á¤ ÈÄ, Idle¿¡¼­ 
-"ÈÞ´ëÆù ¿Âµµ°¡ ³Ê¹« ³·½À´Ï´Ù.ÁßÀüÀ» ÀÏ½Ã ÁßÁö ÇÕ´Ï´Ù. popup ¹ß»ý ÀÌ½´
+\BA\B9\C7\D5 MST TEST issue: AP_USB retaion \BC\B3\C1\A4 \C8\C4, Idle\BF\A1\BC\AD 
+"\C8Þ´\EB\C6\F9 \BFÂµ\B5\B0\A1 \B3Ê¹\AB \B3\B7\BD\C0\B4Ï´\D9.\C1\DF\C0\FC\C0\BB \C0Ï½\C3 \C1\DF\C1\F6 \C7Õ´Ï´\D9. popup \B9ß»\FD \C0Ì½\B4
 */
 #if defined(CONFIG_MUIC_MAX14526)
 extern int su760_factory_cable_detect;
@@ -2994,8 +2994,7 @@ static void twl6030_bci_battery_work(struct work_struct *work)
 //	D("[bclee][TWL6030] di->valid_charging_source=%d, charging_ic_status=%d", di->valid_charging_source, charging_ic_status);
   /* log added to check fuel gauge stability */
 //nthyunjin.yang 120615 remove log
-	printk("[Power] ui_cap = %d, volt = %d, chg_status = %d, temp_C = %d, chg_source = %d. \n",
-		di->ui_capacity, di->fg_voltage_mV, di->charge_status, di->temp_C, di->charger_source);
+	//printk("[Power] ui_cap = %d, volt = %d, chg_status = %d, temp_C = %d, chg_source = %d. \n", di->ui_capacity, di->fg_voltage_mV, di->charge_status, di->temp_C, di->charger_source);
 
 	if (max17043_get_ui_capacity()==100 &&
 	   di->charger_source != POWER_SUPPLY_TYPE_BATTERY)
