@@ -28,15 +28,6 @@
 #define OMAP4_LPDDR2_I684_FIX_VALUE	0x004E4000
 #define OMAP4_PROD_ID_I684_MASK		0x000C0000
 
-
-/*
- * Trim value has to be written to CONTROL_EFUSE_2 according to
- * OMAP4430 errata i684 (version B)
- * OMAP4430 units with ProdID[51:50]=11 are not affected
- */
-#define OMAP4_LPDDR2_I684_FIX_VALUE	0x004E4000
-#define OMAP4_PROD_ID_I684_MASK		0x000C0000
-
 static bool bgap_trim_sw_overide;
 static bool dpll_trim_override = true;
 static bool ddr_io_trim_override;
@@ -181,30 +172,6 @@ static __init int omap4_ldo_trim_init(void)
 	 *	 efuse fields, SW WA needed for LPDDR.
 	 * 1  1  New LPDDR trim formula to compensate for vertical vs horizontal
 	 *	 cell layout.  No overwrite required.
-	 */
-	if (cpu_is_omap443x()) {
-		u32 prod_id;
-
-		prod_id = omap_ctrl_readl(
-				OMAP4_CTRL_MODULE_CORE_STD_FUSE_PROD_ID_1);
-		prod_id &= OMAP4_PROD_ID_I684_MASK;
-		if (prod_id != OMAP4_PROD_ID_I684_MASK)
-			ddr_io_trim_override = true;
-	}
-
-	/*
-	 * Errata i684 (revision B)
-	 * Impacts all OMAP4430ESx.y trimmed and untrimmed excluding units
-	 * with with ProdID[51:50]=11
-	 * OMAP4460/70 are not impacted.
-	 *
-	 * ProdID:
-	 * 51 50
-	 * 0  0  Incorrect trim, SW WA needed.
-	 * 0  1  Fixed test program issue of overlapping of LPDDR & SmartIO
-	 *	 efuse fields, SW WA needed for LPDDR.
-	 * 1  1  New LPDDR trim formula to compensate for vertical vs horizontal
-	 *	 cell layout. No overwrite required.
 	 */
 	if (cpu_is_omap443x()) {
 		u32 prod_id;
