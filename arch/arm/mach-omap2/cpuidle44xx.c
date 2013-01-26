@@ -327,10 +327,10 @@ static void omap4_enter_idle_primary(struct omap4_processor_cx *cx)
 		pwrdm_set_logic_retst(core_pd, cx->core_logic_state);
 		omap_set_pwrdm_state(core_pd, cx->core_state);
 	}
-
 	//to SMART IDLE when sleep
 	if (cx->type >= OMAP4_STATE_C2)
 		omap_dma_set_midle(DMA_IDLEMODE_SMARTIDLE);
+	
 
 	pr_debug("%s: cpu0 down\n", __func__);
 
