@@ -46,8 +46,6 @@ struct device_opp {
     struct list_head opp_list;
 };
 
-extern struct device_opp * find_device_opp(struct device * dev);
-
 void customvoltage_register_freqmutex(struct mutex * freq_mutex)
 {
     frequency_mutex = freq_mutex;
@@ -67,6 +65,8 @@ void customvoltage_register_oppdevice(struct device * dev, char * dev_name)
     return;
 }
 EXPORT_SYMBOL(customvoltage_register_oppdevice);
+
+extern struct device_opp *find_device_opp(struct device *dev);
 
 void customvoltage_init(void)
 {
