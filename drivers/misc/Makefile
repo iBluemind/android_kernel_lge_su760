@@ -65,9 +65,11 @@ obj-$(CONFIG_MPU_SENSORS_MPU3050)   += mpu3050/
 # LGE_CHANGE [younglae.kim@lge.com] 2012-04-18 BMC050 will be used for U2
 obj-$(CONFIG_SENSORS_BMC050)        += bmc050/
 obj-$(CONFIG_TWL6040_VIB)	+= twl6040-vib.o
+obj-$(CONFIG_CDC_TCXO)		+= cdc_tcxo.o
 obj-$(CONFIG_GCCORE)		+= gcx/gccore/
 obj-$(CONFIG_GCBV)		+= gcx/gcbv/
 obj-$(CONFIG_GCIOCTL)		+= gcx/gcioctl/
+<<<<<<< HEAD
 # LGE_SJIT 2011-11-29 [dojip.kim@lge.com] add tspdrv from P940 GB
 # LGE_CHANGE [seungmoon.lee@lge.com] 2011-08-18
 obj-$(CONFIG_TSPDRV)		+= tspdrv/
@@ -79,3 +81,6 @@ obj-$(CONFIG_TS0710_MUX)	+= ts0710mux/
 obj-$(CONFIG_FSYNC_CONTROL)	+= fsync_control.o
 obj-$(CONFIG_CUSTOM_VOLTAGE)	+= custom_voltage.o
 
+=======
+obj-$(CONFIG_CACHE2DMANAGER)	+= cache-2dmanager/
+>>>>>>> omap/p-android-omap-3.0

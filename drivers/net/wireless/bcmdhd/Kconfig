@@ -65,6 +65,7 @@ config BCMDHD_HOSTWAKEUP_USE_SDIO
 	bool "Use SDIO pin to the Host Wakeup"
 	default n
 	---help---
+<<<<<<< HEAD
 	  Use SDIO pin to the Host Wakeup
 
 config BCMDHD_GPIO_WL_HOSTWAKEUP
@@ -89,3 +90,20 @@ config BCMDHD_USE_STATIC_BUF
 	---help---
 	  Use static buffer in os_malloc
 
+=======
+	  Use memory preallocated in platform
+
+config DHD_USE_SCHED_SCAN
+	bool "Use CFG80211 sched scan"
+	depends on BCMDHD && CFG80211
+	default n
+	---help---
+	  Use CFG80211 sched scan
+
+config DHD_ENABLE_P2P
+	bool "Enable Wifi Direct"
+	depends on BCMDHD && CFG80211
+	default n
+	---help---
+	  Use Enable Wifi Direct
+>>>>>>> omap/p-android-omap-3.0

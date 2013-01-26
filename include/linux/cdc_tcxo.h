@@ -19,6 +19,7 @@
 
 /* REGISTER1 bit fields */
 
+<<<<<<< HEAD
 #define CDC_TCXO_REQ1POL	0x01
 #define CDC_TCXO_REQ2POL	0x02
 #define CDC_TCXO_REQ3POL	0x04
@@ -41,6 +42,30 @@
 #define CDC_TCXO_REQ2PRIO	0x02
 #define CDC_TCXO_REQ3PRIO	0x04
 #define CDC_TCXO_REQ4PRIO	0x08
+=======
+#define CDC_TCXO_REQ1POL	BIT(0)
+#define CDC_TCXO_REQ2POL	BIT(1)
+#define CDC_TCXO_REQ3POL	BIT(2)
+#define CDC_TCXO_REQ4POL	BIT(3)
+#define CDC_TCXO_REQ1INT	BIT(4)
+#define CDC_TCXO_REQ2INT	BIT(5)
+#define CDC_TCXO_REQ3INT	BIT(6)
+#define CDC_TCXO_REQ4INT	BIT(7)
+
+/* REGISTER2 bit fields */
+
+#define CDC_TCXO_MREQ1		BIT(4)
+#define CDC_TCXO_MREQ2		BIT(5)
+#define CDC_TCXO_MREQ3		BIT(6)
+#define CDC_TCXO_MREQ4		BIT(7)
+
+/* REGISTER3 bit fields */
+
+#define CDC_TCXO_REQ1PRIO	BIT(0)
+#define CDC_TCXO_REQ2PRIO	BIT(1)
+#define CDC_TCXO_REQ3PRIO	BIT(2)
+#define CDC_TCXO_REQ4PRIO	BIT(3)
+>>>>>>> omap/p-android-omap-3.0
 #define CDC_TCXO_LDOEN0		BIT(4)
 #define CDC_TCXO_LDOEN1		BIT(5)
 #define CDC_TCXO_MREQCTRL0	BIT(6)
@@ -62,8 +87,13 @@ struct cdc_tcxo_platform_data {
 int cdc_tcxo_set_req_int(int clk_id, int enable);
 int cdc_tcxo_set_req_prio(int clk_id, int req_prio);
 #else
+<<<<<<< HEAD
 int cdc_tcxo_set_req_int(int clk_id, int enable) { return 0; }
 int cdc_tcxo_set_req_prio(int clk_id, int req_prio) { return 0; }
+=======
+static inline int cdc_tcxo_set_req_int(int clk_id, int enable) { return 0; }
+static inline int cdc_tcxo_set_req_prio(int clk_id, int req_prio) { return 0; }
+>>>>>>> omap/p-android-omap-3.0
 #endif
 
 #endif /* _LINUX_CDC_TCXO_H_ */

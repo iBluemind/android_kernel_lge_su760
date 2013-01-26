@@ -256,6 +256,7 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
 	 * This is only for framebuffer update not for TV timing setting
 	 * Setting TV timing will be done only on enable
 	 */
+<<<<<<< HEAD
 	dssdev->panel.timings.x_res = 640;
 	dssdev->panel.timings.y_res = 480;
 #else
@@ -263,6 +264,11 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
 	dssdev->panel.timings.y_res = 720;
 #endif
 // LGE_CHANGE_E [sungho.jung@lge.com] 2012-04-03
+=======
+	if (dssdev->panel.timings.x_res == 0)
+		dssdev->panel.timings = (struct omap_video_timings)
+			{640, 480, 31746, 128, 24, 29, 9, 40, 2};
+>>>>>>> omap/p-android-omap-3.0
 
 	/* sysfs entry to provide user space control to set deepcolor mode */
 	if (sysfs_create_group(&dssdev->dev.kobj, &hdmi_panel_attr_group))
@@ -302,6 +308,7 @@ static int hdmi_panel_enable(struct omap_dss_device *dssdev)
 	}
 
 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+	hdmi_inform_power_on_to_cec(true);
 err:
 	mutex_unlock(&hdmi.hdmi_lock);
 	HDMIDBG("error:%d\n", r);
@@ -313,7 +320,7 @@ static void hdmi_panel_disable(struct omap_dss_device *dssdev)
 {
 	HDMIDBG("ENTER \n");
 	mutex_lock(&hdmi.hdmi_lock);
-
+	hdmi_inform_power_on_to_cec(false);
 	if (dssdev->state == OMAP_DSS_DISPLAY_ACTIVE)
 		omapdss_hdmi_display_disable(dssdev);
 
@@ -330,7 +337,9 @@ static int hdmi_panel_suspend(struct omap_dss_device *dssdev)
 	mutex_lock(&hdmi.hdmi_lock);
 
 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
-		r = -EINVAL;
+		/* We should enable "resume" event handler for case, when HDMI
+		 * display is plugged in while device was in suspend mode */
+		dssdev->activate_after_resume = true;
 		goto err;
 	}
 
@@ -350,10 +359,8 @@ static int hdmi_panel_resume(struct omap_dss_device *dssdev)
 	HDMIDBG("ENTER state=%d \n", dssdev->state);
 	mutex_lock(&hdmi.hdmi_lock);
 
-	if (dssdev->state != OMAP_DSS_DISPLAY_SUSPENDED) {
-		r = -EINVAL;
+	if (dssdev->state != OMAP_DSS_DISPLAY_SUSPENDED)
 		goto err;
-	}
 
 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
 err:
@@ -402,6 +409,7 @@ static void hdmi_hotplug_detect_worker(struct work_struct *work)
 	mutex_lock(&hdmi.hdmi_lock);
 	if (state == HPD_STATE_OFF) {
 		switch_set_state(&hdmi.hpd_switch, 0);
+		hdmi_inform_hpd_to_cec(false);
 		if (dssdev->state == OMAP_DSS_DISPLAY_ACTIVE) {
 			mutex_unlock(&hdmi.hdmi_lock);
 			dssdev->driver->disable(dssdev);
@@ -431,6 +439,7 @@ static void hdmi_hotplug_detect_worker(struct work_struct *work)
 					dssdev->panel.monspecs.max_x * 10000;
 			dssdev->panel.height_in_um =
 					dssdev->panel.monspecs.max_y * 10000;
+			hdmi_inform_hpd_to_cec(true);
 			switch_set_state(&hdmi.hpd_switch, 1);
 			goto done;
 		} else if (state == HPD_STATE_EDID_TRYLAST){
@@ -505,6 +514,12 @@ static int hdmi_get_modedb(struct omap_dss_device *dssdev,
 	memcpy(modedb, specs->modedb, sizeof(*modedb) * modedb_len);
 	return modedb_len;
 }
+static void hdmi_get_resolution(struct omap_dss_device *dssdev,
+			       u16 *xres, u16 *yres)
+{
+	*xres = dssdev->panel.timings.x_res;
+	*yres = dssdev->panel.timings.y_res;
+}
 
 static struct omap_dss_driver hdmi_driver = {
 	.probe		= hdmi_panel_probe,
@@ -516,6 +531,7 @@ static struct omap_dss_driver hdmi_driver = {
 	.get_timings	= hdmi_get_timings,
 	.set_timings	= hdmi_set_timings,
 	.check_timings	= hdmi_check_timings,
+	.get_resolution = hdmi_get_resolution,
 	.get_modedb	= hdmi_get_modedb,
 	.set_mode	= omapdss_hdmi_display_set_mode,
 #if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY)	  //mo2sanghyun.lee 2012.06.12   3d setting

@@ -246,6 +246,9 @@ struct platform_device;
 struct bus_type *dss_get_bus(void);
 struct regulator *dss_get_vdds_dsi(void);
 struct regulator *dss_get_vdds_sdi(void);
+void omap_dss_request_high_bandwidth(struct device *dss_dev);
+void omap_dss_reset_high_bandwidth(struct device *dss_dev);
+void omap_dss_overlay_ensure_bw(void);
 
 /* display */
 int dss_suspend_all_devices(void);
@@ -266,7 +269,7 @@ void default_get_overlay_fifo_thresholds(enum omap_plane plane,
 int dss_init_overlay_managers(struct platform_device *pdev);
 void dss_uninit_overlay_managers(struct platform_device *pdev);
 int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl);
-void dss_setup_partial_planes(struct omap_dss_device *dssdev,
+int dss_setup_partial_planes(struct omap_dss_device *dssdev,
 				u16 *x, u16 *y, u16 *w, u16 *h,
 				bool enlarge_update_area);
 void dss_start_update(struct omap_dss_device *dssdev);
@@ -491,6 +494,7 @@ void dispc_set_plane_pos(enum omap_plane plane, u16 x, u16 y);
 void dispc_set_plane_size(enum omap_plane plane, u16 width, u16 height);
 void dispc_set_channel_out(enum omap_plane plane,
 		enum omap_channel channel_out);
+void dispc_set_wb_channel_out(enum omap_plane plane);
 
 void dispc_enable_gamma_table(bool enable);
 int dispc_setup_plane(enum omap_plane plane,
@@ -505,7 +509,7 @@ int dispc_setup_plane(enum omap_plane plane,
 		      u8 rotation, bool mirror,
 		      u8 global_alpha, u8 pre_mult_alpha,
 		      enum omap_channel channel,
-		      u32 puv_addr);
+		      u32 puv_addr, bool source_of_wb);
 int dispc_scaling_decision(u16 width, u16 height,
 		u16 out_width, u16 out_height,
 		enum omap_plane plane,
@@ -562,6 +566,7 @@ int dispc_get_clock_div(enum omap_channel channel,
 		struct dispc_clock_info *cinfo);
 u32 sa_calc_wrap(struct dispc_config *dispc_reg_config, u32 channel_no);
 int dispc_setup_wb(struct writeback_cache_data *wb);
+void dispc_setup_wb_source(enum omap_writeback_source source);
 void dispc_go_wb(void);
 
 /* VENC */
@@ -619,6 +624,8 @@ int omapdss_hdmi_get_s3d_enable(void);
 
 int hdmi_get_current_hpd(void);
 void hdmi_get_monspecs(struct fb_monspecs *specs);
+void hdmi_inform_hpd_to_cec(int status);
+void hdmi_inform_power_on_to_cec(int status);
 u8 *hdmi_read_edid(struct omap_video_timings *);
 
 int hdmi_panel_init(void);
@@ -627,6 +634,12 @@ void hdmi_dump_regs(struct seq_file *s);
 int omapdss_hdmi_register_hdcp_callbacks(void (*hdmi_start_frame_cb)(void),
 					 void (*hdmi_irq_cb)(int status),
 					 bool (*hdmi_power_on_cb)(void));
+int omapdss_hdmi_register_cec_callbacks(void (*hdmi_cec_enable_cb)(int status),
+					void (*hdmi_cec_irq_cb)(void),
+					void (*hdmi_cec_hpd)(int phy_addr,
+					int status));
+int omapdss_hdmi_unregister_cec_callbacks(void);
+
 int omap_dss_ovl_set_info(struct omap_overlay *ovl,
 		struct omap_overlay_info *info);
 

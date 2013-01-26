@@ -59,6 +59,8 @@ static int wl_cfgp2p_start_xmit(struct sk_buff *skb, struct net_device *ndev);
 static int wl_cfgp2p_do_ioctl(struct net_device *net, struct ifreq *ifr, int cmd);
 static int wl_cfgp2p_if_open(struct net_device *net);
 static int wl_cfgp2p_if_stop(struct net_device *net);
+static s32 wl_cfgp2p_cancel_listen(struct wl_priv *wl, struct net_device *ndev,
+	bool notify);
 
 static const struct net_device_ops wl_cfgp2p_if_ops = {
 	.ndo_open		= wl_cfgp2p_if_open,
@@ -105,6 +107,7 @@ bool wl_cfgp2p_is_p2p_action(void *frame, u32 frame_len)
 
 	return false;
 }
+
 bool wl_cfgp2p_is_gas_action(void *frame, u32 frame_len)
 {
 
@@ -128,6 +131,7 @@ bool wl_cfgp2p_is_gas_action(void *frame, u32 frame_len)
 		return false;
 
 }
+
 void wl_cfgp2p_print_actframe(bool tx, void *frame, u32 frame_len)
 {
 	wifi_p2p_pub_act_frame_t *pact_frm;
@@ -274,7 +278,6 @@ wl_cfgp2p_init_priv(struct wl_priv *wl)
 	wl_to_p2p_bss_bssidx(wl, P2PAPI_BSSCFG_DEVICE) = 0;
 	wl_to_p2p_bss_ndev(wl, P2PAPI_BSSCFG_CONNECTION) = NULL;
 	wl_to_p2p_bss_bssidx(wl, P2PAPI_BSSCFG_CONNECTION) = 0;
-	spin_lock_init(&wl->p2p->timer_lock);
 	return BCME_OK;
 
 }
@@ -342,6 +345,7 @@ wl_cfgp2p_ifadd(struct wl_priv *wl, struct ether_addr *mac, u8 if_type,
 	u32 scb_timeout = 10;
 #endif /* CONFIG_COMMON_PATCH */
 	struct net_device *ndev = wl_to_prmry_ndev(wl);
+	u32 scb_timeout = WL_SCB_TIMEOUT;
 
 	ifreq.type = if_type;
 	ifreq.chspec = chspec;
@@ -356,15 +360,24 @@ wl_cfgp2p_ifadd(struct wl_priv *wl, struct ether_addr *mac, u8 if_type,
 	err = wldev_iovar_setbuf(ndev, "p2p_ifadd", &ifreq, sizeof(ifreq),
 		wl->ioctl_buf, WLC_IOCTL_MAXLEN, &wl->ioctl_buf_sync);
 
+<<<<<<< HEAD:drivers/net/wireless/bcmdhd/src/wl/sys/wl_cfgp2p.c
 #ifdef CONFIG_COMMON_PATCH
 	if (unlikely(err < 0))
 		printk("'wl p2p_ifadd' error %d\n", err);
 	else if (if_type == WL_P2P_IF_GO) {
+=======
+	if (unlikely(err < 0)) {
+		printk("'wl p2p_ifadd' error %d\n", err);
+	} else if (if_type == WL_P2P_IF_GO) {
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/wl_cfgp2p.c
 		err = wldev_ioctl(ndev, WLC_SET_SCB_TIMEOUT, &scb_timeout, sizeof(u32), true);
 		if (unlikely(err < 0))
 			printk("'wl scb_timeout' error %d\n", err);
 	}
+<<<<<<< HEAD:drivers/net/wireless/bcmdhd/src/wl/sys/wl_cfgp2p.c
 #endif /* CONFIG_COMMON_PATCH */
+=======
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/wl_cfgp2p.c
 
 	return err;
 }
@@ -402,9 +415,13 @@ wl_cfgp2p_ifchange(struct wl_priv *wl, struct ether_addr *mac, u8 if_type,
 {
 	wl_p2p_if_t ifreq;
 	s32 err;
+<<<<<<< HEAD:drivers/net/wireless/bcmdhd/src/wl/sys/wl_cfgp2p.c
 #ifdef CONFIG_COMMON_PATCH
 	u32 scb_timeout = 10;
 #endif /* CONFIG_COMMON_PATCH */
+=======
+	u32 scb_timeout = WL_SCB_TIMEOUT;
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/wl_cfgp2p.c
 	struct net_device *netdev =  wl_to_p2p_bss_ndev(wl, P2PAPI_BSSCFG_CONNECTION);
 
 	ifreq.type = if_type;
@@ -422,6 +439,10 @@ wl_cfgp2p_ifchange(struct wl_priv *wl, struct ether_addr *mac, u8 if_type,
 
 	if (unlikely(err < 0)) {
 		printk("'wl p2p_ifupd' error %d\n", err);
+	} else if (if_type == WL_P2P_IF_GO) {
+		err = wldev_ioctl(netdev, WLC_SET_SCB_TIMEOUT, &scb_timeout, sizeof(u32), true);
+		if (unlikely(err < 0))
+			printk("'wl scb_timeout' error %d\n", err);
 	}
 #ifdef CONFIG_COMMON_PATCH 
 	else if (if_type == WL_P2P_IF_GO) {
@@ -1224,12 +1245,15 @@ wl_cfgp2p_listen_complete(struct wl_priv *wl, struct net_device *ndev,
 	s32 ret = BCME_OK;
 
 	CFGP2P_DBG((" Enter\n"));
+
+	/* If p2p_info is de-initialized, do nothing  */
+	if (!wl->p2p)
+		return ret;
+
 	if (wl_get_p2p_status(wl, LISTEN_EXPIRED) == 0) {
 		wl_set_p2p_status(wl, LISTEN_EXPIRED);
 		if (timer_pending(&wl->p2p->listen_timer)) {
-			spin_lock_bh(&wl->p2p->timer_lock);
 			del_timer_sync(&wl->p2p->listen_timer);
-			spin_unlock_bh(&wl->p2p->timer_lock);
 		}
 		cfg80211_remain_on_channel_expired(ndev, wl->last_roc_id, &wl->remain_on_chan,
 		    wl->remain_on_chan_type, GFP_KERNEL);
@@ -1254,6 +1278,33 @@ wl_cfgp2p_listen_expired(unsigned long data)
 	CFGP2P_DBG((" Enter\n"));
 	msg.event_type =  hton32(WLC_E_P2P_DISC_LISTEN_COMPLETE);
 	wl_cfg80211_event(wl_to_p2p_bss_ndev(wl, P2PAPI_BSSCFG_DEVICE), &msg, NULL);
+}
+
+/*
+ *  Routine for cancelling the P2P LISTEN
+ */
+static s32
+wl_cfgp2p_cancel_listen(struct wl_priv *wl, struct net_device *ndev,
+                         bool notify)
+{
+	WL_DBG(("Enter \n"));
+
+	/* Irrespective of whether timer is running or not, reset
+	 * the LISTEN state.
+	 */
+	wl_cfgp2p_set_p2p_mode(wl, WL_P2P_DISC_ST_SCAN, 0, 0,
+		wl_to_p2p_bss_bssidx(wl, P2PAPI_BSSCFG_DEVICE));
+
+	if (timer_pending(&wl->p2p->listen_timer)) {
+		del_timer_sync(&wl->p2p->listen_timer);
+
+		if (notify)
+			cfg80211_remain_on_channel_expired(ndev, wl->last_roc_id,
+				&wl->remain_on_chan, wl->remain_on_chan_type, GFP_KERNEL);
+	}
+
+
+	return 0;
 }
 
 /*
@@ -1574,8 +1625,10 @@ wl_cfgp2p_supported(struct wl_priv *wl, struct net_device *ndev)
 s32
 wl_cfgp2p_down(struct wl_priv *wl)
 {
-	if (timer_pending(&wl->p2p->listen_timer))
-		del_timer_sync(&wl->p2p->listen_timer);
+
+	wl_cfgp2p_cancel_listen(wl,
+		wl->p2p_net ? wl->p2p_net : wl_to_prmry_ndev(wl), TRUE);
+
 	wl_cfgp2p_deinit_priv(wl);
 	return 0;
 }

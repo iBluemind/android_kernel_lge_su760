@@ -588,7 +588,10 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 
 		if (request->actual == request->length) {
 			musb_g_giveback(musb_ep, request, 0);
+<<<<<<< HEAD
 
+=======
+>>>>>>> omap/p-android-omap-3.0
 			/*
 			 * In the giveback function the MUSB lock is
 			 * released and acquired after sometime. During
@@ -598,7 +601,10 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 			 * we are reading/modifying the right registers
 			 */
 			musb_ep_select(mbase, epnum);
+<<<<<<< HEAD
 			
+=======
+>>>>>>> omap/p-android-omap-3.0
 			req = musb_ep->desc ? next_request(musb_ep) : NULL;
 			if (!req) {
 				dev_dbg(musb->controller, "%s idle now\n",
@@ -1757,7 +1763,8 @@ static int musb_gadget_pullup(struct usb_gadget *gadget, int is_on)
 	}
 	spin_unlock_irqrestore(&musb->lock, flags);
 
-	pm_runtime_put(musb->controller);
+	pm_runtime_mark_last_busy(musb->controller);
+	pm_runtime_put_autosuspend(musb->controller);
 
 	return 0;
 }
@@ -1987,6 +1994,7 @@ int usb_gadget_probe_driver(struct usb_gadget_driver *driver,
 		}
 
 		hcd->self.uses_pio_for_control = 1;
+		hcd->self.dma_align = 1;
 	}
 
 	if ((musb->xceiv->last_event == USB_EVENT_NONE) ||

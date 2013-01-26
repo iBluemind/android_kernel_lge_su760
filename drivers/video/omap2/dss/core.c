@@ -32,6 +32,8 @@
 #include <linux/io.h>
 #include <linux/device.h>
 #include <linux/regulator/consumer.h>
+#include <plat/omap_hwmod.h>
+#include <plat/omap-pm.h>
 
 #include <video/omapdss.h>
 
@@ -167,6 +169,33 @@ static inline void dss_uninitialize_debugfs(void)
 }
 #endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
 
+/*
+ * The value of HIGH_RES_TPUT corresponds to one dispc pipe layer of
+ * 1920x1080x4(bpp)x60(Hz) = ~500000(MiB/s). We add another 100000
+ * for the other partial screen pipes. This is above the threshold for
+ * selecting the higher OPP and L3 frequency, so it's "as fast" as we
+ * can go so covers the higest supported resolution.
+ */
+#define HIGH_RES_TPUT 600000 /* MiB/s */
+void omap_dss_request_high_bandwidth(struct device *dss_dev)
+{
+	if (IS_ERR_OR_NULL(dss_dev))
+		DSSERR("%s: wrong dss_dev pointer\n", __func__);
+	else if (!omap_pm_set_min_bus_tput(dss_dev,
+					OCP_INITIATOR_AGENT, HIGH_RES_TPUT))
+		return;
+	DSSDBG("Failed to set high L3 bus speed\n");
+}
+
+void omap_dss_reset_high_bandwidth(struct device *dss_dev)
+{
+	if (IS_ERR_OR_NULL(dss_dev))
+		DSSERR("%s: wrong dss_dev pointer\n", __func__);
+	else if (!omap_pm_set_min_bus_tput(dss_dev, OCP_INITIATOR_AGENT, -1))
+		return;
+	DSSDBG("Failed to reset high L3 bus speed\n");
+}
+
 /* PLATFORM DEVICE */
 static int omap_dss_probe(struct platform_device *pdev)
 {
@@ -227,6 +256,9 @@ static int omap_dss_probe(struct platform_device *pdev)
 	for (i = 0; i < pdata->num_devices; ++i) {
 		struct omap_dss_device *dssdev = pdata->devices[i];
 
+		if (def_disp_name && strcmp(def_disp_name, dssdev->name) == 0)
+			pdata->default_device = dssdev;
+
 		r = omap_dss_register_device(dssdev);
 		if (r) {
 			DSSERR("device %d %s register failed %d\n", i,
@@ -237,9 +269,6 @@ static int omap_dss_probe(struct platform_device *pdev)
 
 			goto err_register;
 		}
-
-		if (def_disp_name && strcmp(def_disp_name, dssdev->name) == 0)
-			pdata->default_device = dssdev;
 	}
 
 	return 0;
@@ -439,10 +468,17 @@ static void omap_dss_driver_disable(struct omap_dss_device *dssdev)
 
 static int omap_dss_driver_enable(struct omap_dss_device *dssdev)
 {
-	int r = dssdev->driver->enable_orig(dssdev);
+	int r;
+	r = dssdev->driver->enable_orig(dssdev);
 	if (!r && dssdev->state == OMAP_DSS_DISPLAY_ACTIVE)
 		blocking_notifier_call_chain(&dssdev->state_notifiers,
 					OMAP_DSS_DISPLAY_ACTIVE, dssdev);
+	return r;
+}
+
+static int omap_dss_driver_suspend(struct omap_dss_device *dssdev)
+{
+	int r = dssdev->driver->suspend_orig(dssdev);
 	return r;
 }
 
@@ -462,12 +498,19 @@ int omap_dss_register_driver(struct omap_dss_driver *dssdriver)
 	dssdriver->disable = omap_dss_driver_disable;
 	dssdriver->enable_orig = dssdriver->enable;
 	dssdriver->enable = omap_dss_driver_enable;
+<<<<<<< HEAD
 #if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) //##hwcho_20120522
 	dssdriver->enable_s3d = dssdriver->enable_s3d;
 	dssdriver->get_s3d_enabled = dssdriver->get_s3d_enabled;
 	dssdriver->set_s3d_disp_type = dssdriver->set_s3d_disp_type;  //mo2sanghyun.lee 
 	dssdriver->get_s3d_disp_type = dssdriver->get_s3d_disp_type;
 #endif //##
+=======
+
+	dssdriver->suspend_orig = dssdriver->suspend;
+	dssdriver->suspend = omap_dss_driver_suspend;
+
+>>>>>>> omap/p-android-omap-3.0
 	return driver_register(&dssdriver->driver);
 }
 EXPORT_SYMBOL(omap_dss_register_driver);

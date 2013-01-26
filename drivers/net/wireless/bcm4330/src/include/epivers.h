@@ -32,17 +32,31 @@
 
 #define	EPI_RC_NUMBER		100
 
+<<<<<<< HEAD:drivers/net/wireless/bcm4330/src/include/epivers.h
 #define	EPI_INCREMENTAL_NUMBER	14
 
 #define	EPI_BUILD_NUMBER	0
 
 #define	EPI_VERSION		5, 90, 100, 14
+=======
+#define	EPI_INCREMENTAL_NUMBER	75
+
+#define	EPI_BUILD_NUMBER	0
+
+#define	EPI_VERSION		5, 90, 195, 75
+
+#define	EPI_VERSION_NUM		0x055ac34b
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/epivers.h
 
 #define	EPI_VERSION_NUM		0x055a640e
 
 #define EPI_VERSION_DEV		5.90.100
 
+<<<<<<< HEAD:drivers/net/wireless/bcm4330/src/include/epivers.h
 /* Driver Version String, ASCII, 32 chars max */
 #define	EPI_VERSION_STR		"5.90.100.14"
+=======
+#define	EPI_VERSION_STR		"5.90.195.75"
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/epivers.h
 
 #endif /* _epivers_h_ */

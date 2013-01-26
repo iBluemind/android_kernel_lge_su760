@@ -75,4 +75,8 @@ obj-$(CONFIG_DRM_PSB)		+= gma500/
 obj-$(CONFIG_INTEL_MEI)		+= mei/
 obj-$(CONFIG_MFD_NVEC)		+= nvec/
 obj-$(CONFIG_THERMAL_FRAMEWORK) += thermal_framework/
+<<<<<<< HEAD
 obj-$(CONFIG_CPUPOWER)		+=cpupower/
+=======
+obj-$(CONFIG_RPC_OMAP)		+= omaprpc/
+>>>>>>> omap/p-android-omap-3.0

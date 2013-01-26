@@ -1280,6 +1280,32 @@ char *extra
 }
 
 static int
+wl_iw_set_suspend_mode(
+struct net_device *dev,
+struct iw_request_info *info,
+union iwreq_data *wrqu,
+char *extra
+)
+{
+	int ret = 0;
+
+#if !defined(CONFIG_HAS_EARLYSUSPEND) || !defined(DHD_USE_EARLYSUSPEND)
+	int suspend_flag;
+
+	suspend_flag = *(extra + strlen(SETSUSPENDMODE_CMD) + 1) - '0';
+
+	if (suspend_flag != 0)
+		suspend_flag = 1;
+
+	if (!(ret = net_os_set_suspend(dev, suspend_flag, 0)))
+		WL_ERROR(("%s: Suspend Mode %d\n",__FUNCTION__,suspend_flag));
+	else
+		WL_ERROR(("%s: failed %d\n", __FUNCTION__, ret));
+#endif
+	return ret;
+}
+
+static int
 wl_format_ssid(char* ssid_buf, uint8* ssid, int ssid_len)
 {
 	int i, c;
@@ -1768,10 +1794,14 @@ wl_iw_send_priv_event(
 	wrqu.data.length = strlen(extra);
 	wireless_send_event(dev, cmd, &wrqu, extra);
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/wl/sys/wl_iw.c
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/wl/sys/wl_iw.c
 	net_os_wake_lock_timeout_enable(dev);
 =======
 	net_os_wake_lock_ctrl_timeout_enable(dev, DHD_EVENT_TIMEOUT_MS);
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/wl_iw.c
+=======
+	net_os_wake_lock_ctrl_timeout_enable(dev, DHD_EVENT_TIMEOUT_MS);
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/wl_iw.c
 	WL_TRACE(("Send IWEVCUSTOM Event as %s\n", extra));
 
 	return 0;
@@ -8283,10 +8313,13 @@ wl_iw_set_priv(
 	    else if (strnicmp(extra, DTIM_SKIP_SET_CMD, strlen(DTIM_SKIP_SET_CMD)) == 0)
 			ret = wl_iw_set_dtim_skip(dev, info, (union iwreq_data *)dwrq, extra);
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/wl/sys/wl_iw.c
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/wl/sys/wl_iw.c
 	    else if (strnicmp(extra, SETSUSPEND_CMD, strlen(SETSUSPEND_CMD)) == 0)
 			ret = wl_iw_set_suspend(dev, info, (union iwreq_data *)dwrq, extra);
 	    else if (strnicmp(extra, TXPOWER_SET_CMD, strlen(TXPOWER_SET_CMD)) == 0)
 =======
+=======
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/wl_iw.c
 		else if (strnicmp(extra, SETSUSPENDOPT_CMD, strlen(SETSUSPENDOPT_CMD)) == 0)
 			ret = wl_iw_set_suspend_opt(dev, info, (union iwreq_data *)dwrq, extra);
 		else if (strnicmp(extra, SETSUSPENDMODE_CMD, strlen(SETSUSPENDMODE_CMD)) == 0)

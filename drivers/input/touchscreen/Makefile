@@ -63,6 +63,7 @@ obj-$(CONFIG_TOUCHSCREEN_W90X900)	+= w90p910_ts.o
 obj-$(CONFIG_TOUCHSCREEN_TPS6507X)	+= tps6507x-ts.o
 obj-$(CONFIG_TOUCHSCREEN_SYNTM12XX)	+= syntm12xx.o
 obj-$(CONFIG_TOUCHSCREEN_QUANTUM_OBP)	+= qtouch_obp_ts.o
+<<<<<<< HEAD
 
 ## LGE_SJIT_S 2011-10-13 [choongryeol.lee@lge.com] synaptics rmi4 touch driver
 obj-$(CONFIG_LGE_TOUCHSCREEN_SYNAPTICS_RMI4_I2C)	+=touch_synaptics_rmi4_i2c.o touch_synaptics_fw_upgrade_lghdk.o
@@ -84,3 +85,6 @@ obj-$(CONFIG_TOUCHSCREEN_MMS136)        += melfas_ts.o mms136_ISP_download.o mms
 ## LGE_SJIT 2011-11-16 [dojip.kim@lge.com] unified touch firmware version path
 ## from [G1-COMMON][touch] Unified Touch Firmware Version PATH
 obj-$(CONFIG_TS_INFO_CLASS)             += ts_class.o
+=======
+obj-$(CONFIG_TOUCHSCREEN_CYPRESS_TTSP) +=  cyttsp4_core.o cyttsp4_i2c.o
+>>>>>>> omap/p-android-omap-3.0

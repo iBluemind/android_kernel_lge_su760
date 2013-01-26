@@ -71,6 +71,7 @@ static int dapm_up_seq[] = {
 	[snd_soc_dapm_out_drv] = 10,
 	[snd_soc_dapm_hp] = 10,
 	[snd_soc_dapm_spk] = 10,
+	[snd_soc_dapm_line] = 10,
 	[snd_soc_dapm_post] = 11,
 };
 
@@ -79,6 +80,7 @@ static int dapm_down_seq[] = {
 	[snd_soc_dapm_adc] = 1,
 	[snd_soc_dapm_hp] = 2,
 	[snd_soc_dapm_spk] = 2,
+	[snd_soc_dapm_line] = 2,
 	[snd_soc_dapm_out_drv] = 2,
 	[snd_soc_dapm_pga] = 4,
 	[snd_soc_dapm_mixer_named_ctl] = 5,
@@ -3092,7 +3094,11 @@ static void soc_dapm_shutdown_codec(struct snd_soc_dapm_context *dapm)
 	LIST_HEAD(down_list);
 	int powerdown = 0;
 
+<<<<<<< HEAD
 	mutex_lock(&card->dapm_mutex);
+=======
+	mutex_lock(&card->power_mutex);
+>>>>>>> omap/p-android-omap-3.0
 
 	list_for_each_entry(w, &dapm->card->widgets, list) {
 		if (w->dapm != dapm)
@@ -3117,7 +3123,11 @@ static void soc_dapm_shutdown_codec(struct snd_soc_dapm_context *dapm)
 						    SND_SOC_BIAS_STANDBY);
 	}
 
+<<<<<<< HEAD
 	mutex_unlock(&card->dapm_mutex);
+=======
+	mutex_unlock(&card->power_mutex);
+>>>>>>> omap/p-android-omap-3.0
 }
 
 /*

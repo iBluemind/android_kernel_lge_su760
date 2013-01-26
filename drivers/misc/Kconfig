@@ -570,12 +570,15 @@ config CDC_TCXO
 	help
 	  Enable support for Texas Instruments CDC TCXO CDC3S04
 
+<<<<<<< HEAD
 # RIP-12331 : handling CP Crash of RIL Recovery
 config LGE_MODEM_WATCHER
 	bool "LGE Modem Watcher"
 	depends on MACH_LGE
 	default n
 
+=======
+>>>>>>> omap/p-android-omap-3.0
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
@@ -593,6 +596,7 @@ source "drivers/misc/carma/Kconfig"
 source "drivers/misc/gcx/gccore/Kconfig"
 source "drivers/misc/gcx/gcioctl/Kconfig"
 source "drivers/misc/gcx/gcbv/Kconfig"
+<<<<<<< HEAD
 source "drivers/misc/ts0710mux/Kconfig"
 source "drivers/misc/ti-st/Kconfig"
 
@@ -607,5 +611,8 @@ config CUSTOM_VOLTAGE
 	default y
 	help
 	  Say Y here to enable Custom Voltage
+=======
+source "drivers/misc/cache-2dmanager/Kconfig"
+>>>>>>> omap/p-android-omap-3.0
 
 endif # MISC_DEVICES

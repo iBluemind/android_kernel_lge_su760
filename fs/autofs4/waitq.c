@@ -91,6 +91,7 @@ static int autofs4_write(struct file *file, const void *addr, int bytes)
 	return (bytes > 0);
 }
 
+<<<<<<< HEAD
 /*
  * The autofs_v5 packet was misdesigned.
  *
@@ -108,6 +109,8 @@ static noinline size_t autofs_v5_packet_size(struct autofs_sb_info *sbi)
 	return pktsz;
 }
 
+=======
+>>>>>>> omap/p-android-omap-3.0
 static void autofs4_notify_daemon(struct autofs_sb_info *sbi,
 				 struct autofs_wait_queue *wq,
 				 int type)

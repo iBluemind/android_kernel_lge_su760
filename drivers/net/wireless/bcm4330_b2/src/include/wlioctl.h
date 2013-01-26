@@ -25,10 +25,14 @@
  * other than the GPL, without Broadcom's express prior written consent.
  *
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/wlioctl.h
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/wlioctl.h
  * $Id: wlioctl.h,v 1.767.2.38 2011-02-01 23:04:28 Exp $
 =======
  * $Id: wlioctl.h 353331 2012-08-27 06:04:47Z $
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/wlioctl.h
+=======
+ * $Id: wlioctl.h 331292 2012-05-04 09:04:23Z $
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/wlioctl.h
  */
 
 
@@ -1131,10 +1135,14 @@ typedef struct {
 #define WL_AUTH_OPEN_SYSTEM     0   
 #define WL_AUTH_SHARED_KEY      1   
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/wlioctl.h
+<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/wlioctl.h
 #define WL_AUTH_OPEN_SHARED     2   
 =======
 #define WL_AUTH_OPEN_SHARED		2	
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/wlioctl.h
+=======
+#define WL_AUTH_OPEN_SHARED		2	
+>>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/wlioctl.h
 
 
 #define WL_RADIO_SW_DISABLE     (1<<0)

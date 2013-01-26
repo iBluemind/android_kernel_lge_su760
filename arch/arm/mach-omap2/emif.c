@@ -73,6 +73,30 @@ static struct omap_device_pm_latency omap_emif_latency[] = {
 #define EMIF_ERRATUM_SR_TIMER_i735	BIT(0)
 #define EMIF_ERRATUM_SR_TIMER_MIN	6
 
+/*
+ * TI Errata i743 - LPDDR2 Power-Down State is Not Efficient
+ * IMPACTED: OMAP4430 and OMAP4460 all revisions
+ * The EMIF supports power-down state for low power. The EMIF automatically
+ * puts the SDRAM into power-down after the memory is not accessed for a
+ * defined number of cycles and the EMIF_PWR_MGMT_CTRL[10:8] REG_LP_MODE bit
+ * field is set to 0x4.
+ * As the EMIF supports automatic output impedance calibration, a ZQ
+ * calibration long command is issued every time it exits active power-down
+ * and precharge power-down modes. The EMIF waits and blocks any other command
+ * during this calibration.
+ * The EMIF does not allow selective disabling of ZQ calibration upon exit of
+ * power-down mode. Due to very short periods of power-down cycles,
+ * ZQ calibration overhead creates bandwidth issues and increases overall
+ * system power consumption. On the other hand, issuing ZQ calibration
+ * long commands when exiting self-refresh is still required.
+ *
+ * W/A: Because there is no power consumption benefit of the power-down due to
+ * the calibration and there is a performance risk, the guideline is to not
+ * allow power-down state and, therefore, to not have set the
+ * EMIF_PWR_MGMT_CTRL[10:8] REG_LP_MODE bit field to 0x4.
+ */
+#define EMIF_ERRATUM_POWER_DOWN_NOT_EFFICIENT_i743	BIT(1)
+
 static u32 emif_errata;
 #define is_emif_erratum(erratum) (emif_errata & EMIF_ERRATUM_##erratum)
 
@@ -521,8 +545,10 @@ static u32 get_ddr_phy_ctrl_1(u32 freq, u8 RL)
 		val = EMIF_DLL_SLAVE_DLY_CTRL_100_MHZ_AND_LESS;
 	else if (freq <= 200000000)
 		val = EMIF_DLL_SLAVE_DLY_CTRL_200_MHZ;
-	else
+	else if (freq <= 400000000)
 		val = EMIF_DLL_SLAVE_DLY_CTRL_400_MHZ;
+	else
+		val = EMIF_DLL_SLAVE_DLY_CTRL_466_MHZ;
 	mask_n_set(phy, OMAP44XX_REG_DLL_SLAVE_DLY_CTRL_SHIFT,
 		   OMAP44XX_REG_DLL_SLAVE_DLY_CTRL_MASK, val);
 
@@ -566,6 +592,17 @@ static void set_lp_mode(u32 emif_nr, u32 lpmode)
 {
 	u32 temp;
 	void __iomem *base = emif[emif_nr].base;
+
+	if (is_emif_erratum(POWER_DOWN_NOT_EFFICIENT_i743) &&
+		(LP_MODE_PWR_DN == lpmode)) {
+
+		WARN_ONCE(1, "%s: Power-down mode"
+			" REG_LP_MODE = LP_MODE_PWR_DN(0x4) is prohibited by "
+			" erratum i743 switch to LP_MODE_SELF_REFRESH(0x2)",
+			__func__);
+		/* rallback LP_MODE to Self-refresh mode */
+		lpmode = LP_MODE_SELF_REFRESH;
+	}
 
 	/* Extract current lp mode value */
 	temp = readl(base + OMAP44XX_EMIF_PWR_MGMT_CTRL);
@@ -1189,6 +1226,9 @@ static void __init emif_setup_errata(void)
 {
 	if (cpu_is_omap44xx())
 		emif_errata |= EMIF_ERRATUM_SR_TIMER_i735;
+
+	if (cpu_is_omap443x() || cpu_is_omap446x())
+		emif_errata |= EMIF_ERRATUM_POWER_DOWN_NOT_EFFICIENT_i743;
 }
 
 /*
@@ -1451,9 +1491,6 @@ static void __init setup_lowpower_regs(u32 emif_nr,
 	if (dev->emif_ddr_selfrefresh_cycles >= 0) {
 		u32 num_cycles, ddr_sr_timer;
 
-		/* Enable self refresh if not already configured */
-		temp = __raw_readl(base + OMAP44XX_EMIF_PWR_MGMT_CTRL) &
-			OMAP44XX_REG_LP_MODE_MASK;
 		/*
 		 * Configure the self refresh timing
 		 * base value starts at 16 cycles mapped to 1( __fls(16) = 4)
@@ -1489,24 +1526,18 @@ static void __init setup_lowpower_regs(u32 emif_nr,
 		__raw_writel(temp, base + OMAP44XX_EMIF_PWR_MGMT_CTRL_SHDW);
 
 		/* Enable Self Refresh */
-		temp = __raw_readl(base + OMAP44XX_EMIF_PWR_MGMT_CTRL);
-		mask_n_set(temp, OMAP44XX_REG_LP_MODE_SHIFT,
-			   OMAP44XX_REG_LP_MODE_MASK, LP_MODE_SELF_REFRESH);
-		__raw_writel(temp, base + OMAP44XX_EMIF_PWR_MGMT_CTRL);
+		set_lp_mode(emif_nr, LP_MODE_SELF_REFRESH);
 	} else {
-		/* Disable Automatic power management if < 0 and not disabled */
-		temp = __raw_readl(base + OMAP44XX_EMIF_PWR_MGMT_CTRL) &
-			OMAP44XX_REG_LP_MODE_MASK;
+		/* Disable Automatic power management if < 0 */
 
+		/* Program the idle delay to 0x0 */
 		temp = __raw_readl(base + OMAP44XX_EMIF_PWR_MGMT_CTRL_SHDW);
 		mask_n_set(temp, OMAP44XX_REG_SR_TIM_SHDW_SHIFT,
 			   OMAP44XX_REG_SR_TIM_SHDW_MASK, 0x0);
 		__raw_writel(temp, base + OMAP44XX_EMIF_PWR_MGMT_CTRL_SHDW);
 
-		temp = __raw_readl(base + OMAP44XX_EMIF_PWR_MGMT_CTRL);
-		mask_n_set(temp, OMAP44XX_REG_LP_MODE_SHIFT,
-			   OMAP44XX_REG_LP_MODE_MASK, LP_MODE_DISABLE);
-		__raw_writel(temp, base + OMAP44XX_EMIF_PWR_MGMT_CTRL);
+		/* Disable Automatic power management */
+		set_lp_mode(emif_nr, LP_MODE_DISABLE);
 	}
 }
 

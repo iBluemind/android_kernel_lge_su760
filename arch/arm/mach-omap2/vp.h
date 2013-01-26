@@ -81,8 +81,8 @@ struct omap_vp_common {
 // LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch :  introduce SoC limit parameters
 /**
    * struct omap_vp_volt_limits - Voltage limit Parameters for SoC
-   * @vddmin:¡í	  Minimum voltage in uV
-   * @vddmax:¡í	  Maximum voltage in uV
+   * @vddmin:ï¿½ï¿½	  Minimum voltage in uV
+   * @vddmax:ï¿½ï¿½	  Maximum voltage in uV
    */
 struct omap_vp_volt_limits {
 	u32 vddmin;
@@ -90,6 +90,16 @@ struct omap_vp_volt_limits {
 };
 // LGE_CHANGE_END [bk.shin@lge.com] 2012-04-25
 
+
+/**
+ * struct omap_vp_volt_limits - Voltage limit Parameters for SoC
+ * @vddmin:	Minimum voltage in uV
+ * @vddmax:	Maximum voltage in uV
+ */
+struct omap_vp_volt_limits {
+	u32 vddmin;
+	u32 vddmax;
+};
 
 /**
  * struct omap_vp_instance - VP register offsets (per-VDD)

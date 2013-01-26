@@ -671,10 +671,11 @@ struct twl4030_bci_platform_data {
 	unsigned int max_bat_voltagemV;
 	unsigned int low_bat_voltagemV;
 
+	unsigned int sense_resistor_mohm;
+
 	/* twl6032 */
-	unsigned int use_hw_charger;
-	unsigned int use_power_path;
 	unsigned long features;
+<<<<<<< HEAD
 	unsigned int use_eeprom_config;
 
 	/* LGE_SJIT 2012-01-25 [dojip.kim@lge.com]
@@ -683,6 +684,10 @@ struct twl4030_bci_platform_data {
 #ifdef CONFIG_MACH_LGE
 	int gpio_omap_send;
 #endif
+=======
+
+	unsigned long errata;
+>>>>>>> omap/p-android-omap-3.0
 };
 
 /* TWL4030_GPIO_MAX (18) GPIOs, with interrupts */
@@ -1049,6 +1054,7 @@ static inline int twl4030charger_usb_en(int enable) { return 0; }
 #endif
 #define TWL6032_PREQ1_RES_ASS_A	0xd7
 
+<<<<<<< HEAD
 #if defined(CONFIG_MACH_LGE)
 
 #define CONTROLLER_INT_MASK	0x00
@@ -1231,5 +1237,8 @@ static inline int twl4030charger_usb_en(int enable) { return 0; }
 
 #endif	/* CONFIG_MAHC_LGE */
 /* LGE_CHANGE_E [jongho3.lee@lge.com] ?-?-? */
+=======
+#define TWL6032_ERRATA_DB00119490	(1 << 0)
+>>>>>>> omap/p-android-omap-3.0
 
 #endif /* End of __TWL4030_H */
