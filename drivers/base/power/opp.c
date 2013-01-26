@@ -130,7 +130,7 @@ struct device_opp *find_device_opp(struct device *dev)
 
 	return dev_opp;
 }
-#if !defined (CONFIG_CUSTOM_VOLTAGE) || !defined (CONFIG_LIVE_OC)
+#if defined (CONFIG_CUSTOM_VOLTAGE) || defined (CONFIG_LIVE_OC)
 EXPORT_SYMBOL(find_device_opp);
 #endif
 
