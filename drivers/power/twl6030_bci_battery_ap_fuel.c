@@ -74,42 +74,37 @@
 /* LGE_CHANGE [euiseop.shin@lge.com] 2011-04-13,
  * LGE_P940, for battery,power debug
  */
-#ifdef  __DEBUG_POWER
-
-#define __DEBUG_PMIC
-#define __DEBUG_CHARGER
-#define __DEBUG_FUELGAUGE
-#define __DEBUG_MUIC
-#define __DEBUG_TEMP
+#ifndef  __DEBUG_POWER
+#define __DEBUG_POWER
 
 #ifdef __DEBUG_PMIC 
 #define DPWR(fmt, args...) printk("[PWR] " fmt "\n", ##args) 
 #else
-#define DPWR(fmt, args...) 
+#define DPWR(fmt, args...)
 #endif
 
 #ifdef __DEBUG_CHARGER
 #define DCHG(fmt, args...) printk("[CHG] " fmt "\n", ##args) 
 #else
-#define DCHG(fmt, args...) 
+#define DCHG(fmt, args...)
 #endif
 
 #ifdef __DEBUG_FUELGAUGE
 #define DGAU(fmt, args...) printk("[GAU] " fmt "\n", ##args) 
 #else
-#define DGAU(fmt, args...) 
+#define DGAU(fmt, args...)
 #endif
 
 #ifdef __DEBUG_TEMP
 #define DTEMP(fmt, args...) printk("[TEMP] " fmt "\n", ##args) 
 #else
-#define DTEMP(fmt, args...) 
+#define DTEMP(fmt, args...)
 #endif
 
 #ifdef __DEBUG_MUIC
 #define DMUIC(fmt, args...) printk("[MUIC] " fmt "\n", ##args) 
 #else
-#define DMUIC(fmt, args...) 
+#define DMUIC(fmt, args...)
 #endif
 
 #endif /* __DEBUG_POWER */
