@@ -79,11 +79,8 @@ struct omap_vp_instance omap4_vp_mpu = {
 	.vlimitto = OMAP4_PRM_VP_MPU_VLIMITTO_OFFSET,
 	.vstatus = OMAP4_PRM_VP_MPU_STATUS_OFFSET,
 	.voltage = OMAP4_PRM_VP_MPU_VOLTAGE_OFFSET,
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch :  introduce SoC limit parameters
 	.vlimits = &omap4_vp_mpu_limit,
-};
-
-struct omap_vp_volt_limits omap4_vp_iva_limit = {
-	.vddmin	= OMAP4_VP_IVA_VLIMITTO_VDDMIN,
 };
 
 struct omap_vp_volt_limits omap4_vp_iva_limit = {
@@ -100,11 +97,8 @@ struct omap_vp_instance omap4_vp_iva = {
 	.vlimitto = OMAP4_PRM_VP_IVA_VLIMITTO_OFFSET,
 	.vstatus = OMAP4_PRM_VP_IVA_STATUS_OFFSET,
 	.voltage = OMAP4_PRM_VP_IVA_VOLTAGE_OFFSET,
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch : introduce SoC limit parameters
 	.vlimits = &omap4_vp_iva_limit,
-};
-
-struct omap_vp_volt_limits omap4_vp_core_limit = {
-	.vddmin	= OMAP4_VP_CORE_VLIMITTO_VDDMIN,
 };
 
 struct omap_vp_volt_limits omap4_vp_core_limit = {

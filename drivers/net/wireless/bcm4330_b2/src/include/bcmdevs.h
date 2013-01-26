@@ -22,14 +22,10 @@
  * other than the GPL, without Broadcom's express prior written consent.
  *
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/bcmdevs.h
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/bcmdevs.h
  * $Id: bcmdevs.h,v 13.285.2.39 2011-02-04 05:03:16 Exp $
 =======
  * $Id: bcmdevs.h 332966 2012-05-11 22:40:21Z $
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/bcmdevs.h
-=======
- * $Id: bcmdevs.h 332966 2012-05-11 22:40:21Z $
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/bcmdevs.h
  */
 
 

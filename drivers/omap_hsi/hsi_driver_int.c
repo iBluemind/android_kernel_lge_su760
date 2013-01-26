@@ -121,7 +121,6 @@ bool hsi_is_channel_busy(struct hsi_channel *ch)
 }
 
 /* Check if a HSI port is busy :
- * - ACWAKE is high
  * - data transfer (Write) is ongoing for a given HSI channel
  * - CAWAKE is high
  * - CAWAKE is not used (receiver in 3-wires mode)
@@ -151,7 +150,7 @@ bool hsi_is_hsi_port_busy(struct hsi_port *pport)
 		return true;
 	}
 
-	if (cur_cawake || pport->acwake_status) {
+	if (cur_cawake) {
 		dev_dbg(hsi_ctrl->dev, "Port %d: WAKE status: acwake_status %d,"
 			"cur_cawake %d", pport->port_number,
 			pport->acwake_status, cur_cawake);

@@ -6,14 +6,10 @@
  * GPIO interface, extbus, and support for serial and parallel flashes.
  *
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/sbchipc.h
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/sbchipc.h
  * $Id: sbchipc.h,v 13.169.2.14 2011-02-10 23:43:55 Exp $
 =======
  * $Id: sbchipc.h 343982 2012-07-11 00:29:37Z $
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/sbchipc.h
-=======
- * $Id: sbchipc.h 333924 2012-05-18 04:48:52Z $
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/sbchipc.h
  *
  * Copyright (C) 1999-2011, Broadcom Corporation
  * 

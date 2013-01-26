@@ -753,7 +753,6 @@ config TOUCHSCREEN_QUANTUM_OBP
 
 	  If unsure, say N.
 
-<<<<<<< HEAD
 
 ## LGE_SJIT_S 2011-10-13 [choongryeol.lee@lge.com] synaptics rmi4 touch driver
 config LGE_TOUCHSCREEN_SYNAPTICS_RMI4_I2C
@@ -840,14 +839,4 @@ config TS_INFO_CLASS
 	  To compile this driver as a module, choose M here: the
 	  module will be called ts info class.
 
-=======
-config TOUCHSCREEN_CYPRESS_TTSP
-	tristate "Cypress True Touch touchscreens"
-	depends on I2C
-	help
-	  Say Y here if you have a Cypress true touch touchscreen.
-
-	  If unsure, say N.
-
->>>>>>> omap/p-android-omap-3.0
 endif

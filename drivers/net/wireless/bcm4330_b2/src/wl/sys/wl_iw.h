@@ -210,14 +210,10 @@ extern int net_os_wake_lock(struct net_device *dev);
 extern int net_os_wake_unlock(struct net_device *dev);
 extern int net_os_wake_lock_timeout(struct net_device *dev);
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/wl/sys/wl_iw.h
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/wl/sys/wl_iw.h
 extern int net_os_wake_lock_timeout_enable(struct net_device *dev);
 =======
 extern int  net_os_wake_lock_ctrl_timeout_enable(struct net_device *dev, int val);
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/wl_iw.h
-=======
-extern int  net_os_wake_lock_ctrl_timeout_enable(struct net_device *dev, int val);
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/wl_iw.h
 extern int net_os_set_suspend_disable(struct net_device *dev, int val);
 extern int net_os_set_suspend(struct net_device *dev, int val, int force);
 extern int net_os_set_dtim_skip(struct net_device *dev, int val);

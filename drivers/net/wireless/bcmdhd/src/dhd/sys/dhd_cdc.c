@@ -21,11 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
-<<<<<<< HEAD:drivers/net/wireless/bcmdhd/src/dhd/sys/dhd_cdc.c
  * $Id: dhd_cdc.c 323178 2012-03-23 07:09:33Z $
-=======
- * $Id: dhd_cdc.c 324280 2012-03-28 19:01:17Z $
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/dhd_cdc.c
  *
  * BDC is like CDC, except it includes a header for data packets to convey
  * packet priority over the bus, and flags (e.g. to indicate checksum status

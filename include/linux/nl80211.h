@@ -1347,7 +1347,6 @@ enum nl80211_attrs {
 	NL80211_ATTR_SCHED_SCAN_MATCH,
 	NL80211_ATTR_MAX_MATCH_SETS,
 
-<<<<<<< HEAD
 	NL80211_ATTR_PMKSA_CANDIDATE,
 
 	NL80211_ATTR_TX_NO_CCK_RATE,
@@ -1360,8 +1359,6 @@ enum nl80211_attrs {
 
 	NL80211_ATTR_DEVICE_AP_SME,
 
-=======
->>>>>>> omap/p-android-omap-3.0
 	/* add attributes here, update the policy in nl80211.c */
 
 	__NL80211_ATTR_AFTER_LAST,

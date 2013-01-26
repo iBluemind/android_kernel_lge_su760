@@ -23,14 +23,10 @@
  * other than the GPL, without Broadcom's express prior written consent.
  *
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/siutils.h
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/siutils.h
  * $Id: siutils.h,v 13.251.2.10 2011-02-04 05:06:32 Exp $
 =======
  * $Id: siutils.h 335486 2012-05-28 09:47:55Z $
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/siutils.h
-=======
- * $Id: siutils.h 335486 2012-05-28 09:47:55Z $
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/siutils.h
  */
 
 

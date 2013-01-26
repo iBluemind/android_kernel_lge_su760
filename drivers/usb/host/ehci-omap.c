@@ -159,24 +159,6 @@ void omap_ehci_hw_phy_reset(const struct usb_hcd *hcd)
 	return;
 }
 
-static struct {
-	int		stopped;
-	int		done;
-} tll_WA_info;
-
-static void tll_WA_func(void *info)
-{
-	tll_WA_info.stopped = 1;
-	dsb();
-	/* this loop does almost nothing,
-	   and expected to not mess with MPCore
-	   (TLBs, caches and write buffer), at least
-	   after the first iteration
-	*/
-	while (!tll_WA_info.done)
-		cpu_relax();
-}
-
 static int omap4_ehci_tll_hub_control(
 	struct usb_hcd	*hcd,
 	u16		typeReq,
@@ -193,7 +175,6 @@ static int omap4_ehci_tll_hub_control(
 	unsigned long	flags;
 	int		retval = 0;
 	u32		runstop, temp_reg, tll_reg;
-	u32		cpu;
 
 	tll_reg = (u32)OMAP2_L4_IO_ADDRESS(L3INIT_HSUSBTLL_CLKCTRL);
 
@@ -268,20 +249,6 @@ static int omap4_ehci_tll_hub_control(
 						"port %d would not halt!\n",
 						wIndex);
 
-				/* If we have another CPU online, force it
-				   to not mess with MPCore */
-				cpu = smp_processor_id();
-				if (cpu_online(cpu ^ 0x1)) {
-					tll_WA_info.stopped = 0;
-					tll_WA_info.done = 0;
-					smp_call_function_single(cpu ^ 0x1,
-						tll_WA_func, NULL, 0);
-					while (!tll_WA_info.stopped)
-						cpu_relax();
-					udelay(1);
-					dsb();
-				}
-
 				temp_reg = __raw_readl(tll_reg);
 				temp_reg &= ~(1 << (wIndex + 8));
 
@@ -293,11 +260,6 @@ static int omap4_ehci_tll_hub_control(
 				/* Disable the Channel Optional Fclk */
 				__raw_writel(temp_reg, tll_reg);
 				dmb();
-
-				/*Release other CPU*/
-				tll_WA_info.done = 1;
-				dsb();
-
 				retval = handshake(ehci, status_reg,
 					   PORT_RESUME, 0, 2000 /* 2msec */);
 
@@ -533,7 +495,6 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
 	hcd->rsrc_start = res->start;
 	hcd->rsrc_len = resource_size(res);
 	hcd->regs = regs;
-	hcd->self.dma_align = 1;
 
 	/* get ehci regulator and enable */
 	for (i = 0 ; i < OMAP3_HS_USB_PORTS ; i++) {
@@ -553,7 +514,6 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
 	}
 
 	pm_runtime_get_sync(dev->parent);
-	*pdata->usbhs_update_sar = 1;
 
 	/*
 	 * An undocumented "feature" in the OMAP3 EHCI controller,
@@ -683,17 +643,10 @@ static int ehci_omap_bus_resume(struct usb_hcd *hcd)
 {
 	struct device *dev = hcd->self.controller;
 	struct ehci_hcd_omap_platform_data  *pdata;
-	struct omap_hwmod	*oh;
 	struct clk *clk;
 	int i;
 
-	int ret;
-
 	dev_dbg(dev, "ehci_omap_bus_resume\n");
-
-	oh = omap_hwmod_lookup(USBHS_EHCI_HWMODNAME);
-
-	ret = omap_hwmod_disable_ioring_wakeup(oh);
 
 	/* Re-enable any external transceiver clocks first */
 	pdata = dev->platform_data;
@@ -707,10 +660,8 @@ static int ehci_omap_bus_resume(struct usb_hcd *hcd)
 			OCP_INITIATOR_AGENT,
 			(200*1000*4));
 
-	if (dev->parent)
+	if (dev->parent && pm_runtime_suspended(dev->parent))
 		pm_runtime_get_sync(dev->parent);
-
-	*pdata->usbhs_update_sar = 1;
 
 	return ehci_bus_resume(hcd);
 }

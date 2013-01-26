@@ -21,11 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
-<<<<<<< HEAD:drivers/net/wireless/bcm4330/src/include/hndpmu.h
  * $Id: hndpmu.h,v 13.35.8.4 2011/01/05 06:06:52 Exp $
-=======
- * $Id: hndpmu.h 335486 2012-05-28 09:47:55Z $
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/hndpmu.h
  */
 
 #ifndef _hndpmu_h_
@@ -34,8 +30,5 @@
 
 extern void si_pmu_otp_power(si_t *sih, osl_t *osh, bool on);
 extern void si_sdiod_drive_strength_init(si_t *sih, osl_t *osh, uint32 drivestrength);
-
-extern void si_pmu_set_otp_wr_volts(si_t *sih);
-extern void si_pmu_set_otp_rd_volts(si_t *sih);
 
 #endif /* _hndpmu_h_ */

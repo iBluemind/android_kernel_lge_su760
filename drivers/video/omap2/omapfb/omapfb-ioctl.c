@@ -892,7 +892,8 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
 			break;
 		}
 
-		get_fb_resolution(display, &xres, &yres);
+		display->driver->get_resolution(display, &xres, &yres);
+
 		p.display_info.xres = xres;
 		p.display_info.yres = yres;
 

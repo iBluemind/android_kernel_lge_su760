@@ -73,13 +73,10 @@ enum extension_edid_db {
 #define EDID_TIMING_DESCRIPTOR_SIZE		0x12
 #define EDID_DESCRIPTOR_BLOCK0_ADDRESS		0x36
 #define EDID_DESCRIPTOR_BLOCK1_ADDRESS		0x80
-#define EDID_HDMI_VENDOR_SPECIFIC_DATA_BLOCK	128
 #define EDID_SIZE_BLOCK0_TIMING_DESCRIPTOR	4
 #define EDID_SIZE_BLOCK1_TIMING_DESCRIPTOR	4
 
 #define OMAP_HDMI_TIMINGS_NB			34
-#define HDMI_DEFAULT_REGN 15
-#define HDMI_DEFAULT_REGM2 1
 
 static struct {
 	struct mutex lock;
@@ -109,18 +106,11 @@ static struct {
 
 	u8 s3d_mode;
 	bool s3d_enable;
-<<<<<<< HEAD
 	u8 s3d_type;  //mo2sanghyun.lee 
 
-=======
-	int source_physical_address;
->>>>>>> omap/p-android-omap-3.0
 	void (*hdmi_start_frame_cb)(void);
 	void (*hdmi_irq_cb)(int);
 	bool (*hdmi_power_on_cb)(void);
-	void (*hdmi_cec_enable_cb)(int status);
-	void (*hdmi_cec_irq_cb)(void);
-	void (*hdmi_cec_hpd)(int phy_addr, int status);
 } hdmi;
 
 static const u8 edid_header[8] = {0x0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0};
@@ -393,39 +383,6 @@ void hdmi_get_monspecs(struct fb_monspecs *specs)
 		specs->modedb[j++] = specs->modedb[i];
 	}
 	specs->modedb_len = j;
-
-	/* Find out the Source Physical address for the CEC
-	CEC physical address will be part of VSD block from
-	TV Physical address is 2 bytes after 24 bit IEEE
-	registration identifier (0x000C03)
-	*/
-	i = EDID_HDMI_VENDOR_SPECIFIC_DATA_BLOCK;
-	while (i < (HDMI_EDID_MAX_LENGTH - 5)) {
-		if ((edid[i] == 0x03) && (edid[i+1] == 0x0c) &&
-			(edid[i+2] == 0x00)) {
-			hdmi.source_physical_address = (edid[i+3] << 8) |
-				edid[i+4];
-			break;
-		}
-		i++;
-
-	}
-}
-
-void hdmi_inform_hpd_to_cec(int status)
-{
-	if (!status)
-		hdmi.source_physical_address = 0;
-
-	if (hdmi.hdmi_cec_hpd)
-		(*hdmi.hdmi_cec_hpd)(hdmi.source_physical_address,
-			status);
-}
-
-void hdmi_inform_power_on_to_cec(int status)
-{
-	if (hdmi.hdmi_cec_enable_cb)
-		(*hdmi.hdmi_cec_enable_cb)(status);
 }
 
 u8 *hdmi_read_edid(struct omap_video_timings *dp)
@@ -597,11 +554,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
 	 * Input clock is predivided by N + 1
 	 * out put of which is reference clk
 	 */
-	if (dssdev->clocks.hdmi.regn == 0)
-		pi->regn = HDMI_DEFAULT_REGN;
-	else
-		pi->regn = dssdev->clocks.hdmi.regn;
-
+	pi->regn = dssdev->clocks.hdmi.regn;
 	refclk = clkin / (pi->regn + 1);
 
 	/*
@@ -609,11 +562,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
 	 * Multiplying by 100 to avoid fractional part removal
 	 */
 	pi->regm = (phy * 100 / (refclk)) / 100;
-
-	if (dssdev->clocks.hdmi.regm2 == 0)
-		pi->regm2 = HDMI_DEFAULT_REGM2;
-	else
-		pi->regm2 = dssdev->clocks.hdmi.regm2;
+	pi->regm2 = dssdev->clocks.hdmi.regm2;
 
 	/*
 	 * fractional multiplier is remainder of the difference between
@@ -762,7 +711,6 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
 		dssdev->panel.timings.y_res, hdmi.mode);
 
 	if (!hdmi.custom_set) {
-<<<<<<< HEAD
         // wooho47.jung@lge.com 2012.04.19
         // MOD : for default mode. p2 is not dvi, is hdmi.
         #if 1
@@ -772,18 +720,6 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
 	    struct fb_videomode vesa_vga = vesa_modes[4];
 	    hdmi_set_timings(&vesa_vga, false);
         #endif
-=======
-		u32 cea_code = 0;
-		struct fb_videomode default_mode;
-
-		cea_code = dssdev->panel.hdmi_default_cea_code;
-		if (cea_code > 0 && cea_code < CEA_MODEDB_SIZE)
-			default_mode = cea_modes[cea_code];
-		else
-			default_mode = vesa_modes[4];
-
-		hdmi_set_timings(&default_mode, false);
->>>>>>> omap/p-android-omap-3.0
 	}
 
 	omapfb_fb2dss_timings(&hdmi.cfg.timings, &dssdev->panel.timings);
@@ -821,7 +757,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
 		goto err;
 	}
 
-	r = hdmi_ti_4xxx_phy_init(&hdmi.hdmi_data, phy);
+	r = hdmi_ti_4xxx_phy_init(&hdmi.hdmi_data);
 	if (r) {
 		DSSDBG("Failed to start PHY\n");
 		HDMIDBG("Failed to start PHY\n");
@@ -842,13 +778,13 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
 	/* Make selection of HDMI in DSS */
 	dss_select_hdmi_venc_clk_source(DSS_HDMI_M_PCLK);
 
-	/* Select the dispc clock source as PRCM clock, to ensure that it is not
-	 * DSI PLL source as the clock selected by DSI PLL might not be
-	 * sufficient for the resolution selected / that can be changed
-	 * dynamically by user. This can be moved to single location , say
-	 * Boardfile.
+	/*
+	 * Select the DISPC clock source as PRCM clock in case when both LCD
+	 * panels are disabled and we cannot use DSI PLL for this purpose.
 	 */
-	dss_select_dispc_clk_source(dssdev->clocks.dispc.dispc_fclk_src);
+	if (!dispc_is_channel_enabled(OMAP_DSS_CHANNEL_LCD) &&
+	    !dispc_is_channel_enabled(OMAP_DSS_CHANNEL_LCD2))
+		dss_select_dispc_clk_source(dssdev->clocks.dispc.dispc_fclk_src);
 
 
 	/* bypass TV gamma table */
@@ -926,25 +862,6 @@ int omapdss_hdmi_register_hdcp_callbacks(void (*hdmi_start_frame_cb)(void),
 EXPORT_SYMBOL(omapdss_hdmi_register_hdcp_callbacks);
 #endif
 
-int omapdss_hdmi_register_cec_callbacks(void (*hdmi_cec_enable_cb)(int status),
-					void (*hdmi_cec_irq_cb)(void),
-					void (*hdmi_cec_hpd)(int phy_addr,
-						int status))
-{
-	hdmi.hdmi_cec_enable_cb = hdmi_cec_enable_cb;
-	hdmi.hdmi_cec_irq_cb = hdmi_cec_irq_cb;
-	hdmi.hdmi_cec_hpd = hdmi_cec_hpd;
-	return 0;
-}
-EXPORT_SYMBOL(omapdss_hdmi_register_cec_callbacks);
-
-int omapdss_hdmi_unregister_cec_callbacks(void)
-{
-	hdmi.hdmi_cec_enable_cb = NULL;
-	hdmi.hdmi_cec_irq_cb = NULL;
-	hdmi.hdmi_cec_hpd = NULL;
-	return 0;
-}
 void omapdss_hdmi_set_deepcolor(int val)
 {
 	hdmi.deep_color = val;
@@ -1009,9 +926,6 @@ static irqreturn_t hdmi_irq_handler(int irq, void *arg)
 	r = hdmi_ti_4xxx_irq_handler(&hdmi.hdmi_data);
 
 	DSSDBG("Received HDMI IRQ = %08x\n", r);
-
-	if (hdmi.hdmi_cec_irq_cb && (r & HDMI_CEC_INT))
-		hdmi.hdmi_cec_irq_cb();
 
 	if (hdmi.hdmi_irq_cb)
 		hdmi.hdmi_irq_cb(r);

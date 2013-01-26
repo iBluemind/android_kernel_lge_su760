@@ -15,23 +15,22 @@
 #ifndef GCCORE_H
 #define GCCORE_H
 
-#include "sched.h"
+#include <linux/sched.h>
 #include "gcioctl.h"
 
-/* Capability query. */
-void gc_caps(struct gcicaps *gcicaps);
+/* Synchronization functions. */
+#define GC_INFINITE (~0U)
+void gc_delay(unsigned int milliseconds);
+enum gcerror gc_wait_completion(struct completion *completion,
+				unsigned int milliseconds);
+enum gcerror gc_acquire_mutex(struct mutex *mutex,
+				unsigned int milliseconds);
 
 /* Command buffer submission. */
-void gc_commit(struct gcicommit *gcicommit, bool fromuser);
+void gc_commit(struct gccommit *gccommit, int fromuser);
 
-/* Client memory mapping. */
-void gc_map(struct gcimap *gcimap, bool fromuser);
-void gc_unmap(struct gcimap *gcimap, bool fromuser);
-
-/* Arm a callback. */
-void gc_callback(struct gcicallbackarm *gcicallbackarm, bool fromuser);
-
-/* Process cleanup. */
-void gc_release(void);
+/* Surface management. */
+void gc_map(struct gcmap *gcmap);
+void gc_unmap(struct gcmap *gcmap);
 
 #endif

@@ -241,8 +241,10 @@ static struct omap_voltdm_pmic omap3_mpu_pmic = {
 	.vp_erroroffset		= OMAP3_VP_CONFIG_ERROROFFSET,
 	.vp_vstepmin		= OMAP3_VP_VSTEPMIN_VSTEPMIN,
 	.vp_vstepmax		= OMAP3_VP_VSTEPMAX_VSTEPMAX,
-	.min_volt		= OMAP3430_VP1_VLIMITTO_VDDMIN,
-	.max_volt		= OMAP3430_VP1_VLIMITTO_VDDMAX,
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch :  rename vp_vddmin and vp_vddmax fields
+	.min_volt		= 600000,
+	.max_volt		= 1450000,
+// LGE_CHANGE_END [bk.shin@lge.com] 2012-04-25
 	.vp_timeout_us		= OMAP3_VP_VLIMITTO_TIMEOUT_US,
 	.i2c_slave_addr		= TWL4030_SRI2C_SLAVE_ADDR,
 	.volt_reg_addr		= TWL4030_VDD1_SR_CONTROL_REG,
@@ -262,8 +264,9 @@ static struct omap_voltdm_pmic omap3_core_pmic = {
 	.vp_erroroffset		= OMAP3_VP_CONFIG_ERROROFFSET,
 	.vp_vstepmin		= OMAP3_VP_VSTEPMIN_VSTEPMIN,
 	.vp_vstepmax		= OMAP3_VP_VSTEPMAX_VSTEPMAX,
-	.min_volt		= OMAP3430_VP2_VLIMITTO_VDDMIN,
-	.max_volt		= OMAP3430_VP2_VLIMITTO_VDDMAX,
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch :  rename vp_vddmin and vp_vddmax fields
+	.min_volt		= 600000,
+	.max_volt		= 1450000,
 // LGE_CHANGE_END [bk.shin@lge.com] 2012-04-25
 	.vp_timeout_us		= OMAP3_VP_VLIMITTO_TIMEOUT_US,
 	.i2c_slave_addr		= TWL4030_SRI2C_SLAVE_ADDR,
@@ -285,8 +288,10 @@ static struct omap_voltdm_pmic omap443x_447x_mpu_pmic = {
 	.vp_erroroffset		= OMAP4_VP_CONFIG_ERROROFFSET,
 	.vp_vstepmin		= OMAP4_VP_VSTEPMIN_VSTEPMIN,
 	.vp_vstepmax		= OMAP4_VP_VSTEPMAX_VSTEPMAX,
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch :  rename vp_vddmin and vp_vddmax fields
 	.min_volt		= 709000,
 	.max_volt		= 1418000,
+// LGE_CHANGE_END [bk.shin@lge.com] 2012-04-25
 	.vp_timeout_us		= OMAP4_VP_VLIMITTO_TIMEOUT_US,
 	.i2c_slave_addr		= TWL6030_SRI2C_SLAVE_ADDR,
 	.volt_reg_addr		= TWL6030_VCORE1_SR_VOLT_REG,
@@ -465,6 +470,7 @@ static int __init twl_set_sr(struct voltagedomain *voltdm)
 	return r;
 }
 
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch :  update min, max voltages
 static int __init twl6030_set_offset(struct voltagedomain *voltdm)
 {
 	/*
@@ -491,7 +497,7 @@ static int __init twl6030_set_offset(struct voltagedomain *voltdm)
 			goto out;
 		/* Check if TWL firmware lets us write */
 		if (!(smps_offset & 0x80)) {
-			WARN(1, "%s: No SMPS OFFSET value=0x%02x"
+			WARN(1,"%s: No SMPS OFFSET value=0x%02x"
 				"update not possible, max val might be wrong\n",
 				__func__, smps_offset);
 			/* Nothing we can do */
@@ -501,7 +507,7 @@ static int __init twl6030_set_offset(struct voltagedomain *voltdm)
 		/* Attempt to set offset for all */
 		r = twl_i2c_write_u8(TWL6030_MODULE_ID0, 0xFF, REG_SMPS_OFFSET);
 		if (r) {
-			WARN(1, "%s: No SMPS OFFSET value=0x%02x"
+			WARN(1,"%s: No SMPS OFFSET value=0x%02x"
 				"update failed %d, max val might be wrong\n",
 				__func__, smps_offset, r);
 			/* Nothing we can do */
@@ -512,7 +518,7 @@ static int __init twl6030_set_offset(struct voltagedomain *voltdm)
 		r = twl_i2c_read_u8(TWL6030_MODULE_ID0, &smps_offset,
 				REG_SMPS_OFFSET);
 		if (r || !(smps_offset & 0x8)) {
-			WARN(1, "%s: No SMPS OFFSET value=0x%02x"
+			WARN(1,"%s: No SMPS OFFSET value=0x%02x"
 				"check(r=%d) failed, max val might be wrong\n",
 				__func__, smps_offset, r);
 			/* Nothing we can do */
@@ -527,6 +533,8 @@ out:
 	 */
 	return 0;
 }
+// LGE_CHANGE_END [bk.shin@lge.com] 2012-04-25
+
 
 /* OMAP4430 - All vcores: 1, 2 and 3 should go down with PREQ */
 static __initdata struct twl_reg_setup_array omap4430_twl6030_setup[] = {
@@ -565,8 +573,9 @@ static __initdata struct twl_reg_setup_array omap4430_twl6030_setup[] = {
 
 static int __init twl_set_4430vcore(struct voltagedomain *voltdm)
 {
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25,  TI patch : update min, max voltages
 	twl6030_set_offset(voltdm);
-
+// LGE_CHANGE_END [bk.shin@lge.com] 2012-04-25
 	return _twl_set_regs("OMAP4430 ", omap4430_twl6030_setup);
 }
 
@@ -686,12 +695,12 @@ int __init omap_twl_init(void)
 
 	/* Reuse OMAP3430 values */
 	if (cpu_is_omap3630()) {
-
+// LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25,  TI patch : rename vp_vddmin and vp_vddmax fields
 		omap3_mpu_pmic.min_volt = OMAP3630_VP1_VLIMITTO_VDDMIN;
 		omap3_mpu_pmic.max_volt = OMAP3630_VP1_VLIMITTO_VDDMAX;
 		omap3_core_pmic.min_volt = OMAP3630_VP2_VLIMITTO_VDDMIN;
 		omap3_core_pmic.max_volt = OMAP3630_VP2_VLIMITTO_VDDMAX;
-
+// LGE_CHANGE_END [bk.shin@lge.com] 2012-04-25
 	}
 
 	if (cpu_is_omap44xx())

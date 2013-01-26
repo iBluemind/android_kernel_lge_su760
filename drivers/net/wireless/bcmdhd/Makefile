@@ -8,7 +8,6 @@ DHDCFLAGS = -Wall -Wstrict-prototypes -Werror -Dlinux -DBCMDRIVER \
 	-DNEW_COMPAT_WIRELESS -DWIFI_ACT_FRAME -DARP_OFFLOAD_SUPPORT          \
 	-DKEEP_ALIVE -DCSCAN -DPKT_FILTER_SUPPORT     \
 	-DEMBEDDED_PLATFORM -DENABLE_INSMOD_NO_FW_LOAD -DPNO_SUPPORT          \
-<<<<<<< HEAD
 	-I$(SRCROOT) \
 	-I$(SRCROOT)/include \
 	-I$(SRCROOT)/shared \
@@ -17,10 +16,6 @@ DHDCFLAGS = -Wall -Wstrict-prototypes -Werror -Dlinux -DBCMDRIVER \
 	-I$(SRCROOT)/wl/sys \
 	-I$(SRCROOT)/wl/bcmwifi/src \
 	-I$(SRCROOT)/wl/bcmwifi/include
-=======
-	-DSET_RANDOM_MAC_SOFTAP -DWL_CFG80211_STA_EVENT                       \
-	-Idrivers/net/wireless/bcmdhd -Idrivers/net/wireless/bcmdhd/include
->>>>>>> omap/p-android-omap-3.0
 
 # common patch  - should be defiend!!!!
 DHDCFLAGS += -DCONFIG_COMMON_PATCH
@@ -88,25 +83,14 @@ obj-$(CONFIG_BCMDHD_USE_STATIC_BUF) += brcm_static_buf.o
 obj-$(CONFIG_BCMDHD) += bcmdhd.o
 bcmdhd-objs += $(DHDOFILES)
 ifneq ($(CONFIG_WIRELESS_EXT),)
-<<<<<<< HEAD
 bcmdhd-objs += src/wl/sys/wl_iw.o
 DHDCFLAGS += -DSOFTAP
-=======
-bcmdhd-objs += wl_iw.o
-DHDCFLAGS += -DSOFTAP -DWL_WIRELESS_EXT
->>>>>>> omap/p-android-omap-3.0
 endif
 ifneq ($(CONFIG_CFG80211),)
 bcmdhd-objs += src/wl/sys/wl_cfg80211.o \
 		src/wl/sys/wl_cfgp2p.o \
 		src/dhd/sys/dhd_cfg80211.o
 DHDCFLAGS += -DWL_CFG80211
-endif
-ifneq ($(CONFIG_DHD_USE_SCHED_SCAN),)
-DHDCFLAGS += -DWL_SCHED_SCAN
-endif
-ifneq ($(CONFIG_DHD_ENABLE_P2P),)
-DHDCFLAGS += -DWL_ENABLE_P2P_IF
 endif
 EXTRA_CFLAGS = $(DHDCFLAGS)
 ifeq ($(CONFIG_BCMDHD),m)

@@ -23,14 +23,10 @@
  * other than the GPL, without Broadcom's express prior written consent.
  *
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/linuxver.h
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/include/linuxver.h
  * $Id: linuxver.h,v 13.53.2.2 2010-12-22 23:47:26 Exp $
 =======
  * $Id: linuxver.h 312264 2012-02-02 00:49:43Z $
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/include/linuxver.h
-=======
- * $Id: linuxver.h 312264 2012-02-02 00:49:43Z $
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/include/linuxver.h
  */
 
 

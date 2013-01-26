@@ -166,10 +166,6 @@ source "drivers/staging/nvec/Kconfig"
 
 source "drivers/staging/thermal_framework/Kconfig"
 
-<<<<<<< HEAD
 source "drivers/staging/cpupower/Kconfig" 
-=======
-source "drivers/staging/omaprpc/Kconfig"
->>>>>>> omap/p-android-omap-3.0
 
 endif # STAGING

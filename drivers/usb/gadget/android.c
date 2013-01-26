@@ -45,7 +45,6 @@
 #include "epautoconf.c"
 #include "composite.c"
 
-<<<<<<< HEAD
 /* LGE_SJIT_S 10/21/2011 [mohamed.khadri@lge.com] 
             LG Gadget driver - nmea and diag funcation extensions  */
 #if defined(CONFIG_LGE_ANDROID_USB)
@@ -54,8 +53,6 @@
 /* LGE_SJIT_E 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver - nmea and diag funcation extensions  */
 
-=======
->>>>>>> omap/p-android-omap-3.0
 #include "f_audio_source.c"
 #include "f_mass_storage.c"
 #include "u_serial.c"
@@ -138,11 +135,6 @@ struct android_usb_function {
 	
 	/* Optional: cleanup during gadget unbind */
 	void (*cleanup)(struct android_usb_function *);
-	/* Optional: called when the function is added the list of
-	 *		enabled functions */
-	void (*enable)(struct android_usb_function *);
-	/* Optional: called when it is removed */
-	void (*disable)(struct android_usb_function *);
 
 	int (*bind_config)(struct android_usb_function *, struct usb_configuration *);
 
@@ -323,7 +315,6 @@ static void android_work(struct work_struct *data)
 	}
 }
 
-<<<<<<< HEAD
 /* LGE_SJIT_S 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver */
 #if defined(CONFIG_LGE_ANDROID_USB)
@@ -336,8 +327,6 @@ static void android_work(struct work_struct *data)
 #endif 
 /* LGE_SJIT_E 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver */
-=======
->>>>>>> omap/p-android-omap-3.0
 static void android_enable(struct android_dev *dev)
 {
 	struct usb_composite_dev *cdev = dev->cdev;
@@ -417,30 +406,6 @@ static void adb_android_function_disable(struct android_usb_function *f)
 		android_enable(dev);
 }
 
-static void adb_android_function_enable(struct android_usb_function *f)
-{
-	struct android_dev *dev = _android_dev;
-	struct adb_data *data = f->config;
-
-	data->enabled = true;
-
-	/* Disable the gadget until adbd is ready */
-	if (!data->opened)
-		android_disable(dev);
-}
-
-static void adb_android_function_disable(struct android_usb_function *f)
-{
-	struct android_dev *dev = _android_dev;
-	struct adb_data *data = f->config;
-
-	data->enabled = false;
-
-	/* Balance the disable that was called in closed_callback */
-	if (!data->opened)
-		android_enable(dev);
-}
-
 static struct android_usb_function adb_function = {
 	.name		= "adb",
 	.enable		= adb_android_function_enable,
@@ -479,10 +444,6 @@ static void adb_closed_callback(void)
 
 	mutex_unlock(&dev->mutex);
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> omap/p-android-omap-3.0
 
 struct acm_function_config {
 	int instances;
@@ -1330,7 +1291,6 @@ static struct android_usb_function *supported_functions[] = {
 #endif
 	&mass_storage_function,
 	&accessory_function,
-<<<<<<< HEAD
 ///////////////////////////////////////
 	&cdrom_storage_function,
 //////////////////////////////////////////////////////////////
@@ -1343,8 +1303,6 @@ static struct android_usb_function *supported_functions[] = {
 #endif
 /* LGE_SJIT_E 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver - nmea and diag funcation extensions  */
-=======
->>>>>>> omap/p-android-omap-3.0
 	&audio_source_function,
 	NULL
 };
@@ -1981,7 +1939,6 @@ static int __init init(void)
 #else
 	if (!dev)
 		return -ENOMEM;
-<<<<<<< HEAD
 #endif
 
 /* LGE_SJIT_S 10/21/2011 [mohamed.khadri@lge.com]
@@ -1992,8 +1949,6 @@ static int __init init(void)
 /* LGE_SJIT_E 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver */
 	dev->disable_depth = 1;
-=======
->>>>>>> omap/p-android-omap-3.0
 
 	dev->disable_depth = 1;
 	dev->functions = supported_functions;

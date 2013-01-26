@@ -51,7 +51,6 @@
 #define HSI_RESETDONE_NORMAL_RETRIES	1 /* Reset should complete in 1 R/W */
 					  /* cycle */
 
-<<<<<<< HEAD
 // LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [START]
 #if defined(CONFIG_MACH_LGE_COSMO_REV_D) || defined(CONFIG_MACH_LGE_COSMO_DOMASTIC)
 /* Notify active/sleep status of AP to CP*/
@@ -64,19 +63,6 @@
 static int irq_num_122;
 #endif
 //mo2haewoon.you => [END]
-=======
-#ifdef CONFIG_OMAP4_DPLL_CASCADING
-struct hsi_dpll_cascading_blocker {
-	bool lock_dpll_cascading;
-	struct device *dev;
-	struct work_struct dpll_blocker_work;
-};
-
-static struct hsi_dpll_cascading_blocker dpll_blocker = {
-	.lock_dpll_cascading = true,
-};
-#endif
->>>>>>> omap/p-android-omap-3.0
 
 // LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]
 void hsi_hsr_suspend(struct hsi_dev *hsi_ctrl)
@@ -683,22 +669,6 @@ static int __init hsi_init_gdd_chan_count(struct hsi_dev *hsi_ctrl)
 	return 0;
 }
 
-#ifdef CONFIG_OMAP4_DPLL_CASCADING
-static void hsi_dpll_cascading_blocker_work(struct work_struct *work)
-{
-	struct hsi_dpll_cascading_blocker *dpll_blocker;
-
-	dpll_blocker = container_of(work,
-			struct hsi_dpll_cascading_blocker,
-			dpll_blocker_work);
-
-	if (dpll_blocker->lock_dpll_cascading)
-		omap4_dpll_cascading_blocker_hold(dpll_blocker->dev);
-	else
-		omap4_dpll_cascading_blocker_release(dpll_blocker->dev);
-}
-#endif
-
 /**
 * hsi_clocks_disable_channel - virtual wrapper for disabling HSI clocks for
 * a given channel
@@ -737,19 +707,13 @@ void hsi_clocks_disable_channel(struct device *dev, u8 channel_number,
 /* MIPI Unstable Downlink Throughput : Disable log ( dev_warn = >  dev_dbg) */
 #if 1
 		dev_dbg(dev, "Disabling clocks with HST FSM not IDLE !\n");
-<<<<<<< HEAD
 #endif
 // LGE_CHANGE [MIPI-HSI] jaesung.woo@lge.com [END]		
 #ifdef K3_0_PORTING_HSI_MISSING_FEATURE
 
-=======
-
-#ifdef CONFIG_OMAP4_DPLL_CASCADING
->>>>>>> omap/p-android-omap-3.0
 	/* Allow Fclk to change */
-	dpll_blocker.lock_dpll_cascading = false;
-	dpll_blocker.dev = dev;
-	schedule_work(&dpll_blocker.dpll_blocker_work);
+	if (dpll_cascading_blocker_release(dev) < 0)
+		dev_warn(dev, "Error releasing DPLL cascading constraint\n");
 #endif
 
 	pm_runtime_put_sync_suspend(dev);
@@ -787,11 +751,10 @@ int hsi_clocks_enable_channel(struct device *dev, u8 channel_number,
 		return -EEXIST;
 	}
 
-#ifdef CONFIG_OMAP4_DPLL_CASCADING
-	/* Prevent Fclk to change */
-	dpll_blocker.lock_dpll_cascading = true;
-	dpll_blocker.dev = dev;
-	schedule_work(&dpll_blocker.dpll_blocker_work);
+#ifdef K3_0_PORTING_HSI_MISSING_FEATURE
+	/* Prevent Fclk change */
+	if (dpll_cascading_blocker_hold(dev) < 0)
+		dev_warn(dev, "Error holding DPLL cascading constraint\n");
 #endif
 
 	return pm_runtime_get_sync(dev);
@@ -1358,11 +1321,6 @@ static int __init hsi_driver_init(void)
 		goto rback1;
 	}
 
-#ifdef CONFIG_OMAP4_DPLL_CASCADING
-	INIT_WORK(&dpll_blocker.dpll_blocker_work,
-			hsi_dpll_cascading_blocker_work);
-#endif
-
 	/* Register the HSI platform driver */
 	err = platform_driver_probe(&hsi_pdriver, hsi_platform_device_probe);
 	if (err < 0) {
@@ -1380,9 +1338,6 @@ rback1:
 
 static void __exit hsi_driver_exit(void)
 {
-#ifdef CONFIG_OMAP4_DPLL_CASCADING
-	flush_work_sync(&dpll_blocker.dpll_blocker_work);
-#endif
 	platform_driver_unregister(&hsi_pdriver);
 	hsi_debug_exit();
 	hsi_bus_exit();

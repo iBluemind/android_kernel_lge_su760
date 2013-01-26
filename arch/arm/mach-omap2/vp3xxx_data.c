@@ -75,12 +75,6 @@ struct omap_vp_instance omap3_vp_mpu = {
 	.voltage = OMAP3_PRM_VP1_VOLTAGE_OFFSET,
 // LGE_CHANGE_START [bk.shin@lge.com] 2012-04-25, TI patch :  introduce SoC limit parameters
 	.vlimits = &omap3_vp_mpu_limit,
-	
-};
-
-struct omap_vp_volt_limits omap3_vp_core_limit = {
-	.vddmin	= OMAP3430_VP2_VLIMITTO_VDDMIN,
-	.vddmax	= OMAP3430_VP2_VLIMITTO_VDDMAX,
 };
 
 struct omap_vp_volt_limits omap3_vp_core_limit = {

@@ -30,15 +30,10 @@ int cdc_tcxo_set_req_int(int clk_id, int enable)
 	char mask;
 	int ret;
 
-<<<<<<< HEAD
 	if (!cdc_info.active) {
 		dev_err(cdc_info.dev, "device is not active yet\n");
 		return -ENODEV;
 	}
-=======
-	if (!cdc_info.active)
-		return -ENODEV;
->>>>>>> omap/p-android-omap-3.0
 
 	switch (clk_id) {
 	case CDC_TCXO_CLK1:
@@ -78,15 +73,10 @@ int cdc_tcxo_set_req_prio(int clk_id, int req_prio)
 	char mask;
 	int ret;
 
-<<<<<<< HEAD
 	if (!cdc_info.active) {
 		dev_err(cdc_info.dev, "device is not active yet\n");
 		return -ENODEV;
 	}
-=======
-	if (!cdc_info.active)
-		return -ENODEV;
->>>>>>> omap/p-android-omap-3.0
 
 	switch (clk_id) {
 	case CDC_TCXO_CLK1:
@@ -129,10 +119,6 @@ static int cdc_tcxo_probe(struct i2c_client *client, \
 
 	cdc_info.client = client;
 	cdc_info.dev = &client->dev;
-<<<<<<< HEAD
-=======
-
->>>>>>> omap/p-android-omap-3.0
 	for (i = 0; i < CDC_TCXO_REGNUM; i++)
 		cdc_info.buf[i] = pdata->buf[i];
 
@@ -183,7 +169,4 @@ static void __exit cdc_tcxo_exit(void)
 
 module_init(cdc_tcxo_init);
 module_exit(cdc_tcxo_exit);
-<<<<<<< HEAD
 
-=======
->>>>>>> omap/p-android-omap-3.0

@@ -22,14 +22,10 @@
  * other than the GPL, without Broadcom's express prior written consent.
  *
 <<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/dhd/sys/dhd_sdio.c
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/dhd/sys/dhd_sdio.c
  * $Id: dhd_sdio.c,v 1.274.2.40 2011-02-09 22:42:44 Exp $
 =======
  * $Id: dhd_sdio.c 352730 2012-08-23 20:55:11Z $
 >>>>>>> google/android-3.0:drivers/net/wireless/bcmdhd/dhd_sdio.c
-=======
- * $Id: dhd_sdio.c 326662 2012-04-10 06:38:08Z $
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/dhd_sdio.c
  */
 
 #include <typedefs.h>
@@ -1506,11 +1502,7 @@ dhd_bus_rxctl(struct dhd_bus *bus, uchar *msg, uint msglen)
 		dhd_os_sdunlock(bus->dhd);
 #endif /* DHD_DEBUG */
 	} else if (pending == TRUE) {
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/dhd/sys/dhd_sdio.c
 		/* possibly fw hangs so never responsed back */
-=======
-		/* signal pending */
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/dhd_sdio.c
 		DHD_ERROR(("%s: signal pending\n", __FUNCTION__));
 		return -EINTR;
 	} else {
@@ -6265,7 +6257,6 @@ uint dhd_bus_chip_id(dhd_pub_t *dhdp)
 {
 	dhd_bus_t *bus = dhdp->bus;
 
-<<<<<<< HEAD:drivers/net/wireless/bcm4330_b2/src/dhd/sys/dhd_sdio.c
 	return bus->sih->chip;
 }
 
@@ -6283,9 +6274,6 @@ uint dhd_bus_chippkg_id(dhd_pub_t *dhdp)
 	dhd_bus_t *bus = dhdp->bus;
 
 	return bus->sih->chippkg;
-=======
-	return  bus->sih->chip;
->>>>>>> omap/p-android-omap-3.0:drivers/net/wireless/bcmdhd/dhd_sdio.c
 }
 
 int
