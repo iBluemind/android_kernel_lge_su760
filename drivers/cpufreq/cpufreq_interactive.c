@@ -52,12 +52,7 @@ struct cpufreq_interactive_cpuinfo {
 	u64 hispeed_validate_time;
 	struct rw_semaphore enable_sem;
 	int governor_enabled;
-	unsigned int *load_history;
-	unsigned int history_load_index;
-	unsigned int total_avg_load;
-	unsigned int total_load_history;
-	unsigned int low_power_rate_history;
-	unsigned int cpu_tune_value;
+
 };
 
 static DEFINE_PER_CPU(struct cpufreq_interactive_cpuinfo, cpuinfo);
@@ -67,15 +62,6 @@ static struct task_struct *speedchange_task;
 static cpumask_t speedchange_cpumask;
 static spinlock_t speedchange_cpumask_lock;
 static struct mutex gov_lock;
-
-#define MIN_GO_HISPEED_LOAD 70
-#define DEFAULT_LOW_POWER_RATE 10
-
-/* default number of sampling periods to average before hotplug-in decision */
-#define DEFAULT_SAMPLING_PERIODS 10
-#define DEFAULT_HI_PERF_THRESHOLD 80
-#define DEFAULT_LOW_POWER_THRESHOLD 35
-#define MAX_MIN_SAMPLE_TIME (80 * USEC_PER_MSEC)
 
 /* Hi speed to bump to from lo speed when load burst (default max) */
 static unsigned int hispeed_freq;
