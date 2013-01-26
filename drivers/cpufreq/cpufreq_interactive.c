@@ -68,6 +68,21 @@ static cpumask_t speedchange_cpumask;
 static spinlock_t speedchange_cpumask_lock;
 static struct mutex gov_lock;
 
+static struct workqueue_struct *tune_wq;
+static struct work_struct tune_work;
+static cpumask_t tune_cpumask;
+static spinlock_t tune_cpumask_lock;
+
+static unsigned int sampling_periods;
+static unsigned int low_power_threshold;
+static unsigned int hi_perf_threshold;
+static unsigned int low_power_rate;
+static enum tune_values {
+	LOW_POWER_TUNE = 0,
+	DEFAULT_TUNE,
+	HIGH_PERF_TUNE
+} cur_tune_value;
+
 #define MIN_GO_HISPEED_LOAD 70
 #define DEFAULT_LOW_POWER_RATE 10
 
@@ -920,7 +935,7 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		unsigned int event)
 {
 	int rc;
-	unsigned int j;
+	unsigned int j, i;
 	struct cpufreq_interactive_cpuinfo *pcpu;
 	struct cpufreq_frequency_table *freq_table;
 
