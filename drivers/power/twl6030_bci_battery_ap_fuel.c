@@ -74,17 +74,15 @@
 /* LGE_CHANGE [euiseop.shin@lge.com] 2011-04-13,
  * LGE_P940, for battery,power debug
  */
-#ifndef  __DEBUG_POWER
-#define __DEBUG_POWER
+#ifdef  __DEBUG_POWER
 
 #define __DEBUG_PMIC
 #define __DEBUG_CHARGER
 #define __DEBUG_FUELGAUGE
 #define __DEBUG_MUIC
-//#define __DEBUG_TEMP
+#define __DEBUG_TEMP
 
 #ifdef __DEBUG_PMIC 
-//#define DPWR(fmt, args...) printk(fmt " :: file=%s, func=%s, line=%d\n", ##args, __FILE__, __func__, __LINE__ ) 
 #define DPWR(fmt, args...) printk("[PWR] " fmt "\n", ##args) 
 #else
 #define DPWR(fmt, args...) 
