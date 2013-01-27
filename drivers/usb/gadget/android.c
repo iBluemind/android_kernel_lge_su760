@@ -1950,7 +1950,6 @@ static int __init init(void)
             LG Gadget driver */
 	dev->disable_depth = 1;
 
-	dev->disable_depth = 1;
 	dev->functions = supported_functions;
 	INIT_LIST_HEAD(&dev->enabled_functions);
 	INIT_WORK(&dev->work, android_work);
