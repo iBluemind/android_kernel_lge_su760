@@ -162,11 +162,11 @@ static ssize_t keypad_keylock_store(struct device *dev,  struct device_attribute
 
 	if(atcmd_keylock == 1)
 	{
-		printk("[KEYPAD] AT%KEYLOCK ON.\n");
+		printk("[KEYPAD] AT%%KEYLOCK ON.\n");
 	}
 	else if(atcmd_keylock == 0)
 	{
-		printk("[KEYPAD] AT%KEYLOCK OFF.\n");
+		printk("[KEYPAD] AT%%KEYLOCK OFF.\n");
 	}
 
 	return ret;

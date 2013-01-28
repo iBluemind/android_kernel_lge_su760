@@ -25,7 +25,7 @@
 
 int lge_dynamic_nvdata_raw_read(int offset, char* buf, int size)
 {
-	if(size == 0) return 0;
+	if(size != 0) {
 
 	int h_file = 0;
 	int ret = 0;
@@ -53,6 +53,8 @@ int lge_dynamic_nvdata_raw_read(int offset, char* buf, int size)
 		return 0;
 	}
 	set_fs(oldfs);
+	
+	}
 
 	return size;
 }
@@ -60,7 +62,7 @@ int lge_dynamic_nvdata_raw_read(int offset, char* buf, int size)
 int lge_dynamic_nvdata_raw_write(int offset, char* buf, int size)
 
 {
-	if(size == 0) return 0;
+	if(size != 0) {
 
 	int h_file = 0;
 	int ret = 0;
@@ -90,6 +92,8 @@ int lge_dynamic_nvdata_raw_write(int offset, char* buf, int size)
 	}
 	set_fs(oldfs);
 
+	}
+
 	return size;
 }
 
@@ -113,7 +117,7 @@ void lge_clean_dynamic_nvdata_partition()
 // ------------------------- For Static NV data -----------------------------------------------------//
 int lge_static_nvdata_raw_read(int offset, char* buf, int size)
 {
-	if(size == 0) return 0;
+	if(size != 0) {
 
 	int h_file = 0;
 	int ret = 0;
@@ -146,13 +150,15 @@ int lge_static_nvdata_raw_read(int offset, char* buf, int size)
 	}
 	set_fs(oldfs);
 
+	}
+
 	return size;
 }
 
 int lge_static_nvdata_raw_write(int offset, char* buf, int size)
 
 {
-	if(size == 0) return 0;
+	if(size != 0) {
 
 	int h_file = 0;
 	int ret = 0;
@@ -182,6 +188,8 @@ int lge_static_nvdata_raw_write(int offset, char* buf, int size)
 		return 0;
 	}
 	set_fs(oldfs);
+
+	}
 
 	return size;
 }

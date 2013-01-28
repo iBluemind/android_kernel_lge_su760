@@ -627,7 +627,7 @@ static int lh430wv2_panel_bl_update_status(struct backlight_device *dev)
 {
 	struct omap_dss_device *dssdev = dev_get_drvdata(&dev->dev);
 	struct lh430wv2_panel_data *td = dev_get_drvdata(&dssdev->dev);
-	int r=0;
+	int r = 0;
 	int level;
 
 	if (dev->props.fb_blank == FB_BLANK_UNBLANK &&
@@ -649,7 +649,7 @@ static int lh430wv2_panel_bl_update_status(struct backlight_device *dev)
                 if( lh430wv2_panel_HiddenRestStatus(3) == 1 )
                 {
 		            mutex_unlock(&td->lock);
-                    return;
+                    return 0;
                 }
             }			
 	//mo2haewoon.you@lge.com <= [END]		
@@ -818,7 +818,7 @@ extern u32 gamma_rgb_data_dispc_for_extern(char *str);
 extern void dispc_set_gamma_table(void); 
 extern int dispc_enable_gamma(enum omap_channel ch, u8 gamma);
 
-static void lge_gamma_rgb_data_from_nv2()
+static void lge_gamma_rgb_data_from_nv2(void)
 {
 	int gamma_temp_r=0,gamma_temp_g=0,gamma_temp_b=0;
 	char cmd_line[256] = {0,};
@@ -1067,11 +1067,11 @@ static ssize_t display_3d_setting_show(struct device *dev,
 	return len;
 }
 
-static ssize_t display_3d_setting_store(struct device *dev,	struct device_attribute *attr,
+static ssize_t display_3d_setting_store(struct device *dev, struct device_attribute *attr,
 		const char *buf, size_t size)
 {
     struct omap_dss_device *dssdev = to_dss_device(dev);
-    struct lh430wv2_panel_data *td = dev_get_drvdata(&dssdev->dev);
+    //struct lh430wv2_panel_data *td = dev_get_drvdata(&dssdev->dev);
 
 	int setting;
 	
@@ -1224,7 +1224,7 @@ static void panel_cosmo_stop_s3d_pwm_timer(void)
 static int lh430wv2_panel_probe(struct omap_dss_device *dssdev)
 {
 	struct backlight_properties props;
-	struct lh430wv2_panel_data *td;
+	struct lh430wv2_panel_data *td = dev_get_drvdata(&dssdev->dev);
 	struct backlight_device *bldev;
 	struct lge_dsi_panel_data *panel_data = get_panel_data(dssdev);
 	struct panel_config *panel_config = NULL;
@@ -2339,7 +2339,7 @@ static int lh430wv2_panel_enable_s3d(struct omap_dss_device *dssdev, bool enable
 {
 	struct lh430wv2_panel_data *td = dev_get_drvdata(&dssdev->dev);
 	
-	if(dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) return;
+	if(dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) return 0;
 	
 	return barrier_init(td, enable);
 }

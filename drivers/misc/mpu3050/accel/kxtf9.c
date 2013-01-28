@@ -326,8 +326,8 @@ static int kxtf9_suspend(void *mlsl_handle,
 			 struct ext_slave_platform_data *pdata)
 {
 	int result;
-	unsigned char data;
-	struct kxtf9_private_data *private_data = pdata->private_data;
+	//unsigned char data;
+	//struct kxtf9_private_data *private_data = pdata->private_data;
 
 
 #ifndef MPL_IKR_BUILD //TSKIM_20110601:remove because of Accel power consumption on sleep.
@@ -629,7 +629,7 @@ static int kxtf9_read(void *mlsl_handle,
 		      unsigned char *data)
 {
 	int result;
-	unsigned char reg;
+	//unsigned char reg;
 
 #ifndef MPL_IKR_BUILD //TSKIM_20110601 : remove to implement mpu-accel
 	result = MLSLSerialRead(mlsl_handle, pdata->address,

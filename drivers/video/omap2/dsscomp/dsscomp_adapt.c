@@ -1541,12 +1541,12 @@ static int lambda_s3d_ro_ril_fill_wbinfo
 								)
 {
 	int 	s3_depth, s3_depth_abs;
-	u32 	black_addr_backup, black_addr;
-	u32		s3_stride, src_stride;
-	int 	height;
-	int 	i;
-	int 	bpp;
-	int 	r;
+	//u32 	black_addr_backup, black_addr;
+	u32		s3_stride;
+	//int 	height;
+	//int 	i;
+	//int 	bpp;
+	//int 	r;
 	
 	if ( info_even==NULL || info_odd==NULL || opd==NULL || opd->uv_paddr!=0 )
 		return -EINVAL;

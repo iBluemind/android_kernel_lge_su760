@@ -153,6 +153,7 @@ static inline u8 twl6030_readb(struct twl6030_usb *twl, u8 module, u8 address)
 }
 
 /*-------------------------------------------------------------------------*/
+/*
 static int twl6030_set_phy_clk(struct otg_transceiver *x, int on)
 {
 	struct twl6030_usb *twl;
@@ -167,6 +168,7 @@ static int twl6030_set_phy_clk(struct otg_transceiver *x, int on)
 
 	return 0;
 }
+*/
 
 static int twl6030_phy_init(struct otg_transceiver *x)
 {
@@ -290,8 +292,8 @@ static ssize_t twl6030_usb_vbus_show(struct device *dev,
 static DEVICE_ATTR(vbus, 0444, twl6030_usb_vbus_show, NULL);
 
 // LGE_UPDATE_S hunsoo.lee
-static struct work_struct twl6030_usb_irq_wq;
-static struct work_struct twl6030_usbotg_irq_wq;
+//static struct work_struct twl6030_usb_irq_wq;
+//static struct work_struct twl6030_usbotg_irq_wq;
 
 void *tmp_twl;
 void *tmp_twl_otg;
@@ -831,8 +833,8 @@ static struct platform_driver twl6030_usb_driver = {
 
 static int __init twl6030_usb_init(void)
 {
-	#if(ENABLE_QUEUE_WORK)
-    twl6030_usb_wq = create_singlethread_workqueue("twl6030_usb_wq");
+	#if defined(ENABLE_QUEUE_WORK)
+    	twl6030_usb_wq = create_singlethread_workqueue("twl6030_usb_wq");
 	if (!twl6030_usb_wq) {		
 		dbg_xceiv("[%s] twl6030_usb_wq is not created  \n",__func__);
 	}
@@ -846,7 +848,7 @@ static void __exit twl6030_usb_exit(void)
 {
 	platform_driver_unregister(&twl6030_usb_driver);
 
-	#if(ENABLE_QUEUE_WORK)
+	#if defined(ENABLE_QUEUE_WORK)
 	destroy_workqueue(twl6030_usb_wq);
 	twl6030_usb_wq = NULL;
 	#endif

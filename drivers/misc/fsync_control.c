@@ -15,7 +15,7 @@
 
 static bool fsync_enabled = true;
 
-bool fsynccontrol_fsync_enabled()
+bool fsynccontrol_fsync_enabled(void)
 {
     return fsync_enabled;
 }

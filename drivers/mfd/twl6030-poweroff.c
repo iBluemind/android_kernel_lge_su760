@@ -38,6 +38,7 @@ void twl6030_poweroff(void)
 {
 	u8 val = 0;
 	int err = 0;
+	int retry = 5;
 
 	err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
 				  TWL6030_PHOENIX_DEV_ON);
@@ -46,8 +47,7 @@ void twl6030_poweroff(void)
 		return;
 	}
 
-	int retry = 5;
-	/* LGE_BSP 2012-02-15 [myeonggyu.son@lge.com]
+  /* LGE_BSP 2012-02-15 [myeonggyu.son@lge.com]
    * Add SW_RESET because of TWL6030 Bug by wonhui.lee@lge.command
    */
     //val |= APP_DEVOFF | CON_DEVOFF | MOD_DEVOFF;

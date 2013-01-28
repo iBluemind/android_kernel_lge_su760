@@ -1712,7 +1712,7 @@ static int twl6040_codec_power_put_enum(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-	struct twl6040_data *priv = snd_soc_codec_get_drvdata(codec);
+	//struct twl6040_data *priv = snd_soc_codec_get_drvdata(codec);
 	int pwr_on = ucontrol->value.enumerated.item[0];
 	int ret;
 

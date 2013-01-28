@@ -137,8 +137,8 @@ static void mdm_watcher_work_func(struct work_struct *work)
 	struct delayed_work *delayed_work = container_of(work, struct delayed_work, work);
 	struct mdm_watcher_data *handler =
 		container_of(delayed_work, struct mdm_watcher_data, delayed_work);
-	int verified;
-	int i;
+	//int verified;
+	//int i;
 	//LGE_CHANGE  RIP-11133 : added CP coredump feature : byeonggeun.kim@lge.com [START]	
 	/*
 	int ret;

@@ -116,7 +116,7 @@ extern int lge_dynamic_nvdata_write(enum lge_dynamic_nvdata_offset offset, char*
 extern int lge_static_nvdata_read(enum lge_static_nvdata_offset offset, char* buf, int size);
 extern int lge_static_nvdata_write(enum lge_static_nvdata_offset offset, char* buf, int size);
 
-extern void lge_clean_dynamic_nvdata_partition(); // <-- for factory reset
+extern void lge_clean_dynamic_nvdata_partition(void); // <-- for factory reset
 
 
 // ---- this api is only for sysfs driver  , so do not use int other kernel side -------//

@@ -33,16 +33,16 @@ typedef enum
 } lge_nvdata_iq_reset_cause_t;
 //LGE_ChangeS jaesung.woo@lge.com 20110131 CIQ [END]
 
-extern int 	lge_is_force_ap_crash();
-extern int  lge_is_crash_dump_enabled();
-extern int lge_is_ap_crash_dump_enabled();
-extern void lge_mark_ap_crash();
+extern int lge_is_force_ap_crash(void);
+extern int lge_is_crash_dump_enabled(void);
+extern int lge_is_ap_crash_dump_enabled(void);
+extern void lge_mark_ap_crash(void);
 // hyoungsuk.jang@lge.com 20110128 CP Crash [START]
-extern void lge_mark_cp_crash();
-extern int  lge_is_mark_cp_crash();
+extern void lge_mark_cp_crash(void);
+extern int  lge_is_mark_cp_crash(void);
 // hyoungsuk.jang@lge.com 20110128 CP Crash [END]
-extern void lge_dump_ap_crash();
-extern void lge_user_reset();
+extern void lge_dump_ap_crash(void);
+extern void lge_user_reset(void);
 
 //LGE_ChangeS jaesung.woo@lge.com 20110131 CIQ [START]
 extern void lge_store_ciq_reset(int is_ap, int cause);

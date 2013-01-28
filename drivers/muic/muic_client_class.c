@@ -31,7 +31,7 @@
 #include <linux/charger_rt9524.h>
 
 struct class *muic_client_class;
-static atomic_t device_count;
+//static atomic_t device_count;
 
 static int muic_notifier_callback(struct notifier_block *self,
 				 unsigned long event, void *data)

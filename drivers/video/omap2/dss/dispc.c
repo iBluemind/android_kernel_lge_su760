@@ -1550,7 +1550,7 @@ static void _dispc_set_scale_param(enum omap_plane plane,
 		enum omap_color_component color_comp)
 {
 	int fir_hinc, fir_vinc;
-	int hscaleup, vscaleup;
+	//int hscaleup, vscaleup;
 #if 0//20120629 mo2hyungmin.kim TI patch for up scaling bluring issue
 	hscaleup = orig_width <= out_width;
 	vscaleup = orig_height <= out_height;
@@ -3128,7 +3128,7 @@ int dispc_enable_gamma(enum omap_channel ch, u8 gamma)
 #ifdef CONFIG_ARCH_OMAP4
 	u32 i, temp, channel;
 	static int enabled;
-	u32 *tablePtr;
+	//u32 *tablePtr;
 
         channel = ch == OMAP_DSS_CHANNEL_LCD ? 0 :
                  ch == OMAP_DSS_CHANNEL_LCD2 ? 1 : 2;
@@ -3196,7 +3196,7 @@ int dispc_set_gamma_rgb(enum omap_channel ch, u8 gamma,int red,int green,int blu
 #ifdef CONFIG_ARCH_OMAP4
 	u32 i, temp, channel;
 	static int enabled;
-	unsigned char maker_id;
+	//unsigned char maker_id;
 	u32 *tablePtr;
 
         channel = ch == OMAP_DSS_CHANNEL_LCD ? 0 :
@@ -3261,7 +3261,7 @@ int dispc_set_gamma_rgb(enum omap_channel ch, u8 gamma,int red,int green,int blu
 #endif
 }
 
-void dispc_set_gamma_table()
+void dispc_set_gamma_table(void)
 {
 	u32 temp;
 	int i, maker_id, gamma_nv_flag;

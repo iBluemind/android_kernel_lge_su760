@@ -144,6 +144,7 @@ static struct platform_device btwilink_device = {
 };
 // TIK - end
 /* Call the uart disable of serial driver */
+/*
 static int plat_bt_uart_disable(void)
 {
         int port_id = 0;
@@ -156,8 +157,10 @@ static int plat_bt_uart_disable(void)
         }
         return err;
 }
+*/
 
 /* Call the uart enable of serial driver */
+/*
 static int plat_bt_uart_enable(void)
 {
         int port_id = 0;
@@ -170,6 +173,7 @@ static int plat_bt_uart_enable(void)
         }
         return err;
 }
+*/
 // LGE_SJIT_E 11/18/2011 [mohamed.khadri@lge.com] BT UART Enable
 
 
@@ -233,7 +237,7 @@ struct platform_device bd_address_device = {
 #if defined(CONFIG_I2C_GPIO)
 #include <linux/i2c-gpio.h>
 #define GPIO_MHL_I2C_SCL	8
-#if CONFIG_MACH_LGE_CX2_SU870 //nthyunjin.yang 120421
+#if defined(CONFIG_MACH_LGE_CX2_SU870) //nthyunjin.yang 120421
 #define GPIO_MHL_I2C_SDA	182
 #else
 #define GPIO_MHL_I2C_SDA	31
@@ -245,6 +249,7 @@ enum {
 };
 #define I2C_ID(x) (x + 5)
 
+/*
 static struct i2c_gpio_platform_data i2c_gpio_data[] = {
     {
         .sda_pin = GPIO_MHL_I2C_SDA,
@@ -254,7 +259,9 @@ static struct i2c_gpio_platform_data i2c_gpio_data[] = {
         .udelay = 2, //10,
     },
 };
+*/
 
+/*
 static struct platform_device i2c_gpio_device[] = {
 	{
 	    .name = "i2c-gpio",
@@ -262,6 +269,7 @@ static struct platform_device i2c_gpio_device[] = {
 	    .dev.platform_data = &i2c_gpio_data[MHL_GPIO_I2C],
 	},
 };
+*/
 
 struct i2c_board_info i2c_gpio_info_mhl[] = {
 #if defined(CONFIG_MHL_TX_SII9244) || defined(CONFIG_MHL_TX_SII9244_LEGACY)
@@ -285,6 +293,7 @@ struct i2c_board_info i2c_gpio_info_mhl[] = {
 #endif	
 };
 
+/*
 static void __init lge_add_i2c_gpio_device(void)
 {
 	int i, ret;
@@ -297,6 +306,7 @@ static void __init lge_add_i2c_gpio_device(void)
                  ARRAY_SIZE(i2c_gpio_info_mhl));
 	printk( "[MHL]i2c_register_board_info ret:%d\n", ret);
 }
+*/
 #endif
 // LGE_CHANGE_E [sungho.jung@lge.com] 2011-07-28
 
@@ -614,7 +624,7 @@ static struct platform_device *pdevs[] __initdata = {
 };
 
 /* LGE_SJIT 2011-12-07 [dojip.kim@lge.com] for vibrator */
-static char vib_name_b[] = VIB_PWM_NAME;
+//static char vib_name_b[] = VIB_PWM_NAME;
 
 int __init cosmo_pdevs_init(void)
 {

@@ -520,18 +520,23 @@ static struct lm3528_platform_data lm3528_pdata = {
 };
 #endif
 
+
 /* LGE_SJIT 2011-12-07 [dojip.kim@lge.com] add rotcpy */
+/*
 static void rotcpy(s8 dst[3 * 3], const s8 src[3 * 3])
 {
 	memcpy(dst, src, 3 * 3);
 }
+*/
 
 /* LGE_SJIT 2011-12-07 [dojip.kim@lge.com] mpu orientation for HW A */
+/*
 static s8 orientation_a[] = {
 	-1, 0, 0,
 	0, -1, 0,
 	0, 0, 1
 };
+*/
 
 /* Sensor I2C platform_data */
 static struct mpu3050_platform_data mpu3050_data = {
@@ -735,7 +740,6 @@ static struct lge_i2c_config i2c_4_config __initdata = {
 
 int __init lge_i2c_init(void)
 {
-	int fixed_rev = 0;
 
 	cosmo_twldata.regen2 = &twl6030_regen2_data;
 

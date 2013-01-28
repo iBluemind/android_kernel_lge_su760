@@ -55,7 +55,7 @@ static char *matchstr(const char *s1, const char *s2)
 	char *p, *p2;
 	bool matched;
 
-	p = s1;
+	p = (char *) s1;
 	do {
 		p = strstr(p, s2);
 		if (p) {

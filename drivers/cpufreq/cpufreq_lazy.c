@@ -731,8 +731,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 	    if (latency == 0)
 		latency = 1;
 	    /* Bring kernel and HW constraints together */
-	    min_sampling_rate = max(min_sampling_rate,
-				    MIN_LATENCY_MULTIPLIER * latency);
+	    min_sampling_rate = max(min_sampling_rate, MIN_LATENCY_MULTIPLIER * latency);
 	    dbs_tuners_ins.sampling_rate = max(min_sampling_rate, DEF_SAMPLE_RATE);
 	    current_sampling_rate = dbs_tuners_ins.sampling_rate;
 	    dbs_tuners_ins.min_timeinstate = latency * LATENCY_MULTIPLIER;

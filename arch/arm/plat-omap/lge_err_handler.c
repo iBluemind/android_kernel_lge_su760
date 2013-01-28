@@ -24,7 +24,7 @@
 #include <plat/lge_err_handler.h>
 
 
-int lge_is_force_ap_crash()
+int lge_is_force_ap_crash(void)
 {
 	char data[2] = {0x00,0x00};
 
@@ -44,7 +44,7 @@ int lge_is_force_ap_crash()
 }
 
 
-int lge_is_crash_dump_enabled()
+int lge_is_crash_dump_enabled(void)
 {
 	char data[2] = {0x00,0x00};
 
@@ -57,7 +57,7 @@ int lge_is_crash_dump_enabled()
 		return 0;
 }
 
-int lge_is_ap_crash_dump_enabled()
+int lge_is_ap_crash_dump_enabled(void)
 {	
 	char data[2] = {0x00,0x00};
 	
@@ -70,7 +70,7 @@ int lge_is_ap_crash_dump_enabled()
 		return 0;
 }
 
-void lge_mark_ap_crash()
+void lge_mark_ap_crash(void)
 {
 	char trap_buffer[2] = { LGE_NVDATA_DYNAMIC_RESET_CAUSE_VAL_AP_CRASH, 0x00 };
 
@@ -78,14 +78,14 @@ void lge_mark_ap_crash()
 }
 
 // hyoungsuk.jang@lge.com 20110128 CP Crash [START]
-void lge_mark_cp_crash()
+void lge_mark_cp_crash(void)
 {
 	char trap_buffer[2] = { LGE_NVDATA_DYNAMIC_RESET_CAUSE_VAL_CP_CRASH, 0x00 };
 
 	lge_dynamic_nvdata_write(LGE_NVDATA_DYNAMIC_RESET_CAUSE_OFFSET,trap_buffer,1);
 }
 
-int lge_is_mark_cp_crash()
+int lge_is_mark_cp_crash(void)
 {
 	char data[2] = {0x00,0x00};
 
@@ -99,15 +99,14 @@ int lge_is_mark_cp_crash()
 // hyoungsuk.jang@lge.com 20110128 CP Crash [END]
 
 
-void lge_user_reset()
+void lge_user_reset(void)
 {
 	char nvdata_user_reset_buffer[2] = {LGE_NVDATA_DYNAMIC_RESET_CAUSE_VAL_USER_RESET, 0x00 };
-	
 	lge_dynamic_nvdata_write(LGE_NVDATA_DYNAMIC_RESET_CAUSE_OFFSET,nvdata_user_reset_buffer,1);
 
 }
 
-static void lge_dump_kernel_log()
+static void lge_dump_kernel_log(void)
 {
 	extern int log_buf_copy(char *dest, int idx, int len);
 	char log_buf[1024];
@@ -142,7 +141,8 @@ static void lge_dump_kernel_log()
 	set_fs(oldfs);
 }
 
-static int lge_dump_android_log()
+/*
+static int lge_dump_android_log(void)
 {
 	static char * dontpanic_path = "/system/bin/logcat";
 	char *argv[] = { dontpanic_path,"-t","1000" ">","/data/panic_an.txt",NULL };
@@ -153,9 +153,10 @@ static int lge_dump_android_log()
 				   argv, envp, UMH_WAIT_PROC);
 
 }
+*/
 
 extern int oops_in_progress;
-void lge_dump_ap_crash()
+void lge_dump_ap_crash(void)
 {
 	int saved_oip;
 	
@@ -173,7 +174,8 @@ void lge_dump_ap_crash()
 	//msleep(100);
 	twl_i2c_write_u8(0x14, 0x47, 0x06); 
 	return;
-}
+}
+
 
 //LGE_ChangeS jaesung.woo@lge.com 20110131 CIQ [START]
 void lge_store_ciq_reset(int is_ap, int cause)

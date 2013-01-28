@@ -66,7 +66,7 @@ static ssize_t state_store(struct device *dev, struct device_attribute *attr,
 	int set_mode = -1;
 	char *p;
 	int len;
-	int error = -EINVAL;
+	//int error = -EINVAL;
 
 	p = memchr(buf, '\n', count);
 	len = p ? p - buf : count;
@@ -120,7 +120,7 @@ static ssize_t int_state_show(struct device *dev, struct device_attribute *attr,
 		char *buf)
 {
 	struct muic_device *mdev = (struct muic_device *)dev_get_drvdata(dev);
-	char *str;
+	//char *str;
 
 #if 0
 	if(state[mdev->mode])

@@ -82,7 +82,7 @@ int omap_tiler_alloc(struct ion_heap *heap,
 	u32 tiler_start = 0;
 	u32 v_size;
 	tiler_blk_handle tiler_handle;
-	ion_phys_addr_t addr = 0;
+//	ion_phys_addr_t addr = 0;
 	int i = 0, ret;
 #ifdef DYNAMIC_PAGE_ALLOC
 	struct page *pg;

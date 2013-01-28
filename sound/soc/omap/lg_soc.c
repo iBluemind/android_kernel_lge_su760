@@ -47,7 +47,7 @@
 #include "omap-dmic.h"
 #include "../codecs/twl6040.h"
 
-static struct regulator *av_switch_reg;
+//static struct regulator *av_switch_reg;
 
 
 static int twl6040_power_mode;
@@ -401,6 +401,7 @@ static struct snd_soc_jack_pin hs_jack_pins[] = {
 	},
 };
 
+/*
 static int sdp4430_av_switch_event(struct snd_soc_dapm_widget *w,
 				   struct snd_kcontrol *kcontrol, int event)
 {
@@ -413,6 +414,7 @@ static int sdp4430_av_switch_event(struct snd_soc_dapm_widget *w,
 
 	return ret;
 }
+*/
 
 static int sdp4430_get_power_mode(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
@@ -1152,7 +1154,7 @@ static struct platform_device *sdp4430_snd_device;
 
 static int __init sdp4430_soc_init(void)
 {
-	u8 gpoctl;
+	//u8 gpoctl;
 	int ret;
 
 	if (!machine_is_p2() && !machine_is_lghdk() && !machine_is_iff() && !machine_is_cosmo()) {

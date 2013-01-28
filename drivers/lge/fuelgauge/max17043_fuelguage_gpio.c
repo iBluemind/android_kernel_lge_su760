@@ -81,6 +81,7 @@ struct max17043_calibration_data {
 };
 
 // 180mA Load for Battery
+/*
 static struct max17043_calibration_data without_charger[] = {
 	{3953,		81,		9,		3242},
 	{3800,		58,		7,		3403},
@@ -90,7 +91,9 @@ static struct max17043_calibration_data without_charger[] = {
 	{3300,		0,		55,		3548},
 	{ -1, -1, -1, -1},	// End of Data
 };
+*/
 // 770mA Charging Battery
+/*
 static struct max17043_calibration_data with_charger[] = {
 	{3865,		2,		66,		3709},
 	{3956,		19,		5,		3851},
@@ -100,6 +103,7 @@ static struct max17043_calibration_data with_charger[] = {
 	{4200,		100,		2,		4042},
 	{ -1, -1, -1, -1},	// End of Data
 };
+*/
 
 #define SOC_TIMES 1000
 #define FUEL_GAUGE_VOLT_ERROR_RANGE		53       // 43 * (250/200)
@@ -699,6 +703,7 @@ static int max17043_write_config(struct max17043_dev *max_dev)
 	return 0;
 }
 
+/*
 static int max17043_need_quickstart(int charging)
 {
 	struct max17043_calibration_data* data;
@@ -774,6 +779,7 @@ static int max17043_need_quickstart(int charging)
 
 	return need_to_quickstart;
 }
+*/
 
 static int max17043_next_alert_level(int level)
 {

@@ -3332,7 +3332,7 @@ EXPORT_SYMBOL(dsi_vc_dcs_write_nosync);
 int dsi_vc_dcs_write(struct omap_dss_device *dssdev, int channel, u8 *data,
 		int len)
 {
-	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+	//struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
 	int r;
 
 	r = dsi_vc_dcs_write_nosync(dssdev, channel, data, len);
@@ -4002,7 +4002,7 @@ static int dsi_video_proto_config(struct omap_dss_device *dssdev)
 	int buswidth = 0;
 	u32 r;
 	int bytes_per_pixel;
-	int hbp, hfp, hsa, tl, line;
+	int hbp, hfp, hsa, tl;
 	int lanes;
 
 	dsi_config_tx_fifo(dsidev, DSI_FIFO_SIZE_32,
@@ -5031,7 +5031,7 @@ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
 {
 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-	static bool first_run_after_boot = 1;
+	//static bool first_run_after_boot = 1;
 
 	DSSDBG("dsi_display_disable\n");
 

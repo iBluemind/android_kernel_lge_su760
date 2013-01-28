@@ -831,7 +831,7 @@ static ssize_t apds9900_show_irdata(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct i2c_client *client = to_i2c_client(dev);
-	struct apds9900_data *data = i2c_get_clientdata(client);
+//	struct apds9900_data *data = i2c_get_clientdata(client);
 
 	return sprintf(buf, "%d\n", i2c_smbus_read_word_data(client, CMD_WORD|APDS9900_IRDATAL_REG));
 }
@@ -842,7 +842,7 @@ static ssize_t apds9900_show_cdata(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct i2c_client *client = to_i2c_client(dev);
-	struct apds9900_data *data = i2c_get_clientdata(client);
+//	struct apds9900_data *data = i2c_get_clientdata(client);
 
 	return sprintf(buf, "%d\n", i2c_smbus_read_word_data(client, CMD_WORD|APDS9900_CDATAL_REG));
 }

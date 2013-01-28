@@ -920,6 +920,7 @@ static struct regulator_ops twlsmps_ops = {
 	.set_suspend_disable	= twl6030ldo_suspend_disable,
 };
 
+/*
 static struct regulator_ops twl6030_external_control_pin_ops = {
 	.enable			= twl6030reg_enable,
 	.disable		= twl6030reg_disable,
@@ -932,6 +933,8 @@ static struct regulator_ops twl6030_external_control_pin_ops = {
 	.set_suspend_enable	= twl6030ldo_suspend_enable,
 	.set_suspend_disable	= twl6030ldo_suspend_disable,
 };
+*/
+
 /*----------------------------------------------------------------------*/
 
 #define TWL4030_FIXED_LDO(label, offset, mVolts, num, turnon_delay, \
