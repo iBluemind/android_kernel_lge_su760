@@ -46,7 +46,7 @@ struct max17043_dev {
 	struct	i2c_adapter adapter;
 	struct	i2c_algo_bit_data algo;
 	/* Spinlock for access to device registers.  Not yet globally used. */
-	spinlock_t	reg_lock;
+	spinlock_t reg_lock;
 	struct platform_device *pdev;
 	struct max17043_platform_data *pdata;
 
@@ -283,7 +283,7 @@ static void max17043_i2c_setscl(void *data, int state)
 	unsigned long flags;
 
 	spin_lock_irqsave(&i2c_max17043_dev->reg_lock, flags);
-    gpio_set_value(max_dev->pdata->gpio_scl, state);
+    	gpio_set_value(max_dev->pdata->gpio_scl, state);
 	spin_unlock_irqrestore(&i2c_max17043_dev->reg_lock, flags);
 }
 
@@ -1251,13 +1251,14 @@ static int max17043_probe(struct platform_device *pdev)
 	max_dev->fg_enable = 1;
 
 //	printk("########## max17043_probe GPIO REQUEST PLATFORM_SET_DRVDATA................................ \n");
-    platform_set_drvdata(pdev, max_dev);
-
+    	platform_set_drvdata(pdev, max_dev);
 	i2c_max17043_dev = max_dev;
+
+	i2c_max17043_dev->reg_lock = SPIN_LOCK_UNLOCKED;
 
 	/* Raise SCL and SDA */
 //	printk("########## max17043_probe GPIO REQUEST I2C_SETSDA................................ \n");
-	max17043_i2c_setsda(max_dev, 1);
+	max17043_i2c_setsda(max_dev, 1);	//Need to debug...
 	udelay(20);
 //	printk("########## max17043_probe GPIO REQUEST I2C_SETSCL................................ \n");
 	max17043_i2c_setscl(max_dev, 1);
@@ -1277,8 +1278,6 @@ static int max17043_probe(struct platform_device *pdev)
 	max17043_read_config(max_dev);
 
 	//max17043_test();
-
-
 
 	INIT_DELAYED_WORK_DEFERRABLE(&i2c_max17043_dev->alert_work, max17043_alert_work);
 	INIT_DELAYED_WORK_DEFERRABLE(&i2c_max17043_dev->gauge_work, max17043_update_work);
@@ -1382,8 +1381,8 @@ static struct platform_driver max17043_driver = {
 	},
 	.probe = max17043_probe,
 	.remove = max17043_remove,
-	.resume		= max17043_resume,
-	.suspend	= max17043_suspend,
+	.resume	= max17043_resume,
+	.suspend = max17043_suspend,
 };
 
 static int __init fuel_gauge_max17043_init(void)
