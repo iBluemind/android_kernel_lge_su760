@@ -1628,7 +1628,7 @@ DESCRIPTOR_ATTR(bDeviceClass, "%d\n", S_IRUGO|S_IWUSR)
 DESCRIPTOR_ATTR(bDeviceSubClass, "%d\n", S_IRUGO|S_IWUSR)
 DESCRIPTOR_ATTR(bDeviceProtocol, "%d\n", S_IRUGO|S_IWUSR)
 DESCRIPTOR_STRING_ATTR(iManufacturer, manufacturer_string)
-DESCRIPTOR_STRING_ATTR(iProduct, product_string)
+//DESCRIPTOR_STRING_ATTR(iProduct, product_string)
 DESCRIPTOR_STRING_ATTR(iSerial, serial_string)
 /* LGE_SJIT_S 10/21/2011 [mohamed.khadri@lge.com]
             LG Gadget driver -  Read only if enabled from kconfig  */
@@ -1835,9 +1835,9 @@ android_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *c)
 	return value;
 }
 
- // for usb disconnect event
- extern void musb_wake_unlock_from_muic(void);
-void android_USB_disconnect(){
+// for usb disconnect event
+extern void musb_wake_unlock_from_muic(void);
+void android_USB_disconnect(void){
 
 	struct android_dev *dev = _android_dev;
 	struct usb_composite_dev *cdev = NULL;
@@ -1906,7 +1906,8 @@ static int android_create_device(struct android_dev *dev)
 	return 0;
 }
 
-/* Handle error condition in init() (QCT patch) */	
+/* Handle error condition in init() (QCT patch) */
+/*	
 #if defined(CONFIG_LGE_ANDROID_USB)
 static void android_destroy_device(struct android_dev *dev)
 {
@@ -1918,6 +1919,7 @@ static void android_destroy_device(struct android_dev *dev)
 	device_destroy(android_class, dev->dev->devt);
 }
 #endif
+*/
 
 static int __init init(void)
 {
