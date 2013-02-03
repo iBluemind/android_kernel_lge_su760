@@ -36,7 +36,6 @@
 #include <linux/oom.h>
 #include <linux/sched.h>
 #include <linux/swap.h>
-#include <linux/rcupdate.h>
 #include <linux/profile.h>
 #include <linux/rcupdate.h>
 #include <linux/notifier.h>
