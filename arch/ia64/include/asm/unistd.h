@@ -325,7 +325,7 @@
 #ifdef __KERNEL__
 
 
-#define NR_syscalls			311 /* length of syscall table */
+#define NR_syscalls			308 /* length of syscall table */
 
 /*
  * The following defines stop scripts/checksyscalls.sh from complaining about
