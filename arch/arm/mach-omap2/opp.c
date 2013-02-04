@@ -78,7 +78,7 @@ int __init omap_init_opp_table(struct omap_opp_def *opp_def,
 		oh = omap_hwmod_lookup(opp_def->hwmod_name);
 		if (!oh || !oh->od) {
 			WARN(1, "%s: no hwmod or odev for %s, [%d] cannot add OPPs.\n", __func__, opp_def->hwmod_name, i);
-			goto next;
+			continue;
 		}
 		dev = &oh->od->pdev.dev;
 
