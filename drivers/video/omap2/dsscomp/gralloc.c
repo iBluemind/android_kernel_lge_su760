@@ -194,15 +194,11 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 	int skip;
 	struct dsscomp_gralloc_t *gsync;
 	struct dss2_rect_t win = { .w = 0 };
-
 #if defined(CONFIG_MACH_LGE_COSMO_3D_DISPLAY) //##hwcho_20120522
 #ifdef CONFIG_DSSCOMP_ADAPT
 	struct dsscomp_adapt_info* adapt_info = NULL;
 #endif
 #endif //##
-
-	u32 wb_mgr_ix;
-
 	/* reserve tiler areas if not already done so */
 	dsscomp_gralloc_init(cdev);
 
@@ -228,45 +224,8 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 	log_event(0, ms, gsync, "new in %pf (refs=1)",
 			(u32) dsscomp_gralloc_queue, 0);
 
-	/* by default our auxiliary variable has wrong value */
-	wb_mgr_ix = MAX_MANAGERS;
-
-	/* check the composition
-	 * if composition has wb and connected to manager
-	 * in m2m mode while blanking - do not skip the
-	 * composition for this manager */
-	if (blanked) {
-		for (i = 0; i < d->num_ovls; i++) {
-			if (d->ovls[i].cfg.ix == 4 &&
-						d->ovls[i].cfg.wb_mode ==
-							OMAP_WB_MEM2MEM_MODE &&
-						d->ovls[i].cfg.enabled) {
-				wb_mgr_ix = d->ovls[i].cfg.mgr_ix;
-				break;
-			}
-		}
-
-		/* If current composition contains no WB, but previous
-		 * composition contains WB, then we should pass this
-		 * composition */
-		for (ch = 0; ch < MAX_MANAGERS; ch++) {
-			if (wb_mgr_ix >= MAX_MANAGERS &&
-						ovl_use_mask[ch] & (1 << 4)) {
-				wb_mgr_ix = ch;
-				break;
-			}
-		}
-
-		if (wb_mgr_ix < MAX_MANAGERS)
-			for (ch = 0; ch < MAX_MANAGERS; ch++) {
-				if (ch != wb_mgr_ix)
-					ovl_use_mask[ch] = 0;
-			}
-	}
-
 	/* ignore frames while we are blanked */
-	skip = blanked && wb_mgr_ix >= MAX_MANAGERS;
-
+	skip = blanked;
 	if (skip && (debug & DEBUG_PHASES))
 		dev_info(DEV(cdev), "[%p,%08x] ignored\n", gsync, d->sync_id);
 
@@ -282,8 +241,7 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 	memset(comp, 0, sizeof(comp));
 	memset(ovl_new_use_mask, 0, sizeof(ovl_new_use_mask));
 
-	if ((skip || !dsscomp_is_any_device_active()) &&
-		wb_mgr_ix >= MAX_MANAGERS)
+	if (skip)
 		goto skip_comp;
 
 	d->mode = DSSCOMP_SETUP_DISPLAY;
@@ -306,11 +264,6 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 			continue;
 		}
 		channels[i] = ch = mgr->id;
-
-		if (wb_mgr_ix < MAX_MANAGERS && blanked)
-			if (wb_mgr_ix != i)
-				continue;
-
 		mgr_set_mask |= 1 << ch;
 
 		/* swap red & blue if requested */
@@ -320,14 +273,6 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 
 	/* create dsscomp objects for set managers (including active ones) */
 	for (ch = 0; ch < MAX_MANAGERS; ch++) {
-
-		if (wb_mgr_ix < MAX_MANAGERS && blanked) {
-			if (wb_mgr_ix != ch) {
-				comp[ch] = NULL;
-				continue;
-			}
-		}
-
 		if (!(mgr_set_mask & (1 << ch)) && !ovl_use_mask[ch])
 			continue;
 
@@ -359,10 +304,6 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 	/* configure manager data from gralloc composition */
 	for (i = 0; i < d->num_mgrs; i++) {
 		ch = channels[i];
-
-		if (!comp[ch])
-			continue;
-
 		r = dsscomp_set_mgr(comp[ch], d->mgrs + i);
 		if (r)
 			dev_err(DEV(cdev), "failed to set mgr%d (%d)\n", ch, r);
@@ -433,7 +374,7 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 		/* map non-TILER buffers to 1D */
 
 		/* skip 2D and disabled layers */
-		if (!pas || !pas[i] || !oi->cfg.enabled)
+		if (!pas[i] || !oi->cfg.enabled)
 			goto skip_map1d;
 
 		if (!slot) {
@@ -559,19 +500,12 @@ skip_map1d:
 		atomic_inc(&gsync->refs);
 		log_event(0, ms, gsync, "++refs=%d for [%p]",
 				atomic_read(&gsync->refs), (u32) comp[ch]);
-
-		if (wb_mgr_ix < MAX_MANAGERS && blanked)
-			comp[ch]->m2m_only = true;
-		else
-			comp[ch]->m2m_only = false;
-
 		r = dsscomp_delayed_apply(comp[ch]);
 		if (r)
 			dev_err(DEV(cdev), "failed to apply comp (%d)\n", r);
 		else
 			ovl_use_mask[ch] = ovl_new_use_mask[ch];
 	}
-
 skip_comp:
 	/* release sync object ref - this completes unapplied compositions */
 	dsscomp_gralloc_cb(gsync, DSS_COMPLETION_RELEASED);
