@@ -235,9 +235,9 @@ static irqreturn_t omap4_keypad_interrupt(int irq, void *dev_id)
                                                 (keypad_data->keymap[code] == KEY_VOLUMEUP) ? "Vol_UP" : ((keypad_data->keymap[code] == KEY_VOLUMEDOWN) ? "Vol_DOWN" : "HOME"),
                                                 (key_state[col] & (1 << row)) ? "PRESS" : "RELEASE" );
 #else
-                    printk("[omap4-keypad] %s KEY %s\n",
-						(keypad_data->keymap[code] == KEY_VOLUMEUP) ? "Vol_UP" : ((keypad_data->keymap[code] == KEY_VOLUMEDOWN) ? "Vol_DOWN" : "CAPTURE"),
-						(key_state[col] & (1 << row)) ? "PRESS" : "RELEASE" );
+                   // printk("[omap4-keypad] %s KEY %s\n",
+		   //				(keypad_data->keymap[code] == KEY_VOLUMEUP) ? "Vol_UP" : ((keypad_data->keymap[code] == KEY_VOLUMEDOWN) ? "Vol_DOWN" : "CAPTURE"),
+		   //				(key_state[col] & (1 << row)) ? "PRESS" : "RELEASE" );
 #endif
 
 #ifdef CONFIG_INPUT_LGE_GKPD
@@ -271,7 +271,7 @@ static irqreturn_t omap4_keypad_interrupt(int irq, void *dev_id)
 			keypad_data->base + OMAP4_KBD_IRQSTATUS);
 
 
-	printk("#################################### %s is finished!!!!!\n", __func__);
+	//printk("#################################### %s is finished!!!!!\n", __func__);
 	return IRQ_HANDLED;
 }
 
