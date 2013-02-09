@@ -161,10 +161,11 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	}
 	lowmem_print(4, "lowmem_shrink %lu, %x, return %d\n",
 		     sc->nr_to_scan, sc->gfp_mask, rem);
+
 	rcu_read_unlock();
 
     	if (selected)
-        	compact_nodes();
+        	compact_nodes(false);
 
 	return rem;
 }
