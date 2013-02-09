@@ -325,7 +325,7 @@ static int omap_hsmmc_get_wp(struct device *dev, int slot)
 
 static int omap_hsmmc_get_cover_state(struct device *dev, int slot)
 {
-	struct omap_mmc_platform_data *mmc = dev->platform_data;
+	//struct omap_mmc_platform_data *mmc = dev->platform_data;
 
 	/* NOTE: assumes card detect signal is active-low */
 	return omap_hsmmc_card_detect(dev, 0);
@@ -987,6 +987,7 @@ int omap_hsmmc_cover_is_closed(struct omap_hsmmc_host *host)
 	return r;
 }
 
+/*
 static ssize_t
 omap_hsmmc_show_cover_switch(struct device *dev, struct device_attribute *attr,
 			   char *buf)
@@ -997,8 +998,9 @@ omap_hsmmc_show_cover_switch(struct device *dev, struct device_attribute *attr,
 	return sprintf(buf, "%s\n",
 			omap_hsmmc_cover_is_closed(host) ? "closed" : "open");
 }
+*/
 
-static DEVICE_ATTR(cover_switch, S_IRUGO, omap_hsmmc_show_cover_switch, NULL);
+//static DEVICE_ATTR(cover_switch, S_IRUGO, omap_hsmmc_show_cover_switch, NULL);
 
 static ssize_t
 omap_hsmmc_show_slot_name(struct device *dev, struct device_attribute *attr,

@@ -128,7 +128,7 @@ static ssize_t show_keypad_debug_mask(struct device *dev,
 }
 
 static ssize_t store_keypad_debug_mask(struct device *dev,
-		struct device_attribute *attr, char *buf, size_t count)
+		struct device_attribute *attr, const char *buf, size_t count)
 {
 	debug_mask = simple_strtoul(buf, NULL, 10);
 	printk("%s: debug_mask is set to %d\n", __func__, debug_mask);

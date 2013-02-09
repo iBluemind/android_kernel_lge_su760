@@ -4771,7 +4771,7 @@ void dispc_uninit_platform_driver(void)
 	return platform_driver_unregister(&omap_dispchw_driver);
 }
 //LGE_CHANGE_S [jeonghoon.cho@lge.com] 2012-0208, P940 : Add GAMMA Function refer from P2 GB
-static u32 __init gamma_rgb_data_dispc(char *str)
+static int __init gamma_rgb_data_dispc(char *str)
 {
 	int output[3]={0,};
 

@@ -204,7 +204,7 @@ static ssize_t codec_reg_show(struct device *dev,
 ssize_t codec_reg_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
     int reg, data;
-    char *r, *d;
+    const char *r, *d;
     struct snd_soc_pcm_runtime *rtd =
         container_of(dev, struct snd_soc_pcm_runtime, dev);
 

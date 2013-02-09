@@ -725,7 +725,7 @@ static ssize_t show_cabc_mode(struct device *dev,
 
 	mode_str = "unknown";
 	if (mode >= 0 && mode < ARRAY_SIZE(cabc_modes))
-		mode_str = cabc_modes[mode];
+		mode_str = (char *)cabc_modes[mode];
 	len = snprintf(buf, PAGE_SIZE, "%s\n", mode_str);
 
 	return len < PAGE_SIZE - 1 ? len : PAGE_SIZE - 1;

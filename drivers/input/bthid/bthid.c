@@ -205,7 +205,7 @@ static ssize_t bthid_write(struct file *file, const char __user *buffer, size_t 
     return 0;
 }
 
-static int bthid_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+static long bthid_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
     int ret;
     struct bthid_ctrl *p_ctrl;

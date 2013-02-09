@@ -2230,6 +2230,7 @@ static void dsscomp_adapt_dump_info_lambda_list(struct lambda_list_t *list)
 	}
 }
 
+/*
 static void dsscomp_adapt_dump_info(struct dsscomp_adapt_info *info)
 {
 	DBG_PRINTK("Dump dsscomp_adapt_info %p\n", info);
@@ -2239,6 +2240,7 @@ static void dsscomp_adapt_dump_info(struct dsscomp_adapt_info *info)
 	dsscomp_adapt_dump_info_lambda_list(info->lambda_list);
 	DBG_PRINTK("Dump End\n");
 }
+*/
 
 struct dsscomp_adapt_work {
 	struct work_struct work;

@@ -183,7 +183,7 @@ static ssize_t brightness_store(struct device* dev,
 								struct device_attribute* attr,
 								const char* buf, size_t count)
 {
-	struct lm3528_platform_data*	pdata	=	dev->platform_data;
+	//struct lm3528_platform_data*	pdata	=	dev->platform_data;
 	int		brightness	=	simple_strtol(buf, NULL, 10);
 
 	ssize_t ret =  lm3528_setBrightness(brightness, count);

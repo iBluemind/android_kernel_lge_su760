@@ -191,6 +191,7 @@ int muic_set_mhl_mode(struct muic_client_device *mcdev)// (struct i2c_client *cl
 #endif
 
 //	muic_set_mode(MUIC_MHL);
+	return 0;
 }
 
 int muic_set_cp_usb_mode(struct muic_client_device *mcdev)// (struct i2c_client *client)
@@ -793,14 +794,14 @@ static irqreturn_t max14526_interrupt_handler(s32 irq, void *data)
 	return IRQ_HANDLED;
 }
 
-static int muic_int_stat_read(struct muic_client_device *mcdev,
+static int muic_int_stat_read(struct muic_device *mcdev,
 	char *buf)
 {	
 	struct i2c_client *client = max14526; //to_i2c_client(%mcdev->dev);// i2c_verify_client(&mcdev->dev);
 
 	u32 ret;
-	u32 value;
-	unsigned int len;
+	u8 value;
+	int len;
 
 	ret = muic_i2c_read_byte(client, INT_STAT, &value);
 //	value = i2c_smbus_read_byte_data(muic_client, INT_STAT);

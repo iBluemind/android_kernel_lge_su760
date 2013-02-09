@@ -10,9 +10,6 @@
 #ifndef ASMARM_ARCH_KEYPAD_H
 #define ASMARM_ARCH_KEYPAD_H
 
-#ifndef CONFIG_ARCH_OMAP1
-#warning Please update the board to use matrix-keypad driver
-#endif
 #include <linux/input/matrix_keypad.h>
 
 struct omap_kp_platform_data {
