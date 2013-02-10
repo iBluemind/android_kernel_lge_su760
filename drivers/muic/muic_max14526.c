@@ -47,6 +47,8 @@
 #include <asm/gpio.h>
 
 #include <lge/board.h>
+
+#include <linux/fastchg.h>
 #define DEBUGE_MAX14526
 #define DEBUGE
 
@@ -477,11 +479,20 @@ int muic_set_device_none_detect(struct i2c_client *client,unsigned char int_stat
 			//muic_set_charger_mode(client, charger_value);
 
 			//else if( (stat_value & CHGDET)&&((id_register_value & IDNO) == IDNO_1011))//stat_value==0x9B \C0Ϲ\DD \C3\E6\C0\FC\B1\E2
+
+#ifdef CONFIG_FORCE_FAST_CHARGE
+			if((int_stat_value & CHGDET) || (force_fast_charge != 0))
+			{
+				muic_i2c_write_byte(client,SW_CONTROL, COMP2_TO_HZ | COMN1_TO_HZ);
+				muic_set_mode(MUIC_LG_TA);
+			}
+#else
 			if(int_stat_value & CHGDET)
 			{
 				muic_i2c_write_byte(client,SW_CONTROL, COMP2_TO_HZ | COMN1_TO_HZ);
 				muic_set_mode(MUIC_LG_TA);
 			}
+#endif
 			else if (charger_value & DCPORT)
 			{
 				/* Not used actually. Special TA for North America.*/
