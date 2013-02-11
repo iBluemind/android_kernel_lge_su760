@@ -26,8 +26,6 @@
 #define MAX_FINGER	10
 #define MAX_BUTTON	4
 
-#include <linux/earlysuspend.h>
-
 struct touch_device_caps
 {
 	u8		button_support;
@@ -203,33 +201,6 @@ struct accuracy_filter_info {
 	struct accuracy_history_data	his_data;
 };
 
-struct lge_touch_data
-{
-	void*			h_touch;
-	atomic_t		next_work;
-	atomic_t		device_init;
-	u8				work_sync_err_cnt;
-	u8				ic_init_err_cnt;
-	volatile int	curr_pwr_state;
-	struct i2c_client 			*client;
-	struct input_dev 			*input_dev;
-	struct hrtimer 				timer;
-	struct work_struct  		work;
-	struct delayed_work			work_init;
-	struct delayed_work			work_touch_lock;
-	struct work_struct  		work_fw_upgrade;
-	struct early_suspend		early_suspend;
-	struct touch_platform_data 	*pdata;
-	struct touch_data			ts_data;
-	struct touch_fw_info		fw_info;
-	struct fw_upgrade_info		fw_upgrade;
-	struct section_info			st_info;
-	struct kobject 				lge_touch_kobj;
-	struct ghost_finger_ctrl	gf_ctrl;
-	struct jitter_filter_info	jitter_filter;
-	struct accuracy_filter_info	accuracy_filter;
-};
-
 struct touch_device_driver {
 	int		(*probe)		(struct i2c_client *client);
 	void	(*remove)		(struct i2c_client *client);
@@ -382,8 +353,6 @@ enum{
 
 /* Debug Mask setting */
 #define TOUCH_ERROR_PRINT   (1)
-#define TOUCH_INFO_PRINT    (1)
-#define TOUCH_DEBUG_MSG     (1)
 
 #if defined(TOUCH_INFO_PRINT)
 #define TOUCH_INFO_MSG(fmt, args...) \
